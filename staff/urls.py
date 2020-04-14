@@ -8,4 +8,5 @@ urlpatterns = [
     url(r'^download/(?P<download_type>[\w\-]+)/(?P<month>[\w\-]+)/(?P<year>[\w\-]+)/$', views.download, name='download'),
     url(r'^expense/$', views.expense, name='expense'),
     url(r'^storeExpense/$', views.storeExpense, name='storeExpense'),
+    url(r'^aboutus/$', views.aboutus, name='aboutus'),
 ]

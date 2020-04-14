@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+    </head>
+    {% load custom_filter_tags %}
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/menubar.css' %}">
+    <style>
+        th, td {
+            width:120px;
+            height:25px;
+            text-align:center;
+        }
+    </style>
+    <body>
+        <div class="menu-bar">
+            <ul>
+                <li><a href="/client/details/">Client Form</a></li>
+                <li><a href="/staff/analysis/">Analytics</a></li>
+                <li><a href="/staff/expense/">Expense</a></li>
+                <li><a href="#contact">Contact US</a></li>
+                <li><a class="active" href="#about">About</a></li>
+                <li><a href="#download">Download</a>
+                    <div class="sub-menu">
+                        <ul>
+                            <li><a href="#Expense">Expense</a>
+                                <div class="sub-sub-menu">
+                                    <ul>
+                                        <li><a href="/staff/download/expense/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
+                                        <li><a href="/staff/download/expense/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
+                                        <li><a href="/staff/download/expense/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
+                                        <li><a href="/staff/download/expense/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li><a href="#Analysis">Analysis</a>
+                                <div class="sub-sub-menu">
+                                    <ul>
+                                        <li><a href="/staff/download/analysis_render/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
+                                        <li><a href="/staff/download/analysis_render/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
+                                        <li><a href="/staff/download/analysis_render/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
+                                        <li><a href="/staff/download/analysis_render/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li><a href="#Customer Data">Customer Data</a>
+                                <div class="sub-sub-menu">
+                                    <ul>
+                                        <li><a href="/staff/download/analysis_excel/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
+                                        <li><a href="/staff/download/analysis_excel/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
+                                        <li><a href="/staff/download/analysis_excel/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
+                                        <li><a href="/staff/download/analysis_excel/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <h1>Background</h1>
+        In 2019, House of Handsomes & Divas established its first salon in Devarabisanahalli, Bellandur, Bangalore Karnataka 560103. House of Handsomes opened with a promise – consistently deliver world class services to all customers. Our founders being post graduates from IIIT, are aiming to transform the salon Industry.
+
+        <h1>Objective</h1>
+        To help the Salon(Small to Big) by providing them the interface to manage the customer data, also providing the analysis tool to predict the Customer data and expense tool to keep all the expense at one place.
+
+        <h1>Benefits</h1>
+        <ul>
+            <li>Based on the Data Prediction you can manage the inventory </li>
+            <li>You can keep the number of salon members according to Previous Record which in turn will help you to save some cost </li>
+            <li>It will help you to manage all the data at one place </li>
+            <li>Take Better Decision using Analysis tool </li>
+            <li>No one can see your Data except you </li>
+            <li>Not able to check the performance Because of multiple parlour? Don't worry we have the capability to help you to show you the performance for multiple parlour also</li>
+            <li>Anytime you can see the records of last 4 month, if you need before 4 month record that also can be available based on the request</li>
+            <li>Not able to visit the website due to internet connection or Server Down, no worries you will be receiving a report at the end of each and every month</li>
+            <li>Not able to feed the customer data on regular basis? No Worries, share us the Photo at the end of the day we will feed day on your behalf</li>
+        </ul>
+    </body>
+</html>

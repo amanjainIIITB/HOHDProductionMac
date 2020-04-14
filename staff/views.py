@@ -343,6 +343,9 @@ def numberofcustomer(date, datewisedata):
     if flag == False:
         return 0
 
+def aboutus(request):
+    return render(request, 'aboutus.html')
+
 def download(request, download_type, month, year):
 
     # put the ip address or dns of your apic-em controller in this url
