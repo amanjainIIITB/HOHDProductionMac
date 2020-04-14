@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+    </head>
+    {% load custom_filter_tags %}
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/menubar.css' %}">
+    <style>
+        th, td {
+            width:120px;
+            height:25px;
+            text-align:center;
+        }
+    </style>
+    <body>
+        <div class="menu-bar">
+            <ul>
+                <li><a href="/client/details/">Client Form</a></li>
+                <li><a class="active" href="#analytics">Analytics</a></li>
+                <li><a href="/staff/expense/">Expense</a></li>
+                <li><a href="#contact">Contact US</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#download">Download</a>
+                    <div class="sub-menu">
+                        <ul>
+                            <li><a href="#Expense">Expense</a>
+                                <div class="sub-sub-menu">
+                                    <ul>
+                                        <li><a href="/staff/download/expense/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
+                                        <li><a href="/staff/download/expense/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
+                                        <li><a href="/staff/download/expense/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
+                                        <li><a href="/staff/download/expense/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li><a href="#Analysis">Analysis</a>
+                                <div class="sub-sub-menu">
+                                    <ul>
+                                        <li><a href="/staff/download/analysis_render/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
+                                        <li><a href="/staff/download/analysis_render/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
+                                        <li><a href="/staff/download/analysis_render/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
+                                        <li><a href="/staff/download/analysis_render/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li><a href="#Customer Data">Customer Data</a>
+                                <div class="sub-sub-menu">
+                                    <ul>
+                                        <li><a href="/staff/download/analysis_excel/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
+                                        <li><a href="/staff/download/analysis_excel/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
+                                        <li><a href="/staff/download/analysis_excel/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
+                                        <li><a href="/staff/download/analysis_excel/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div id="piechart"></div>
+
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+        <script type="text/javascript">
+        // Load google charts
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(revenue);
+        google.charts.setOnLoadCallback(numberofcustomers);
+        google.charts.setOnLoadCallback(incomeofthemonth);
+        google.charts.setOnLoadCallback(number_of_customer_of_the_month);
+
+        function revenue() {
+                outer = []
+                inner = ["Month", "Income", { role: "style" } ];
+                outer.push(inner);
+                {% for bargraphrevenueobj in revenueBarGraphData %}
+                    inner=[]
+                    inner.push("{{bargraphrevenueobj.0}}");
+                    inner.push({{bargraphrevenueobj.1}});
+                    inner.push("red")
+                    outer.push(inner);
+                {% endfor %}
+            var data = google.visualization.arrayToDataTable(outer);
+
+            var view = new google.visualization.DataView(data);
+            view.setColumns([0, 1,
+            { calc: "stringify",
+              sourceColumn: 1,
+              type: "string",
+              role: "annotation" },
+            2]);
+
+            var options = {
+                title: "Revenue of Last 6 Month",
+                width: 1200,
+                height: 400,
+                bar: {groupWidth: "95%"},
+                legend: { position: "none" },
+            };
+
+            var chart = new google.visualization.BarChart(document.getElementById("revenuediv"));
+            chart.draw(view, options);
+        }
+
+        function numberofcustomers()
+        {
+            outer = []
+                inner = ["Month", "Number of Client", { role: "style" } ];
+                outer.push(inner);
+                {% for bargraphrevenueobj in revenueBarGraphData %}
+                    inner=[]
+                    inner.push("{{bargraphrevenueobj.0}}");
+                    inner.push({{bargraphrevenueobj.2}});
+                    inner.push("light green")
+                    outer.push(inner);
+                {% endfor %}
+            var data = google.visualization.arrayToDataTable(outer);
+
+            var view = new google.visualization.DataView(data);
+            view.setColumns([0, 1,
+            { calc: "stringify",
+              sourceColumn: 1,
+              type: "string",
+              role: "annotation" },
+            2]);
+
+            var options = {
+                title: "Number of Client in Last 6 Month",
+                width: 1200,
+                height: 400,
+                bar: {groupWidth: "95%"},
+                legend: { position: "none" },
+            };
+
+            var chart = new google.visualization.BarChart(document.getElementById("numberofcustomersdiv"));
+            chart.draw(view, options);
+        }
+
+        function incomeofthemonth(){
+
+            var data = google.visualization.arrayToDataTable([
+                ['Task', 'Amount'],
+                ['Cash', {{ total_cash_amount_Of_The_Month }}],
+                ['Online', {{total_online_amount_Of_The_Month}}],
+            ]);
+            // Optional; add a title and set the width and height of the chart
+            var options = {'title':'Income', 'width':1200, 'height':400};
+
+            var chart = new google.visualization.PieChart(document.getElementById('incomeofthemonthdiv'));
+            chart.draw(data, options);
+        }
+
+        function number_of_customer_of_the_month(){
+
+            var data = google.visualization.arrayToDataTable([
+                ['Task', 'Number of Customer'],
+                ['Cash', {{ number_of_cash_customer_Of_The_Month }}],
+                ['Online', {{number_of_online_customer_Of_The_Month}}],
+            ]);
+            // Optional; add a title and set the width and height of the chart
+            var options = {'title':'Number of Customer', 'width':1200, 'height':400};
+
+            var chart = new google.visualization.PieChart(document.getElementById('numberofcustomerofthemonthdiv'));
+            chart.draw(data, options);
+        }
+
+        </script>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <h1>Revenue Data for last 6 Month</h1><br>
+        <div id="revenuediv"></div>
+        <br>
+        <h1>Number of Customers for last 6 month</h1><br>
+        <div id="numberofcustomersdiv"></div>
+        <br>
+
+        <h1>Date wise Data</h1><br>
+        <table border="2">
+            <tr>
+                <th>Date</th>
+                <th>Bharatpe</th>
+                <th>Bharatpe Customer</th>
+                <th>Paytm</th>
+                <th>Paytm Customer</th>
+                <th>Cash</th>
+                <th>Cash Customer</th>
+                <th>Total Amount</th>
+                <th>Total Customer</th>
+            </tr>
+        {% for dateobj in listOfDates %}
+            <tr>
+                <td>{{dateobj}}</td>
+                <td>{{ dateobj|amount:dayWiseBharatpeOfTheMonth}}</td>
+                <td>{{ dateobj|numberofcustomer:dayWiseBharatpeOfTheMonth}}</td>
+                <td>{{ dateobj|amount:dayWisePaytmOfTheMonth}}</td>
+                <td>{{ dateobj|numberofcustomer:dayWisePaytmOfTheMonth}}</td>
+                <td>{{ dateobj|amount:dayWiseCashOfTheMonth}}</td>
+                <td>{{ dateobj|numberofcustomer:dayWiseCashOfTheMonth}}</td>
+
+                {% with cashamount=dateobj|amount:dayWiseCashOfTheMonth  %}
+                    {% with paytmamount=dateobj|amount:dayWisePaytmOfTheMonth %}
+                        {% with bharatpeamount=dateobj|amount:dayWiseBharatpeOfTheMonth %}
+                            <td>{{cashamount|add:paytmamount|add:bharatpeamount}}</td>
+                        {% endwith %}
+                    {% endwith %}
+                {% endwith %}
+                {% with numberofcashcustomer=dateobj|numberofcustomer:dayWiseCashOfTheMonth  %}
+                    {% with numberofpaytmcustomer=dateobj|numberofcustomer:dayWisePaytmOfTheMonth %}
+                        {% with numberofbharatpecustomer=dateobj|numberofcustomer:dayWiseBharatpeOfTheMonth %}
+                            <td>{{numberofcashcustomer|add:numberofpaytmcustomer|add:numberofbharatpecustomer}}</td>
+                        {% endwith %}
+                    {% endwith %}
+                {% endwith %}
+            </tr>
+        {% endfor %}
+        </table>
+        <br><br>
+
+        <h1>Cash VS Online of the Month</h1><br>
+        <div id="incomeofthemonthdiv"></div>
+        <div id="numberofcustomerofthemonthdiv"></div>
+    </body>
+</html>

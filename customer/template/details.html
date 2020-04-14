@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Welcome</title>
+    </head>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/menubar.css' %}">
+    <style>
+
+    input[type=text], select, textarea {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    input[type=submit] {
+        width: 80%;
+        background-color: #4CAF50;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    input[type=submit]:hover {
+        background-color: #45a049;
+    }
+
+    input.largerCheckbox
+    {
+        width:18px;
+        height:18px;
+    }
+
+    /* Box styles */
+    .myBox {
+        border: none;
+        padding: 5px;
+        <!--font: 24px/36px sans-serif;-->
+        width:100px;
+        height: 200px;
+        overflow: scroll;
+    }
+
+    #leftleftbox {
+        float:left;
+        width:4%;
+        height:360px;
+    }
+    #leftrightbox {
+        float:left;
+        width:20%;
+        height:360px;
+        background:#ffcccb;
+    }
+    #middleleftbox{
+        float:left;
+        background:#ffcccb;
+        width:20%;
+        height:360px;
+    }
+    #middlerightbox{
+        float:left;
+        background:grey;
+        width:20%;
+        height:350px;
+    }
+    #rightbox{
+        float:right;
+        width:30%;
+        height:430px;
+    }
+
+    #submit{
+        text-align:center;
+    }
+
+    </style>
+    <body style="background-color: pink;">
+
+        {% if messages %}
+            <script>
+                {% for message in messages %}
+                    alert("{{ message }}");
+                {% endfor %}
+            </script>
+        {% endif %}
+        <div class="menu-bar">
+            <ul>
+                <li><a class="active" href="#client">Client Form</a></li>
+                <li><a href="/staff/analysis/">Analytics</a></li>
+                <li><a href="/staff/expense/">Expense</a></li>
+                <li><a href="#contact">Contact US</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#download">Download</a>
+                    <div class="sub-menu">
+                        <ul>
+                            <li><a href="#Expense">Expense</a>
+                                <div class="sub-sub-menu">
+                                    <ul>
+                                        <li><a href="/staff/download/expense/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
+                                        <li><a href="/staff/download/expense/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
+                                        <li><a href="/staff/download/expense/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
+                                        <li><a href="/staff/download/expense/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li><a href="#Analysis">Analysis</a>
+                                <div class="sub-sub-menu">
+                                    <ul>
+                                        <li><a href="/staff/download/analysis_render/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
+                                        <li><a href="/staff/download/analysis_render/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
+                                        <li><a href="/staff/download/analysis_render/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
+                                        <li><a href="/staff/download/analysis_render/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li><a href="#Customer Data">Customer Data</a>
+                                <div class="sub-sub-menu">
+                                    <ul>
+                                        <li><a href="/staff/download/analysis_excel/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
+                                        <li><a href="/staff/download/analysis_excel/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
+                                        <li><a href="/staff/download/analysis_excel/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
+                                        <li><a href="/staff/download/analysis_excel/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        {{month}}
+        <form method="post" action="/client/thankyou/">
+        <h1>Client Data</h1>
+        <div id = "boxes">
+            {% csrf_token %}
+            <div id="leftleftbox"></div>
+            <div id = "leftrightbox">
+                <label for="date">Date</label>
+                <input type="date" id="date" name="date" ><br>
+                <label for="paymentmode">Payment Mode</label>
+                <select id="paymentmode" name="paymentmode">
+                    <option value="Bharatpe">Bharatpe</option>
+                    <option value="Paytm">Paytm</option>
+                    <option value="Cash">Cash</option>
+                </select>
+                <label for="numberofclient">Number of Client</label>
+                <input type="text" id="numberofclient" name="numberofclient" placeholder="Client count">
+                <label for="amount">Amount</label>
+                <input type="text" id="amount" name="amount" placeholder="Enter Amount..">
+                <input type="submit" value="Submit">
+            </div>
+            <!--<div id = "middleleftbox">-->
+                <!--{% csrf_token %}-->
+            <!--</div>-->
+            <!--<div id = "middlerightbox" class="myBox">-->
+
+            <!--</div>-->
+            <!--<div id = "rightbox">-->
+                <!--<img src="{% static 'customer/images/hoh.jpg' %}">-->
+            <!--</div>-->
+        </div><br>
+        </form>
+    </body>
+</html>

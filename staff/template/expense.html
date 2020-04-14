@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Welcome</title>
+    </head>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/menubar.css' %}">
+    <style>
+        .transaction{
+            width:180px;
+            text-align:center;
+        }
+        th, td {
+            width:150px;
+            height:40px;
+        }
+    </style>
+    <body>
+
+        {% if messages %}
+            <script>
+                {% for message in messages %}
+                    alert("{{ message }}");
+                {% endfor %}
+            </script>
+        {% endif %}
+        <div class="menu-bar">
+            <ul>
+                <li><a href="/client/details/">Client Form</a></li>
+                <li><a href="/staff/analysis/">Analytics</a></li>
+                <li><a class="active" href="#expense">Expense</a></li>
+                <li><a href="#contact">Contact US</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#download">Download</a>
+                    <div class="sub-menu">
+                        <ul>
+                            <li><a href="#Expense">Expense</a>
+                                <div class="sub-sub-menu">
+                                    <ul>
+                                        <li><a href="/staff/download/expense/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
+                                        <li><a href="/staff/download/expense/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
+                                        <li><a href="/staff/download/expense/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
+                                        <li><a href="/staff/download/expense/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li><a href="#Analysis">Analysis</a>
+                                <div class="sub-sub-menu">
+                                    <ul>
+                                        <li><a href="/staff/download/analysis_render/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
+                                        <li><a href="/staff/download/analysis_render/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
+                                        <li><a href="/staff/download/analysis_render/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
+                                        <li><a href="/staff/download/analysis_render/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li><a href="#Customer Data">Customer Data</a>
+                                <div class="sub-sub-menu">
+                                    <ul>
+                                        <li><a href="/staff/download/analysis_excel/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
+                                        <li><a href="/staff/download/analysis_excel/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
+                                        <li><a href="/staff/download/analysis_excel/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
+                                        <li><a href="/staff/download/analysis_excel/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <h1>Purpose of Payment</h1>
+        <form method="post" action="/staff/storeExpense/">
+            {% csrf_token %}
+            <table>
+                <tr>
+                    <td>
+                        <label for="purpose">Transaction Purpose</label>
+                    </td>
+                    <td>
+                        <select id="purpose" name="purpose">
+                            <option value="Owner Rent">Owner Rent</option>
+                            <option value="Shop Rent">Shop Rent</option>
+                            <option value="Shop Electricity bill">Shop Electricity bill</option>
+                            <option value="Shop Water bill">Shop Water bill</option>
+                            <option value="House Rent">House Rent</option>
+                            <option value="House Electricity bill">House Electricity bill</option>
+                            <option value="House Water bill">House Water bill</option>
+                            <option value="Internet Bill">Internet Bill</option>
+                            <option value="Transferred to Employee">Transferred to Employee</option>
+                            <option value="Previous Balance">Previous Balance</option>
+                            <option value="Cash Received">Cash Received</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="purpose">Transaction Purpose</label>
+                    </td>
+                    <td>
+                        <input type="date" id="date" name="date" >
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="paymentmode">Payment Mode</label>
+                    </td>
+                    <td>
+                        <select id="paymentmode" name="paymentmode">
+                            <option value="Online">Online</option>
+                            <option value="Cash">Cash</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="amount">Amount</label>
+                    </td>
+                    <td>
+                        <input type="text" id="amount" name="amount" placeholder="Enter Amount..">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="comment">Comment</label>
+                    </td>
+                    <td>
+                        <input type="text" id="comment" name="comment" >
+                    </td>
+                </tr>
+            </table>
+            <input type="submit" value="Submit">
+        </form>
+        <h1>Transaction Record of the Month</h1>
+        <table border="2">
+            <th>Date</th>
+            <th>Purpose</th>
+            <th>Comment</th>
+            <th>Payment Mode</th>
+            <th>Amount</th>
+            <tr>
+                <td class="transaction"></td>
+                <td class="transaction">Total Online</td>
+                <td class="transaction">Amount Till current Date</td>
+                <td class="transaction">Online</td>
+                <td class="transaction">{{total_online_amount_Of_The_Month}}</td>
+            </tr>
+            {% for transobj in expense%}
+            <tr>
+                <td class="transaction">{{transobj.0}}</td>
+                <td class="transaction">{{transobj.1}}</td>
+                <td class="transaction">{{transobj.2}}</td>
+                <td class="transaction">{{transobj.3}}</td>
+                <td class="transaction">{{transobj.4}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </body>
+</html>
