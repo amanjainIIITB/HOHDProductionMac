@@ -1,0 +1,12 @@
+<html>
+    <title>Signup</title>
+    <body>
+        <form action="/useraccount/signup/" method="post">
+            <table>
+                {% csrf_token %}
+                    {{user_form}}
+            </table>
+            <input type="submit">
+        </form>
+    </body>
+</html>

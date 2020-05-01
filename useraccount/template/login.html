@@ -1,0 +1,15 @@
+<html>
+    <title>Login</title>
+    <body>
+        <form action="/useraccount/login/" method="post">
+            <table>
+                {% csrf_token %}
+                {{form}}
+            </table>
+            {% if request.GET.next %}
+                <input type="hidden" name="next" value="{{request.GET.next}}">
+            {% endif %}
+            <input type="submit">
+        </form>
+    </body>
+</html>

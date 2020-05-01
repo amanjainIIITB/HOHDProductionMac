@@ -4,6 +4,7 @@ from customer.models import *
 from .models import Expense
 import datetime
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -104,7 +105,7 @@ def prepare_list_of_dates(year, month):
         day = day + 1
     return listOfDates
 
-
+# @login_required(login_url="/useraccount/login/")
 def analysis(request):
 
     now = datetime.datetime.now()
@@ -231,7 +232,7 @@ class AnalysisReport(APIView):
 #     Paytm.objects.filter(amount=0).delete()
 #     client.objects.filter(amount=0).delete()
 
-
+# @login_required(login_url="/useraccount/login/")
 def expense(request):
     # cleanDB()
 
@@ -256,6 +257,28 @@ def expense(request):
     r_json['year'] = now.year
     return render(request, 'expense.html',r_json)
 
+def get_month_year_month_name_for_download():
+    now = datetime.datetime.now()
+    month_year_month_name = []
+    month_list = []
+    year_list = []
+    month_name = []
+    number_to_month_name = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov',
+                            'Dec']
+    current_month = now.month
+    current_year = now.year
+    for i in range(4):
+        if current_month == 0:
+            current_month = 12
+            current_year = current_year - 1
+        month_list.append(current_month)
+        month_name.append(number_to_month_name[current_month - 1])
+        year_list.append(current_year)
+        current_month = current_month - 1
+    month_year_month_name.append(month_list)
+    month_year_month_name.append(month_name)
+    month_year_month_name.append(year_list)
+    return month_year_month_name
 
 class ExpenseReport(APIView):
     def get(self):
@@ -298,27 +321,10 @@ class ExpenseReport(APIView):
         list.append(amount_returned_to_employees)
         expense_list.append(list)
 
-        now = datetime.datetime.now()
-        month_list = []
-        year_list = []
-        month_name = []
-        number_to_month_name = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov',
-                                'Dec']
-        current_month = now.month
-        current_year = now.year
-        for i in range(4):
-            if current_month == 0:
-                current_month = 12
-                current_year = current_year - 1
-            month_list.append(current_month)
-            month_name.append(number_to_month_name[current_month - 1])
-            year_list.append(current_year)
-            current_month = current_month - 1
-
-        print(month_list)
+        month_year_month_name = get_month_year_month_name_for_download()
         return Response({'expense': expense_list,
                         'total_online_amount_Of_The_Month': total_online_amount_Of_The_Month,
-                         "month_list": month_list, "year_list": year_list, "month_name": month_name})
+                         "month_list": month_year_month_name[0], "year_list": month_year_month_name[2], "month_name": month_year_month_name[1]})
 
 
 def amount(date, datewisedata):
@@ -344,8 +350,10 @@ def numberofcustomer(date, datewisedata):
         return 0
 
 def aboutus(request):
-    return render(request, 'aboutus.html')
+    month_year_month_name = get_month_year_month_name_for_download()
+    return render(request, 'aboutus.html', {"month_list": month_year_month_name[0], "year_list": month_year_month_name[2], "month_name": month_year_month_name[1]})
 
+@login_required(login_url="/useraccount/login/")
 def download(request, download_type, month, year):
 
     # put the ip address or dns of your apic-em controller in this url

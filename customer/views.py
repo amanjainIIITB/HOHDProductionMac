@@ -2,14 +2,18 @@ from django.shortcuts import render, redirect
 from .models import *
 import datetime
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
-def details(request):
+
+def get_month_year_month_name_for_download():
     now = datetime.datetime.now()
+    month_year_month_name = []
     month_list = []
     year_list = []
     month_name = []
-    number_to_month_name = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    number_to_month_name = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov',
+                            'Dec']
     current_month = now.month
     current_year = now.year
     for i in range(4):
@@ -17,10 +21,18 @@ def details(request):
             current_month = 12
             current_year = current_year - 1
         month_list.append(current_month)
-        month_name.append(number_to_month_name[current_month-1])
+        month_name.append(number_to_month_name[current_month - 1])
         year_list.append(current_year)
         current_month = current_month - 1
-    return render(request, 'details.html', {"month_list": month_list, "year_list": year_list, "month_name": month_name})
+    month_year_month_name.append(month_list)
+    month_year_month_name.append(month_name)
+    month_year_month_name.append(year_list)
+    return month_year_month_name
+
+# @login_required(login_url="/useraccount/login/")
+def details(request):
+    month_year_month_name = get_month_year_month_name_for_download()
+    return render(request, 'details.html', {"month_list": month_year_month_name[0], "year_list": month_year_month_name[2], "month_name": month_year_month_name[1]})
 
 
 def thankyou(request):

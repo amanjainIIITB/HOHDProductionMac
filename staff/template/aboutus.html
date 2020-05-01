@@ -58,6 +58,14 @@
                         </ul>
                     </div>
                 </li>
+                <li>
+                    <div>
+                        <form action="/useraccount/logout/" method="post">
+                            {% csrf_token %}
+                            <button type="submit">Logout</button>
+                        </form>
+                    </div>
+                </li>
             </ul>
         </div>
         <h1>Background</h1>
