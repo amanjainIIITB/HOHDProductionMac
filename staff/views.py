@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.db.models import Sum
 from customer.models import *
-from .models import Expense
+from .models import Expense, ShopRegistration
 import datetime
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -435,3 +435,16 @@ def download(request, download_type, month, year):
     #     response['Content-Disposition'] = content
     #     return response
     # return HttpResponse("Not found")
+
+def shopreg(request):
+    if request.method == "POST":
+        shopRegistration = ShopRegistration()
+        last_shop_id = ShopRegistration.objects.values('ShopID').last()
+        new_shop_id = int(str(last_shop_id['ShopID'])[1:]) + 1
+        shopRegistration.ShopID = 'O'+str(new_shop_id)
+        shopRegistration.Desk_Contact_Number = request.POST.get('Desk_Contact_Number')
+        shopRegistration.Shop_Name = request.POST.get('Shop_Name')
+        shopRegistration.Shop_Address = request.POST.get('Shop_Address')
+        shopRegistration.save()
+        messages.success(request, 'Added successfully', extra_tags='alert')
+    return render(request, 'shop_registration.html')

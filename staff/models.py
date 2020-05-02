@@ -1,5 +1,6 @@
 from django.db import models
 import datetime
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 # Create your models here.
 class Expense(models.Model):
@@ -11,3 +12,10 @@ class Expense(models.Model):
 
     def __str__(self):
         return str(self.date)
+
+class ShopRegistration(models.Model):
+    ShopID = models.CharField(max_length=10, null=True)
+    Desk_Contact_Number = models.IntegerField(validators=[MinValueValidator(1000000000), MaxValueValidator(9999999999)],
+                                              null=True)
+    Shop_Name = models.CharField(max_length=50, null=True)
+    Shop_Address = models.CharField(max_length=200, null=True)

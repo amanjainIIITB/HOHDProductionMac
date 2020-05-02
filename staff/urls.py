@@ -9,4 +9,5 @@ urlpatterns = [
     url(r'^expense/$', views.expense, name='expense'),
     url(r'^storeExpense/$', views.storeExpense, name='storeExpense'),
     url(r'^aboutus/$', views.aboutus, name='aboutus'),
+    url(r'^shopreg/$', views.shopreg, name='shopreg'),
 ]
