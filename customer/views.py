@@ -64,3 +64,14 @@ def thankyou(request):
     customer.save()
     messages.success(request, 'Added successfully', extra_tags='alert')
     return redirect('/client/details/')
+
+def membership(request):
+    if request.method == "POST":
+        membership = Membership()
+        membership.custID = request.POST.get('custid')
+        membership.Name = request.POST.get('name')
+        membership.Contact_Number = request.POST.get('contact_number')
+        membership.DOB = request.POST.get('date')
+        membership.save()
+        messages.success(request, 'Added successfully', extra_tags='alert')
+    return render(request, 'membership.html')

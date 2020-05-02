@@ -95,12 +95,12 @@
         <div class="menu-bar">
             <ul>
                 <li><a href="/client/details/">Client Form</a></li>
-                <li><a href="/client/membership">Membership</a></li>
+                <li><a class="active" href="#membership">Membership</a></li>
                 <li><a href="/staff/analysis/">Analytics</a></li>
                 <li><a href="/staff/expense/">Expense</a></li>
                 <li><a href="#contact">Contact US</a></li>
                 <li><a href="/staff/aboutus/">About</a></li>
-                <li><a class="active" href="#shopreg">Shop Reg</a></li>
+                <li><a href="/staff/shopreg">Shop Reg</a></li>
                 <li><a href="#download">Download</a>
                     <div class="sub-menu">
                         <ul>
@@ -148,18 +148,20 @@
             </ul>
         </div>
         {{month}}
-        <form method="post" action="/staff/shopreg/">
-        <h1>Shop Data</h1>
+        <form method="post" action="/client/membership/">
+        <h1>Client Membership</h1>
         <div id = "boxes">
+            {% csrf_token %}
             <div id="leftleftbox"></div>
             <div id = "leftrightbox">
-                {% csrf_token %}
-                <label for="Shop_Name">Shop Name</label>
-                <input type="text" id="Shop_Name" name="Shop_Name" ><br>
-                <label for="Desk_Contact_Number">Desk Contact Number</label>
-                <input type="text" id="Desk_Contact_Number" name="Desk_Contact_Number" ><br>
-                <label for="Shop_Address">Shop Address</label>
-                <input type="text" id="Shop_Address" name="Shop_Address" ><br>
+                <label for="custid">Client ID</label>
+                <input type="text" id="custid" name="custid"><br>
+                <label for="name">Client Name</label>
+                <input type="text" id="name" name="name"><br>
+                <label for="contact_number">Client Contact Number</label>
+                <input type="text" id="contact_number" name="contact_number">
+                <label for="date">Date of Birth</label>
+                <input type="date" id="date" name="date" ><br>
                 <input type="submit" value="Submit">
             </div>
             <!--<div id = "middleleftbox">-->
