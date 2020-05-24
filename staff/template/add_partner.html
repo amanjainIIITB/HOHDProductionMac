@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Welcome</title>
+    </head>
+    <script>
+        function get_selected_username_info(username, name, id, contact_number)
+        {
+            entered_user_info = "<table ><tr><td>ID</td><td>"+id+"</td</tr><tr><td>Name</td><td>"+name+"</td></tr><tr><td>Username</td><td>"+username+"</td></tr><tr><td>Contact Number</td><td>"+contact_number+"</td></tr></table><br><br>";
+            document.getElementById('user_details').innerHTML = entered_user_info;
+        }
+        function get_list_of_shops_for_selected_user(entered_user_shop_list, login_user_shop_list)
+        {
+            console.log(entered_user_shop_list);
+            console.log(login_user_shop_list);
+            var entered_user_shops = entered_user_shop_list.split(",");
+            var html="";
+            for(login_user_index = 0; login_user_index < login_user_shop_list.length; login_user_index++)
+            {
+                var login_shop_present_in_entered_user = "False";
+                for(entered_user_index = 0; entered_user_index < entered_user_shops.length; entered_user_index++)
+                {
+                    console.log(login_user_shop_list[login_user_index].ShopID);
+                    console.log(entered_user_shops[entered_user_index]);
+                    if(login_user_shop_list[login_user_index].ShopID == entered_user_shops[entered_user_index])
+                    {
+                        login_shop_present_in_entered_user = "True"
+                    }
+                }
+                // Login user shop is not present in entered user shop list
+                if(login_shop_present_in_entered_user == "False")
+                {
+                    html = html + "<input type=\"checkbox\" class=\"largerCheckbox\" name=\"shop_list[]\" value=\'" + login_user_shop_list[login_user_index].ShopID + "\'>";
+                    html = html + login_user_shop_list[login_user_index].ShopID +", ";
+                    html = html + login_user_shop_list[login_user_index].Shop_Name +", ";
+                    html = html + login_user_shop_list[login_user_index].Shop_Address +"<br>";
+                    document.getElementById('shop_list').innerHTML = html;
+                }
+            }
+
+        }
+        function incorrect_username()
+        {
+            // Disable the tile
+            document.getElementById('shop_list').innerHTML = "";
+
+            // Enable the relevant message, Entered Username not found. Please make sure you are entering correct username
+            document.getElementById('user_details').innerHTML = "NOTE: Entered Username not found. Please make sure you are entering correct username<br><br>";
+
+            // Disable the Submit Button
+            document.getElementById("mysubmit").disabled = true;
+            document. getElementById('mysubmit'). style. backgroundColor = 'Red';
+        }
+        function cannot_add_yourself()
+        {
+            // You have entered your username
+            document.getElementById('user_details').innerHTML = "NOTE: You can't add yourself<br><br>";
+
+            // Disable the tile
+            document.getElementById('shop_list').innerHTML = "";
+
+            // Disable the Submit Button
+            document.getElementById("mysubmit").disabled = true;
+            document. getElementById('mysubmit'). style. backgroundColor = 'Red';
+        }
+        function found_correct_username(user, list_shop_details)
+        {
+            // correct username
+            get_selected_username_info(user[0], user[1], user[2], user[3]);
+            get_list_of_shops_for_selected_user(user[4], list_shop_details);
+
+            // Enable the Submit button
+            document.getElementById("mysubmit").disabled = false;
+            document. getElementById('mysubmit'). style. backgroundColor = 'Green';
+        }
+        function validate_username(users, list_shop_details)
+        {
+            var entered_username = document.getElementById('name').value;
+            var login_username="{{login_username}}";
+            var flag="False";
+            for(i=0; i<users.length; i++)
+            {
+                if(entered_username==login_username)
+                {
+                    cannot_add_yourself()
+                    flag="True";
+                    break;
+                }
+                else if(entered_username==users[i][0])
+                {
+                    found_correct_username(users[i], list_shop_details)
+                    flag="True";
+                    break;
+                }
+            }
+            if(flag=="False")
+            {
+                // Entered username is not present in the database
+                incorrect_username();
+            }
+        }
+        function onload_behaviour()
+        {
+            // Disable the tile
+            document.getElementById('shop_list').innerHTML = "";
+
+            // Enable the relevant message, Entered Username not found. Please make sure you are entering correct username
+            document.getElementById('user_details').innerHTML = "NOTE: Entered Username<br><br>";
+
+            // Disable the Submit Button
+            document.getElementById("mysubmit").disabled = true;
+            document. getElementById('mysubmit'). style. backgroundColor = 'Red';
+        }
+    </script>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/menubar.css' %}">
+    <style>
+
+    input[type=text], select, textarea {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    input[type=submit] {
+        width: 80%;
+        background-color: #4CAF50;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    input[type=submit]:hover {
+        background-color: #45a049;
+    }
+
+    input.largerCheckbox
+    {
+        width:18px;
+        height:18px;
+    }
+
+    /* Box styles */
+    .myBox {
+        border: none;
+        padding: 5px;
+        <!--font: 24px/36px sans-serif;-->
+        width:100px;
+        height: 200px;
+        overflow: scroll;
+    }
+
+    #leftleftbox {
+        float:left;
+        width:4%;
+        height:360px;
+    }
+    #leftrightbox {
+        float:left;
+        width:20%;
+        height:360px;
+        background:#ffcccb;
+    }
+    #middleleftbox{
+        float:left;
+        background:#ffcccb;
+        width:20%;
+        height:360px;
+    }
+    #middlerightbox{
+        float:left;
+        background:grey;
+        width:20%;
+        height:350px;
+    }
+    #rightbox{
+        float:right;
+        width:30%;
+        height:430px;
+    }
+
+    #submit{
+        text-align:center;
+    }
+
+    </style>
+    <body style="background-color: pink;" onload="onload_behaviour()">
+
+        {% if messages %}
+            <script>
+                {% for message in messages %}
+                    alert("{{ message }}");
+                {% endfor %}
+            </script>
+        {% endif %}
+        <div class="menu-bar">
+            <ul>
+                <li><a href="/staff/aboutus/">About</a></li>
+                <li><a href="/client/details">Client Form</a></li>
+                <li><a href="/client/membership">Membership</a></li>
+                <li><a href="/staff/analysis/">Analytics</a></li>
+                <li><a href="/staff/expense/">Expense</a></li>
+                <li><a href="#contact">Contact US</a></li>
+                <li><a href="/staff/shopreg">Shop Reg</a></li>
+                <li><a class="active" href="#add_partner">Add Partner</a></li>
+                <li><a href="#download">Download</a>
+                    <div class="sub-menu">
+                        <ul>
+                            <li><a href="#Expense">Expense</a>
+                                <div class="sub-sub-menu">
+                                    <ul>
+                                        <li><a href="/staff/download/expense/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
+                                        <li><a href="/staff/download/expense/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
+                                        <li><a href="/staff/download/expense/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
+                                        <li><a href="/staff/download/expense/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li><a href="#Analysis">Analysis</a>
+                                <div class="sub-sub-menu">
+                                    <ul>
+                                        <li><a href="/staff/download/analysis_render/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
+                                        <li><a href="/staff/download/analysis_render/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
+                                        <li><a href="/staff/download/analysis_render/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
+                                        <li><a href="/staff/download/analysis_render/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li><a href="#Customer Data">Customer Data</a>
+                                <div class="sub-sub-menu">
+                                    <ul>
+                                        <li><a href="/staff/download/analysis_excel/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
+                                        <li><a href="/staff/download/analysis_excel/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
+                                        <li><a href="/staff/download/analysis_excel/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
+                                        <li><a href="/staff/download/analysis_excel/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li>
+                    <div>
+                        <form action="/useraccount/logout/" method="post">
+                            {% csrf_token %}
+                            <button type="submit">Logout</button>
+                        </form>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <form method="post" action="/staff/add_partner/">
+        <h1>Add Partner</h1>
+        <div id = "boxes">
+            {% csrf_token %}
+            <div id="leftleftbox"></div>
+            <div id = "leftrightbox">
+                <label for="name">Partner Username</label>
+                <input onmouseleave="validate_username({{list_users}}, {{list_shop_details}})" type="text" id="name" name="name">
+                <span id="user_details"></span>
+                <label for="parlour">Select Parlour:</label><br>
+                <span id="shop_list"></span>
+<!--                {% for shopobj in list_shop_details %}-->
+<!--                    <input type="checkbox" class="largerCheckbox" name="shop_list[]" value="{{shopobj.ShopID}}">{{shopobj.ShopID}}, {{shopobj.Shop_Name}}, {{shopobj.Shop_Address}}<br>-->
+<!--                {% endfor %}-->
+                <input type="submit" id="mysubmit" value="Submit">
+            </div>
+            <!--<div id = "middleleftbox">-->
+                <!--{% csrf_token %}-->
+            <!--</div>-->
+            <!--<div id = "middlerightbox" class="myBox">-->
+
+            <!--</div>-->
+            <!--<div id = "rightbox">-->
+                <!--<img src="{% static 'customer/images/hoh.jpg' %}">-->
+            <!--</div>-->
+        </div><br>
+        </form>
+    </body>
+</html>

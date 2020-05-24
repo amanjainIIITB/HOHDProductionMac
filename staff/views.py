@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.db.models import Sum
 from customer.models import *
-from .models import Expense, ShopRegistration, ShopOwnerRelationship
+from .models import Expense, ShopRegistration
 from useraccount.models import OwnerRegistration
 import datetime
 from django.contrib import messages
@@ -14,6 +14,8 @@ from .render_html_to_pdf import render_to_pdf
 import requests
 import json
 import xlwt
+from customer.views import atleast_one_shop_registered
+from useraccount.views import set_session
 
 def storeExpense(request):
     expense = Expense()
@@ -106,9 +108,11 @@ def prepare_list_of_dates(year, month):
         day = day + 1
     return listOfDates
 
-# @login_required(login_url="/useraccount/login/")
+@login_required(login_url="/useraccount/login/")
 def analysis(request):
-
+    if not atleast_one_shop_registered(request):
+        return redirect('/staff/shopreg/')
+    print(request.session['shop_id'])
     now = datetime.datetime.now()
 
     # put the ip address or dns of your apic-em controller in this url
@@ -233,10 +237,12 @@ class AnalysisReport(APIView):
 #     Paytm.objects.filter(amount=0).delete()
 #     client.objects.filter(amount=0).delete()
 
-# @login_required(login_url="/useraccount/login/")
+@login_required(login_url="/useraccount/login/")
 def expense(request):
     # cleanDB()
-
+    if not atleast_one_shop_registered(request):
+        return redirect('/staff/shopreg/')
+    print(request.session['shop_id'])
     now = datetime.datetime.now()
     # put the ip address or dns of your apic-em controller in this url
     expense_url = 'http://localhost:8000/staff/getExpense/'
@@ -350,13 +356,17 @@ def numberofcustomer(date, datewisedata):
     if flag == False:
         return 0
 
+
 def aboutus(request):
     month_year_month_name = get_month_year_month_name_for_download()
     return render(request, 'aboutus.html', {"month_list": month_year_month_name[0], "year_list": month_year_month_name[2], "month_name": month_year_month_name[1]})
 
+
 @login_required(login_url="/useraccount/login/")
 def download(request, download_type, month, year):
-
+    if not atleast_one_shop_registered(request):
+        return redirect('/staff/shopreg/')
+    print(request.session['shop_id'])
     # put the ip address or dns of your apic-em controller in this url
     url=''
     if download_type=='analysis_render' or download_type=='analysis_excel':
@@ -437,6 +447,22 @@ def download(request, download_type, month, year):
     #     return response
     # return HttpResponse("Not found")
 
+
+def add_shop_id_in_login_user(request, shop_id):
+    print(shop_id)
+    username = str(request.user.id)
+    owner_object_values = OwnerRegistration.objects.values('ownerID', 'shop_list').filter(user=username).first()
+    print(owner_object_values)
+    owner_object = OwnerRegistration.objects.get(ownerID=owner_object_values['ownerID'])
+    print(owner_object)
+    if owner_object_values['shop_list'] == None:
+        owner_object.shop_list = shop_id
+    else:
+        owner_object.shop_list = owner_object_values['shop_list']+','+shop_id
+    owner_object.save()
+
+
+@login_required(login_url="/useraccount/login/")
 def shopreg(request):
     if request.method == "POST":
         shopRegistration = ShopRegistration()
@@ -446,16 +472,61 @@ def shopreg(request):
         shopRegistration.Desk_Contact_Number = request.POST.get('Desk_Contact_Number')
         shopRegistration.Shop_Name = request.POST.get('Shop_Name')
         shopRegistration.Shop_Address = request.POST.get('Shop_Address')
-        username = str(request.user.id)
-        print(username)
-        ownerID = OwnerRegistration.objects.values('ownerID').filter(user=username).first()
-        print(ownerID)
-        shop_owner_relationship = ShopOwnerRelationship()
-        shop_owner_relationship.ShopID = shopRegistration.ShopID
-        shop_owner_relationship.ownerID = str(ownerID['ownerID'])
-        shop_owner_relationship.save()
+        add_shop_id_in_login_user(request, shopRegistration.ShopID)
         shopRegistration.save()
+        if not atleast_one_shop_registered(request):
+            set_session(request, 'S'+str(new_shop_id))
         messages.success(request, 'Added successfully', extra_tags='alert')
-
-
     return render(request, 'shop_registration.html')
+
+
+def get_shop_details(request):
+    ownerIDobj = OwnerRegistration.objects.values('ownerID', 'shop_list').filter(user=str(request.user.id)).first()
+    shops = ownerIDobj['shop_list'].split(",")
+    list_shop_details = []
+    for shopid in shops:
+        shop_details = ShopRegistration.objects.values('ShopID', 'Shop_Name', 'Shop_Address').filter(
+            ShopID=shopid).last()
+        list_shop_details.append(shop_details)
+    return list_shop_details
+
+
+def get_all_users(request):
+    users = OwnerRegistration.objects.all()
+    list_users = []
+    for userobj in users:
+        user = [userobj.get_username().username, userobj.get_name(), userobj.get_ownerID(),
+                userobj.get_contact_number(), userobj.get_shop_list()]
+        list_users.append(user)
+    return users
+
+
+def add_shop_id_in_entered_user(request, entered_user_name, list_of_shop_id):
+    users = OwnerRegistration.objects.values('shop_list').filter(username=entered_user_name).first()
+    shops = ""
+    if users['shop_list'] != 'None':
+        shops = users['shop_list']
+        for shop_id in list_of_shop_id:
+            shops = shops + "," + str(shop_id)
+    else:
+        shops = list_of_shop_id[0]
+        for shop_index in range(1, len(list_of_shop_id)):
+            shops = shops + "," + str(list_of_shop_id[shop_index])
+    OwnerRegistration.objects.values('shop_list').filter(username=entered_user_name).update(shop_list=shops)
+
+
+@login_required(login_url="/useraccount/login/")
+def add_partner(request):
+    if not atleast_one_shop_registered(request):
+        return redirect('/staff/shopreg/')
+    if request.method == "POST":
+        entered_user_name = request.POST.get('name')
+        list_of_shop_id = request.POST.getlist('shop_list[]')
+        if len(list_of_shop_id) == 0:
+            messages.success(request, 'Select parlour to add', extra_tags='alert')
+        else:
+            add_shop_id_in_entered_user(request, entered_user_name, list_of_shop_id)
+            messages.success(request, 'Selected Parlour Added successfully', extra_tags='alert')
+    return render(request, 'add_partner.html', {"list_shop_details": get_shop_details(request),
+                                                "list_users": get_all_users(request),
+                                                "login_username": request.user.get_username()})

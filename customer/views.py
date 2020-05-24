@@ -3,6 +3,7 @@ from .models import *
 import datetime
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from useraccount.models import OwnerRegistration
 
 # Create your views here.
 
@@ -29,13 +30,17 @@ def get_month_year_month_name_for_download():
     month_year_month_name.append(year_list)
     return month_year_month_name
 
-# @login_required(login_url="/useraccount/login/")
+
+@login_required(login_url="/useraccount/login/")
 def details(request):
+    if not atleast_one_shop_registered(request):
+        return redirect('/staff/shopreg/')
     month_year_month_name = get_month_year_month_name_for_download()
     return render(request, 'details.html', {"month_list": month_year_month_name[0], "year_list": month_year_month_name[2], "month_name": month_year_month_name[1]})
 
 
 def thankyou(request):
+    print(request.session['shop_id'])
     paymentmode = request.POST.get('paymentmode')
     amount = request.POST.get('amount')
     date = request.POST.get('date')
@@ -65,10 +70,24 @@ def thankyou(request):
     messages.success(request, 'Added successfully', extra_tags='alert')
     return redirect('/client/details/')
 
+
+def atleast_one_shop_registered(request):
+    ownerIDobj = OwnerRegistration.objects.values('ownerID', 'shop_list').filter(user=str(request.user.id)).first()
+    if ownerIDobj['shop_list'] == 'None':
+        messages.success(request, 'Register your Parlour or ask your partner to add you', extra_tags='alert')
+        return False
+    else:
+        return True
+
+
+@login_required(login_url="/useraccount/login/")
 def membership(request):
+    if not atleast_one_shop_registered(request):
+        return redirect('/staff/shopreg/')
     if request.method == "POST":
         membership = Membership()
         membership.custID = request.POST.get('custid')
+        membership.shopID = request.session['shop_id']
         membership.Name = request.POST.get('name')
         membership.Contact_Number = request.POST.get('contact_number')
         membership.DOB = request.POST.get('date')

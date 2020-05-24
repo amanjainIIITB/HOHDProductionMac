@@ -26,9 +26,9 @@ class ShopRegistration(models.Model):
         return str(self.ShopID)
 
 
-class ShopOwnerRelationship(models.Model):
-    ShopID = models.CharField(max_length=10, null=True)
-    ownerID = models.CharField(max_length=10, null=True)
-
-    def __str__(self):
-        return str(self.ShopID)+" "+str(self.ownerID)
+# class ShopOwnerRelationship(models.Model):
+#     ShopID = models.CharField(max_length=10, null=True)
+#     ownerID = models.CharField(max_length=10, null=True)
+#
+#     def __str__(self):
+#         return str(self.ShopID)+" "+str(self.ownerID)

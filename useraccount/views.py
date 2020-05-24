@@ -5,6 +5,7 @@ from django.contrib.auth import login, logout
 from .signupform import OwnerRegistrationForm
 from .models import OwnerRegistration
 from django.contrib.auth.models import User
+from customer.views import atleast_one_shop_registered
 
 def signup_view(request):
     if request.method == "POST":
@@ -17,11 +18,27 @@ def signup_view(request):
             last_owner_id = OwnerRegistration.objects.values('ownerID').last()
             print(last_owner_id)
             new_owner_id = int(str(last_owner_id['ownerID'])[1:])+1
-            OwnerRegistration(Name=name, user=User.objects.filter(username=username).first(), Contact_Number=mob, ownerID='O'+str(new_owner_id)).save()
+            OwnerRegistration(Name=name, username=username, user=User.objects.filter(username=username).first(), Contact_Number=mob, ownerID='O'+str(new_owner_id), shop_list='None').save()
             return redirect('/client/details/')
     else:
         user_form = OwnerRegistrationForm()
     return render(request, 'signup.html', {'user_form': user_form})
+
+
+def get_first_shop_id(request):
+    ownerIDobj = OwnerRegistration.objects.values('ownerID', 'shop_list').filter(user=str(request.user.id)).first()
+    shops = ownerIDobj['shop_list'].split(",")
+    return shops[0]
+
+
+def set_session(request, shop_id):
+    request.session['shop_id'] = shop_id
+    print(request)
+
+
+def delete_session(request):
+    del request.session['shop_id']
+
 
 def login_view(request):
     if request.method == "POST":
@@ -29,13 +46,18 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
+            if atleast_one_shop_registered(request):
+                print('Yes shop is registered')
+                shop_id = get_first_shop_id(request)
+                set_session(request, shop_id)
             if 'next' in request.POST:
                 return redirect(request.POST.get('next'))
             else:
-                return redirect('/client/details/')
+                return redirect('/staff/aboutus/')
     else:
         form = AuthenticationForm
     return render(request, 'login.html', {'form':form})
+
 
 def logout_view(request):
     if request.method == 'POST':

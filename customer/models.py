@@ -39,7 +39,9 @@ class Paytm(models.Model):
 
 class Membership(models.Model):
     custID = models.CharField(max_length=10, null=True)
+    shopID = models.CharField(max_length=10, null=True)
     Contact_Number = models.IntegerField(validators=[MinValueValidator(1000000000), MaxValueValidator(9999999999)],
                                          null=True)
+    Sex = models.CharField(max_length=1, null=True)
     Name = models.CharField(max_length=50, null=True)
     DOB = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
