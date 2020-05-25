@@ -5,7 +5,16 @@ from django.contrib.auth import login, logout
 from .signupform import OwnerRegistrationForm
 from .models import OwnerRegistration
 from django.contrib.auth.models import User
-from customer.views import atleast_one_shop_registered
+
+
+def atleast_one_shop_registered(request):
+    ownerIDobj = OwnerRegistration.objects.values('ownerID', 'shop_list').filter(user=str(request.user.id)).first()
+    if ownerIDobj['shop_list'] == 'None':
+        messages.success(request, 'Register your Parlour or ask your partner to add you', extra_tags='alert')
+        return False
+    else:
+        return True
+
 
 def signup_view(request):
     if request.method == "POST":

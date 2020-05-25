@@ -102,6 +102,15 @@
                 <li><a href="#contact">Contact US</a></li>
                 <li><a href="/staff/shopreg">Shop Reg</a></li>
                 <li><a href="/staff/add_partner">Add Partner</a></li>
+                <li><a href="#parlour">Select Parlour</a>
+                    <div class="sub-menu">
+                        <ul>
+                            {% for shopobj in shop_details %}
+                                <li><a href="/staff/selectparlour/{{shopobj.ShopID}}">{{shopobj.ShopID}} {{shopobj.Shop_Name}}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </li>
                 <li><a href="#download">Download</a>
                     <div class="sub-menu">
                         <ul>
@@ -159,6 +168,11 @@
                 <input type="text" id="custid" name="custid"><br>
                 <label for="name">Client Name</label>
                 <input type="text" id="name" name="name"><br>
+                <label for="sex">Sex</label>
+                <select id="sex" name="sex">
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select>
                 <label for="contact_number">Client Contact Number</label>
                 <input type="text" id="contact_number" name="contact_number">
                 <label for="date">Date of Birth</label>

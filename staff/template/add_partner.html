@@ -12,8 +12,6 @@
         }
         function get_list_of_shops_for_selected_user(entered_user_shop_list, login_user_shop_list)
         {
-            console.log(entered_user_shop_list);
-            console.log(login_user_shop_list);
             var entered_user_shops = entered_user_shop_list.split(",");
             var html="";
             for(login_user_index = 0; login_user_index < login_user_shop_list.length; login_user_index++)
@@ -21,8 +19,6 @@
                 var login_shop_present_in_entered_user = "False";
                 for(entered_user_index = 0; entered_user_index < entered_user_shops.length; entered_user_index++)
                 {
-                    console.log(login_user_shop_list[login_user_index].ShopID);
-                    console.log(entered_user_shops[entered_user_index]);
                     if(login_user_shop_list[login_user_index].ShopID == entered_user_shops[entered_user_index])
                     {
                         login_shop_present_in_entered_user = "True"
@@ -211,6 +207,15 @@
                 <li><a href="#contact">Contact US</a></li>
                 <li><a href="/staff/shopreg">Shop Reg</a></li>
                 <li><a class="active" href="#add_partner">Add Partner</a></li>
+                <li><a href="#parlour">Select Parlour</a>
+                    <div class="sub-menu">
+                        <ul>
+                            {% for shopobj in shop_details %}
+                                <li><a href="/staff/selectparlour/{{shopobj.ShopID}}">{{shopobj.ShopID}} {{shopobj.Shop_Name}}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </li>
                 <li><a href="#download">Download</a>
                     <div class="sub-menu">
                         <ul>
@@ -264,24 +269,12 @@
             <div id="leftleftbox"></div>
             <div id = "leftrightbox">
                 <label for="name">Partner Username</label>
-                <input onmouseleave="validate_username({{list_users}}, {{list_shop_details}})" type="text" id="name" name="name">
+                <input onmouseleave="validate_username({{list_users}}, {{shop_details}})" type="text" id="name" name="name">
                 <span id="user_details"></span>
                 <label for="parlour">Select Parlour:</label><br>
                 <span id="shop_list"></span>
-<!--                {% for shopobj in list_shop_details %}-->
-<!--                    <input type="checkbox" class="largerCheckbox" name="shop_list[]" value="{{shopobj.ShopID}}">{{shopobj.ShopID}}, {{shopobj.Shop_Name}}, {{shopobj.Shop_Address}}<br>-->
-<!--                {% endfor %}-->
                 <input type="submit" id="mysubmit" value="Submit">
             </div>
-            <!--<div id = "middleleftbox">-->
-                <!--{% csrf_token %}-->
-            <!--</div>-->
-            <!--<div id = "middlerightbox" class="myBox">-->
-
-            <!--</div>-->
-            <!--<div id = "rightbox">-->
-                <!--<img src="{% static 'customer/images/hoh.jpg' %}">-->
-            <!--</div>-->
         </div><br>
         </form>
     </body>

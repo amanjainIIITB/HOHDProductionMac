@@ -6,6 +6,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 # Create your models here.
 class Expense(models.Model):
     date = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
+    shopID = models.CharField(max_length=10, default='S1')
     purpose = models.CharField(max_length=100, null=True)
     paymentmode = models.CharField(max_length=100, null=True)
     comment = models.CharField(max_length=1000, null=True)

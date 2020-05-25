@@ -11,4 +11,5 @@ urlpatterns = [
     url(r'^aboutus/$', views.aboutus, name='aboutus'),
     url(r'^shopreg/$', views.shopreg, name='shopreg'),
     url(r'^add_partner/$', views.add_partner, name='add_partner'),
+    url(r'^selectparlour/(?P<shop_id>[\w\-]+)/$', views.selectparlour, name='selectparlour'),
 ]

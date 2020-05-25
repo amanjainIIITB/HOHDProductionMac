@@ -102,6 +102,15 @@
                 <li><a href="#contact">Contact US</a></li>
                 <li><a class="active" href="#shopreg">Shop Reg</a></li>
                 <li><a href="/staff/add_partner">Add Partner</a></li>
+                <li><a href="#parlour">Select Parlour</a>
+                    <div class="sub-menu">
+                        <ul>
+                            {% for shopobj in shop_details %}
+                                <li><a href="/staff/selectparlour/{{shopobj.ShopID}}">{{shopobj.ShopID}} {{shopobj.Shop_Name}}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </li>
                 <li><a href="#download">Download</a>
                     <div class="sub-menu">
                         <ul>

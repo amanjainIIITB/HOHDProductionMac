@@ -6,6 +6,7 @@ from django.db import models
 # Create your models here.
 class client(models.Model):
     date = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
+    ShopID = models.CharField(max_length=10, default='S1')
     bardate = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
     time = models.TimeField(default=datetime.datetime.now().strftime('%H:%M:%S'))
     numberofclient = models.IntegerField(default=0)
@@ -17,6 +18,7 @@ class client(models.Model):
 
 class BharatPe(models.Model):
     date = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
+    ShopID = models.CharField(max_length=10, default='S1')
     bardate = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
     time = models.TimeField(default=datetime.datetime.now().strftime('%H:%M:%S'))
     numberofclient = models.IntegerField(default=0)
@@ -28,6 +30,7 @@ class BharatPe(models.Model):
 
 class Paytm(models.Model):
     date = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
+    ShopID = models.CharField(max_length=10, default='S1')
     bardate = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
     time = models.TimeField(default=datetime.datetime.now().strftime('%H:%M:%S'))
     numberofclient = models.IntegerField(default=0)

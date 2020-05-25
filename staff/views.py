@@ -14,12 +14,12 @@ from .render_html_to_pdf import render_to_pdf
 import requests
 import json
 import xlwt
-from customer.views import atleast_one_shop_registered
 from useraccount.views import set_session
 
 def storeExpense(request):
     expense = Expense()
     expense.paymentmode = request.POST.get('paymentmode')
+    expense.shopID = request.session['shop_id']
     expense.date = request.POST.get('date')
     expense.comment = request.POST.get('comment')
     expense.purpose = request.POST.get('purpose')
@@ -48,23 +48,23 @@ def prepareDefaultDB(tablename, bardate, time):
     customer.save()
 
 
-def get_last_6_month_data_for_bar_graph(year, month):
+def get_last_6_month_data_for_bar_graph(shop_id, year, month):
     now = datetime.datetime.now()
     barGraphNumberOfMonth = 6
     revenueBarGraphData = []
     month_list = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-    bharatpe_obj = BharatPe.objects.all().filter().values('bardate').annotate(Amount=Sum('amount'),numberOfCustomer=Sum('numberofclient')).order_by('-bardate')
+    bharatpe_obj = BharatPe.objects.filter(ShopID=shop_id).values('bardate').annotate(Amount=Sum('amount'),numberOfCustomer=Sum('numberofclient')).order_by('-bardate')
     bharatpe_map = {}
     for obj in bharatpe_obj:
         bharatpe_map[str(obj['bardate'])] = [obj['Amount'], obj['numberOfCustomer']]
 
-    paytm_obj = Paytm.objects.all().filter().values('bardate').annotate(Amount=Sum('amount'), numberOfCustomer=Sum('numberofclient')).order_by('-bardate')
+    paytm_obj = Paytm.objects.filter(ShopID=shop_id).values('bardate').annotate(Amount=Sum('amount'), numberOfCustomer=Sum('numberofclient')).order_by('-bardate')
     paytm_map = {}
     for obj in paytm_obj:
         paytm_map[str(obj['bardate'])] = [obj['Amount'], obj['numberOfCustomer']]
 
-    cash_obj = client.objects.all().filter().values('bardate').annotate(Amount=Sum('amount'), numberOfCustomer=Sum('numberofclient')).order_by('-bardate')
+    cash_obj = client.objects.filter(ShopID=shop_id).values('bardate').annotate(Amount=Sum('amount'), numberOfCustomer=Sum('numberofclient')).order_by('-bardate')
     cash_map = {}
     for obj in cash_obj:
         cash_map[str(obj['bardate'])] = [obj['Amount'], obj['numberOfCustomer']]
@@ -117,7 +117,7 @@ def analysis(request):
 
     # put the ip address or dns of your apic-em controller in this url
     expense_url = 'http://localhost:8000/staff/getAnalysis/'
-    payload = {"month": now.month, "year": now.year}
+    payload = {"month": now.month, "year": now.year, "shop_id":request.session['shop_id']}
 
     # Content type must be included in the header
     header = {"content-type": "application/json"}
@@ -129,6 +129,7 @@ def analysis(request):
     r_json = response.json()
     r_json['month'] = now.month
     r_json['year'] = now.year
+    r_json['shop_details'] = get_shop_details(request)
     return render(request, 'analysis.html', r_json)
 
 def generate_month_year_month_name_for_download():
@@ -160,15 +161,15 @@ class AnalysisReport(APIView):
         year = request.data['year']
         bardate = datetime.date(day=1, month=month, year=year).strftime('%Y-%m-%d')
 
-        dayWisePaytmOfTheMonth = Paytm.objects.all().filter(bardate=bardate).values('date').annotate(
+        dayWisePaytmOfTheMonth = Paytm.objects.all().filter(ShopID=request.data['shop_id'], bardate=bardate).values('date').annotate(
             Amount=Sum('amount'), numberOfCustomer=Sum('numberofclient')).order_by('date')
-        dayWiseBharatpeOfTheMonth = BharatPe.objects.all().filter(bardate=bardate).values('date').annotate(
+        dayWiseBharatpeOfTheMonth = BharatPe.objects.all().filter(ShopID=request.data['shop_id'], bardate=bardate).values('date').annotate(
             Amount=Sum('amount'), numberOfCustomer=Sum('numberofclient')).order_by('date')
-        dayWiseCashOfTheMonth = client.objects.all().filter(bardate=bardate).values('date').annotate(
+        dayWiseCashOfTheMonth = client.objects.all().filter(ShopID=request.data['shop_id'], bardate=bardate).values('date').annotate(
             Amount=Sum('amount'), numberOfCustomer=Sum('numberofclient')).order_by('date')
 
-        total_Paytm_amount_Of_The_Month = Paytm.objects.filter(bardate=bardate).aggregate(Sum('amount'))
-        total_Bharatpe_amount_Of_The_Month = BharatPe.objects.filter(bardate=bardate).aggregate(Sum('amount'))
+        total_Paytm_amount_Of_The_Month = Paytm.objects.filter(ShopID=request.data['shop_id'], bardate=bardate).aggregate(Sum('amount'))
+        total_Bharatpe_amount_Of_The_Month = BharatPe.objects.filter(ShopID=request.data['shop_id'], bardate=bardate).aggregate(Sum('amount'))
         if total_Paytm_amount_Of_The_Month['amount__sum'] == None:
             # prepareDefaultDB('Paytm', bardate, now.strftime('%H:%M:%S'))
             total_Paytm_amount_Of_The_Month['amount__sum'] = 0
@@ -182,9 +183,9 @@ class AnalysisReport(APIView):
             # prepareDefaultDB('Cash', bardate, now.strftime('%H:%M:%S'))
             total_cash_amount_Of_The_Month['amount__sum'] = 0
 
-        number_of_Paytm_customer_Of_The_Month = Paytm.objects.filter(bardate=bardate).aggregate(Sum('numberofclient'))
-        number_of_Bharatpe_customer_Of_The_Month = BharatPe.objects.filter(bardate=bardate).aggregate(Sum('numberofclient'))
-        number_of_cash_customer_Of_The_Month = client.objects.filter(bardate=bardate).aggregate(Sum('numberofclient'))
+        number_of_Paytm_customer_Of_The_Month = Paytm.objects.filter(ShopID=request.data['shop_id'], bardate=bardate).aggregate(Sum('numberofclient'))
+        number_of_Bharatpe_customer_Of_The_Month = BharatPe.objects.filter(ShopID=request.data['shop_id'], bardate=bardate).aggregate(Sum('numberofclient'))
+        number_of_cash_customer_Of_The_Month = client.objects.filter(ShopID=request.data['shop_id'], bardate=bardate).aggregate(Sum('numberofclient'))
 
         if number_of_Paytm_customer_Of_The_Month['numberofclient__sum'] == None:
             number_of_Paytm_customer_Of_The_Month['numberofclient__sum'] = 0
@@ -215,7 +216,7 @@ class AnalysisReport(APIView):
         print(month_name)
         print(year_list)
 
-        return Response({'revenueBarGraphData': get_last_6_month_data_for_bar_graph(year, month),
+        return Response({'revenueBarGraphData': get_last_6_month_data_for_bar_graph(request.data['shop_id'], year, month),
                         'dayWiseBharatpeOfTheMonth': dayWiseBharatpeOfTheMonth,
                         'dayWisePaytmOfTheMonth': dayWisePaytmOfTheMonth,
                         'dayWiseCashOfTheMonth': dayWiseCashOfTheMonth,
@@ -226,7 +227,7 @@ class AnalysisReport(APIView):
                         'number_of_online_customer_Of_The_Month': number_of_online_customer_Of_The_Month,
                         'month_list': month_list,
                         'year_list': year_list,
-                        'month_name': month_name })
+                        'month_name': month_name})
 
 
 # """
@@ -246,7 +247,7 @@ def expense(request):
     now = datetime.datetime.now()
     # put the ip address or dns of your apic-em controller in this url
     expense_url = 'http://localhost:8000/staff/getExpense/'
-    payload = {"month":now.month, "year":now.year}
+    payload = {"month":now.month, "year":now.year, "shop_id":request.session['shop_id']}
 
     # Content type must be included in the header
     header = {"content-type": "application/json"}
@@ -262,6 +263,7 @@ def expense(request):
     r_json = response.json()
     r_json['month'] = now.month
     r_json['year'] = now.year
+    r_json['shop_details'] = get_shop_details(request)
     return render(request, 'expense.html',r_json)
 
 def get_month_year_month_name_for_download():
@@ -306,7 +308,9 @@ class ExpenseReport(APIView):
                                            total_BharatPe_amount_Of_The_Month['amount__sum']
         if int(month) <= 9:
             month = '0' + str(month)
-        expense = Expense.objects.filter(date__contains=str(year) + "-" + str(month)).order_by('date')
+        print(Expense.objects.all())
+        expense = Expense.objects.filter(shopID=request.data['shop_id'],date__contains=str(year) + "-" + str(month)).order_by('date')
+        print(expense)
         expense_list = []
 
         amount_returned_to_employees = total_online_amount_Of_The_Month
@@ -327,7 +331,8 @@ class ExpenseReport(APIView):
         list.append('Online')
         list.append(amount_returned_to_employees)
         expense_list.append(list)
-
+        print('request data')
+        print(request)
         month_year_month_name = get_month_year_month_name_for_download()
         return Response({'expense': expense_list,
                         'total_online_amount_Of_The_Month': total_online_amount_Of_The_Month,
@@ -359,7 +364,7 @@ def numberofcustomer(date, datewisedata):
 
 def aboutus(request):
     month_year_month_name = get_month_year_month_name_for_download()
-    return render(request, 'aboutus.html', {"month_list": month_year_month_name[0], "year_list": month_year_month_name[2], "month_name": month_year_month_name[1]})
+    return render(request, 'aboutus.html', {"month_list": month_year_month_name[0], "year_list": month_year_month_name[2], "month_name": month_year_month_name[1], "shop_details": get_shop_details(request)})
 
 
 @login_required(login_url="/useraccount/login/")
@@ -373,7 +378,7 @@ def download(request, download_type, month, year):
         url = 'http://localhost:8000/staff/getAnalysis/'
     elif download_type=='expense':
         url = 'http://localhost:8000/staff/getExpense/'
-    payload = {"month": int(month), "year": int(year)}
+    payload = {"month": int(month), "year": int(year), "shop_id":request.session['shop_id']}
     print(payload)
     # Content type must be included in the header
     header = {"content-type": "application/json"}
@@ -477,7 +482,11 @@ def shopreg(request):
         if not atleast_one_shop_registered(request):
             set_session(request, 'S'+str(new_shop_id))
         messages.success(request, 'Added successfully', extra_tags='alert')
-    return render(request, 'shop_registration.html')
+    month_year_month_name = get_month_year_month_name_for_download()
+    return render(request, 'shop_registration.html', {"month_list": month_year_month_name[0],
+                                                      "year_list": month_year_month_name[2],
+                                                      "month_name": month_year_month_name[1],
+                                                      "shop_details": get_shop_details(request)})
 
 
 def get_shop_details(request):
@@ -498,7 +507,7 @@ def get_all_users(request):
         user = [userobj.get_username().username, userobj.get_name(), userobj.get_ownerID(),
                 userobj.get_contact_number(), userobj.get_shop_list()]
         list_users.append(user)
-    return users
+    return list_users
 
 
 def add_shop_id_in_entered_user(request, entered_user_name, list_of_shop_id):
@@ -515,6 +524,20 @@ def add_shop_id_in_entered_user(request, entered_user_name, list_of_shop_id):
     OwnerRegistration.objects.values('shop_list').filter(username=entered_user_name).update(shop_list=shops)
 
 
+def atleast_one_shop_registered(request):
+    ownerIDobj = OwnerRegistration.objects.values('ownerID', 'shop_list').filter(user=str(request.user.id)).first()
+    if ownerIDobj['shop_list'] == 'None':
+        messages.success(request, 'Register your Parlour or ask your partner to add you', extra_tags='alert')
+        return False
+    else:
+        return True
+
+
+def selectparlour(request, shop_id):
+    set_session(request, shop_id)
+    return redirect('/staff/aboutus/')
+
+
 @login_required(login_url="/useraccount/login/")
 def add_partner(request):
     if not atleast_one_shop_registered(request):
@@ -527,6 +550,10 @@ def add_partner(request):
         else:
             add_shop_id_in_entered_user(request, entered_user_name, list_of_shop_id)
             messages.success(request, 'Selected Parlour Added successfully', extra_tags='alert')
-    return render(request, 'add_partner.html', {"list_shop_details": get_shop_details(request),
+    month_year_month_name = get_month_year_month_name_for_download()
+    return render(request, 'add_partner.html', {"month_list": month_year_month_name[0],
+                                                "year_list": month_year_month_name[2],
+                                                "month_name": month_year_month_name[1],
+                                                "shop_details": get_shop_details(request),
                                                 "list_users": get_all_users(request),
                                                 "login_username": request.user.get_username()})

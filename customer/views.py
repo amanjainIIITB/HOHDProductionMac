@@ -3,32 +3,8 @@ from .models import *
 import datetime
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from useraccount.models import OwnerRegistration
-
+from staff.views import atleast_one_shop_registered, get_month_year_month_name_for_download, get_shop_details
 # Create your views here.
-
-def get_month_year_month_name_for_download():
-    now = datetime.datetime.now()
-    month_year_month_name = []
-    month_list = []
-    year_list = []
-    month_name = []
-    number_to_month_name = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov',
-                            'Dec']
-    current_month = now.month
-    current_year = now.year
-    for i in range(4):
-        if current_month == 0:
-            current_month = 12
-            current_year = current_year - 1
-        month_list.append(current_month)
-        month_name.append(number_to_month_name[current_month - 1])
-        year_list.append(current_year)
-        current_month = current_month - 1
-    month_year_month_name.append(month_list)
-    month_year_month_name.append(month_name)
-    month_year_month_name.append(year_list)
-    return month_year_month_name
 
 
 @login_required(login_url="/useraccount/login/")
@@ -36,7 +12,7 @@ def details(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
     month_year_month_name = get_month_year_month_name_for_download()
-    return render(request, 'details.html', {"month_list": month_year_month_name[0], "year_list": month_year_month_name[2], "month_name": month_year_month_name[1]})
+    return render(request, 'details.html', {"month_list": month_year_month_name[0], "year_list": month_year_month_name[2], "month_name": month_year_month_name[1], "shop_details": get_shop_details(request)})
 
 
 def thankyou(request):
@@ -61,6 +37,7 @@ def thankyou(request):
     elif(paymentmode=='Cash'):
         customer = client()
     customer.date = date
+    customer.ShopID = request.session['shop_id']
     customer.bardate = bardate
     customer.time = time
     customer.paymentmode = paymentmode
@@ -71,17 +48,9 @@ def thankyou(request):
     return redirect('/client/details/')
 
 
-def atleast_one_shop_registered(request):
-    ownerIDobj = OwnerRegistration.objects.values('ownerID', 'shop_list').filter(user=str(request.user.id)).first()
-    if ownerIDobj['shop_list'] == 'None':
-        messages.success(request, 'Register your Parlour or ask your partner to add you', extra_tags='alert')
-        return False
-    else:
-        return True
-
-
 @login_required(login_url="/useraccount/login/")
 def membership(request):
+    print(request.session['shop_id'])
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
     if request.method == "POST":
@@ -89,8 +58,10 @@ def membership(request):
         membership.custID = request.POST.get('custid')
         membership.shopID = request.session['shop_id']
         membership.Name = request.POST.get('name')
+        membership.Sex = request.POST.get('sex')
         membership.Contact_Number = request.POST.get('contact_number')
         membership.DOB = request.POST.get('date')
         membership.save()
         messages.success(request, 'Added successfully', extra_tags='alert')
-    return render(request, 'membership.html')
+    month_year_month_name = get_month_year_month_name_for_download()
+    return render(request, 'membership.html', {"month_list": month_year_month_name[0], "year_list": month_year_month_name[2], "month_name": month_year_month_name[1], "shop_details": get_shop_details(request)})
