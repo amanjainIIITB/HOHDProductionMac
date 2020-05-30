@@ -1,9 +1,10 @@
+from django.db.models import Sum
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.db.models import Sum
 import datetime
 from customer.models import BharatPe, Paytm, client
 from .views import get_month_year_month_name_for_download
+from .common_functions import get_total_online_amount_of_the_month, get_total_cash_amount_of_the_month
 
 
 def get_last_6_month_data_for_bar_graph(shop_id, year, month):
@@ -74,29 +75,6 @@ def prepare_list_of_dates(year, month):
         listOfDates.append(datetime.date(day=day, month=month, year=year).strftime('%Y-%m-%d'))
         day = day + 1
     return listOfDates
-
-
-def get_total_online_amount_of_the_month(shop_id, month, year):
-    bardate = datetime.date(day=1, month=month, year=year).strftime('%Y-%m-%d')
-    total_Paytm_amount_Of_The_Month = Paytm.objects.filter(ShopID=shop_id, bardate=bardate).aggregate(Sum('amount'))
-    total_BharatPe_amount_Of_The_Month = BharatPe.objects.filter(ShopID=shop_id, bardate=bardate).aggregate(
-        Sum('amount'))
-    if total_Paytm_amount_Of_The_Month['amount__sum'] == None:
-        total_Paytm_amount_Of_The_Month['amount__sum'] = 0
-    if total_BharatPe_amount_Of_The_Month['amount__sum'] == None:
-        total_BharatPe_amount_Of_The_Month['amount__sum'] = 0
-    total_online_amount_Of_The_Month = total_Paytm_amount_Of_The_Month['amount__sum'] + \
-                                       total_BharatPe_amount_Of_The_Month['amount__sum']
-    return total_online_amount_Of_The_Month
-
-
-def get_total_cash_amount_of_the_month(shop_id, month, year):
-    bardate = datetime.date(day=1, month=month, year=year).strftime('%Y-%m-%d')
-    total_cash_amount_of_the_month = client.objects.filter(ShopID=shop_id, bardate=bardate).aggregate(Sum('amount'))
-    if total_cash_amount_of_the_month['amount__sum'] is None:
-        return 0
-    else:
-        return total_cash_amount_of_the_month['amount__sum']
 
 
 def get_total_online_customer_of_the_amount(shop_id, month, year):

@@ -1,19 +1,10 @@
 from django.shortcuts import render, redirect
-
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, logout
+from django.contrib.auth.models import User
 from .signupform import OwnerRegistrationForm
 from .models import OwnerRegistration
-from django.contrib.auth.models import User
-
-
-def atleast_one_shop_registered(request):
-    ownerIDobj = OwnerRegistration.objects.values('ownerID', 'shop_list').filter(user=str(request.user.id)).first()
-    if ownerIDobj['shop_list'] == 'None':
-        messages.success(request, 'Register your Parlour or ask your partner to add you', extra_tags='alert')
-        return False
-    else:
-        return True
+from HOHDProductionMac.common_function import set_session, atleast_one_shop_registered
 
 
 def signup_view(request):
@@ -38,11 +29,6 @@ def get_first_shop_id(request):
     ownerIDobj = OwnerRegistration.objects.values('ownerID', 'shop_list').filter(user=str(request.user.id)).first()
     shops = ownerIDobj['shop_list'].split(",")
     return shops[0]
-
-
-def set_session(request, shop_id):
-    request.session['shop_id'] = shop_id
-    print(request)
 
 
 def delete_session(request):

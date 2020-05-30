@@ -1,16 +1,17 @@
 from django.shortcuts import render, redirect
-from .models import Expense, ShopRegistration
-from useraccount.models import OwnerRegistration
-import datetime
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.db.models.utils import *
-from .render_html_to_pdf import render_to_pdf
+import datetime
 import requests
 import json
 import xlwt
-from useraccount.views import set_session
+from .render_html_to_pdf import render_to_pdf
+from .models import Expense, ShopRegistration
+from useraccount.models import OwnerRegistration
+from HOHDProductionMac.common_function import get_month_year_month_name_for_download, atleast_one_shop_registered, \
+    get_login_user_shop_details, set_session, get_list_of_login_user_shops
 
 
 def storeExpense(request):
@@ -50,7 +51,7 @@ def analysis(request):
     r_json = response.json()
     r_json['month'] = now.month
     r_json['year'] = now.year
-    r_json['shop_details'] = get_shop_details(request)
+    r_json['shop_details'] = get_login_user_shop_details(request)
     return render(request, 'analysis.html', r_json)
 
 
@@ -68,43 +69,15 @@ def expense(request):
     # Content type must be included in the header
     header = {"content-type": "application/json"}
 
-    print('hello')
-    print(payload)
     # Performs a POST on the specified url to get the response
     response = requests.post(expense_url, data=json.dumps(payload), headers=header, verify=False)
 
-    print('response')
-    print(response)
     # convert response to json format
     r_json = response.json()
     r_json['month'] = now.month
     r_json['year'] = now.year
-    r_json['shop_details'] = get_shop_details(request)
+    r_json['shop_details'] = get_login_user_shop_details(request)
     return render(request, 'expense.html', r_json)
-
-
-def get_month_year_month_name_for_download():
-    now = datetime.datetime.now()
-    month_year_month_name = []
-    month_list = []
-    year_list = []
-    month_name = []
-    number_to_month_name = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov',
-                            'Dec']
-    current_month = now.month
-    current_year = now.year
-    for i in range(4):
-        if current_month == 0:
-            current_month = 12
-            current_year = current_year - 1
-        month_list.append(current_month)
-        month_name.append(number_to_month_name[current_month - 1])
-        year_list.append(current_year)
-        current_month = current_month - 1
-    month_year_month_name.append(month_list)
-    month_year_month_name.append(month_name)
-    month_year_month_name.append(year_list)
-    return month_year_month_name
 
 
 def amount(date, datewisedata):
@@ -135,7 +108,7 @@ def aboutus(request):
     month_year_month_name = get_month_year_month_name_for_download()
     return render(request, 'aboutus.html',
                   {"month_list": month_year_month_name[0], "year_list": month_year_month_name[2],
-                   "month_name": month_year_month_name[1], "shop_details": get_shop_details(request)})
+                   "month_name": month_year_month_name[1], "shop_details": get_login_user_shop_details(request)})
 
 
 def gererate_customer_data_in_excel(month, year, r_json):
@@ -225,13 +198,12 @@ def download(request, download_type, month, year):
 
 
 def add_shop_id_in_login_user(request, shop_id):
-    print(shop_id)
-    username = str(request.user.id)
-    owner_object_values = OwnerRegistration.objects.values('ownerID', 'shop_list').filter(user=username).first()
+    owner_object_values = OwnerRegistration.objects.values('ownerID', 'shop_list'). \
+        filter(user=str(request.user.id)).first()
     print(owner_object_values)
     owner_object = OwnerRegistration.objects.get(ownerID=owner_object_values['ownerID'])
     print(owner_object)
-    if owner_object_values['shop_list'] == None:
+    if owner_object_values['shop_list'] == 'None':
         owner_object.shop_list = shop_id
     else:
         owner_object.shop_list = owner_object_values['shop_list'] + ',' + shop_id
@@ -250,25 +222,14 @@ def shopreg(request):
         shopRegistration.Shop_Address = request.POST.get('Shop_Address')
         add_shop_id_in_login_user(request, shopRegistration.ShopID)
         shopRegistration.save()
-        if not atleast_one_shop_registered(request):
+        if len(get_list_of_login_user_shops(request)) == 1:
             set_session(request, 'S' + str(new_shop_id))
         messages.success(request, 'Added successfully', extra_tags='alert')
     month_year_month_name = get_month_year_month_name_for_download()
     return render(request, 'shop_registration.html', {"month_list": month_year_month_name[0],
                                                       "year_list": month_year_month_name[2],
                                                       "month_name": month_year_month_name[1],
-                                                      "shop_details": get_shop_details(request)})
-
-
-def get_shop_details(request):
-    ownerIDobj = OwnerRegistration.objects.values('ownerID', 'shop_list').filter(user=str(request.user.id)).first()
-    shops = ownerIDobj['shop_list'].split(",")
-    list_shop_details = []
-    for shopid in shops:
-        shop_details = ShopRegistration.objects.values('ShopID', 'Shop_Name', 'Shop_Address').filter(
-            ShopID=shopid).last()
-        list_shop_details.append(shop_details)
-    return list_shop_details
+                                                      "shop_details": get_login_user_shop_details(request)})
 
 
 def get_all_users(request):
@@ -295,15 +256,6 @@ def add_shop_id_in_entered_user(request, entered_user_name, list_of_shop_id):
     OwnerRegistration.objects.values('shop_list').filter(username=entered_user_name).update(shop_list=shops)
 
 
-def atleast_one_shop_registered(request):
-    ownerIDobj = OwnerRegistration.objects.values('ownerID', 'shop_list').filter(user=str(request.user.id)).first()
-    if ownerIDobj['shop_list'] == 'None':
-        messages.success(request, 'Register your Parlour or ask your partner to add you', extra_tags='alert')
-        return False
-    else:
-        return True
-
-
 def selectparlour(request, shop_id):
     set_session(request, shop_id)
     return redirect('/staff/aboutus/')
@@ -325,6 +277,6 @@ def add_partner(request):
     return render(request, 'add_partner.html', {"month_list": month_year_month_name[0],
                                                 "year_list": month_year_month_name[2],
                                                 "month_name": month_year_month_name[1],
-                                                "shop_details": get_shop_details(request),
+                                                "shop_details": get_login_user_shop_details(request),
                                                 "list_users": get_all_users(request),
                                                 "login_username": request.user.get_username()})
