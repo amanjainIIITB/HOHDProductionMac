@@ -25,6 +25,7 @@
                 <li><a href="#contact">Contact US</a></li>
                 <li><a href="/staff/shopreg">Shop Reg</a></li>
                 <li><a href="/staff/add_partner">Add Partner</a></li>
+                <li></li>
                 <li><a href="#parlour">Select Parlour</a>
                     <div class="sub-menu">
                         <ul>
@@ -87,12 +88,12 @@
         <script type="text/javascript">
         // Load google charts
         google.charts.load('current', {'packages':['corechart']});
-        google.charts.setOnLoadCallback(revenue);
-        google.charts.setOnLoadCallback(numberofcustomers);
-        google.charts.setOnLoadCallback(incomeofthemonth);
+        google.charts.setOnLoadCallback(revenue_for_last_6_month);
+        google.charts.setOnLoadCallback(number_of_customers_for_last_6_month);
+        google.charts.setOnLoadCallback(income_of_the_month);
         google.charts.setOnLoadCallback(number_of_customer_of_the_month);
 
-        function revenue() {
+        function revenue_for_last_6_month() {
                 outer = []
                 inner = ["Month", "Income", { role: "style" } ];
                 outer.push(inner);
@@ -125,7 +126,7 @@
             chart.draw(view, options);
         }
 
-        function numberofcustomers()
+        function number_of_customers_for_last_6_month()
         {
             outer = []
                 inner = ["Month", "Number of Client", { role: "style" } ];
@@ -159,7 +160,7 @@
             chart.draw(view, options);
         }
 
-        function incomeofthemonth(){
+        function income_of_the_month(){
 
             var data = google.visualization.arrayToDataTable([
                 ['Task', 'Amount'],

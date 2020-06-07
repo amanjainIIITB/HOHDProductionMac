@@ -90,8 +90,8 @@
                 </li>
             </ul>
         </div>
-        <h1>Purpose of Payment</h1>
-        <form method="post" action="/staff/storeExpense/">
+        <h1>ADD Expense</h1>
+        <form method="post" action="/staff/add_expense/">
             {% csrf_token %}
             <table>
                 <tr>
@@ -100,17 +100,8 @@
                     </td>
                     <td>
                         <select id="purpose" name="purpose">
-                            <option value="Owner Rent">Owner Rent</option>
-                            <option value="Shop Rent">Shop Rent</option>
-                            <option value="Shop Electricity bill">Shop Electricity bill</option>
-                            <option value="Shop Water bill">Shop Water bill</option>
-                            <option value="House Rent">House Rent</option>
-                            <option value="House Electricity bill">House Electricity bill</option>
-                            <option value="House Water bill">House Water bill</option>
-                            <option value="Internet Bill">Internet Bill</option>
-                            <option value="Transferred to Employee">Transferred to Employee</option>
-                            <option value="Previous Balance">Previous Balance</option>
-                            <option value="Cash Received">Cash Received</option>
+                            <option value="Amount Received">Amount Received</option>
+                            <option value="Amount Given">Amount Given</option>
                         </select>
                     </td>
                 </tr>
@@ -159,12 +150,14 @@
             <th>Comment</th>
             <th>Payment Mode</th>
             <th>Amount</th>
+            <th>Action</th>
             <tr>
                 <td class="transaction"></td>
                 <td class="transaction">Total Online</td>
                 <td class="transaction">Amount Till current Date</td>
                 <td class="transaction">Online</td>
                 <td class="transaction">{{total_online_amount_of_the_Month}}</td>
+                <td></td>
             </tr>
             <tr>
                 <td class="transaction"></td>
@@ -172,6 +165,7 @@
                 <td class="transaction">Amount Till current Date</td>
                 <td class="transaction">Cash</td>
                 <td class="transaction">{{total_cash_amount_of_the_month}}</td>
+                <td></td>
             </tr>
             <tr>
                 <td class="transaction"></td>
@@ -179,14 +173,26 @@
                 <td class="transaction">Amount Till current Date</td>
                 <td class="transaction">NA</td>
                 <td class="transaction">{{revenue}}</td>
+                <td></td>
             </tr>
             {% for transobj in expense%}
+            <tr>
+                <td class="transaction">{{transobj.1}}</td>
+                <td class="transaction">{{transobj.2}}</td>
+                <td class="transaction">{{transobj.3}}</td>
+                <td class="transaction">{{transobj.4}}</td>
+                <td class="transaction">{{transobj.5}}</td>
+                <td class="transaction"><a href="/staff/update_expense/{{transobj.0}}">Edit</a></td>
+            </tr>
+            {% endfor %}
+            {% for transobj in remaining_balance%}
             <tr>
                 <td class="transaction">{{transobj.0}}</td>
                 <td class="transaction">{{transobj.1}}</td>
                 <td class="transaction">{{transobj.2}}</td>
                 <td class="transaction">{{transobj.3}}</td>
                 <td class="transaction">{{transobj.4}}</td>
+                <td></td>
             </tr>
             {% endfor %}
         </table>

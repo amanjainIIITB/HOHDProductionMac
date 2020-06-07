@@ -5,12 +5,13 @@ from .common_functions import get_total_online_amount_of_the_month, get_total_ca
 from .models import Expense
 
 
-def get_all_expense_of_the_month(shop_id, month, year, total_online_amount_of_the_month, total_cash_amount_of_the_month):
+def get_all_expense_of_the_month(shop_id, month, year, total_online_amount_of_the_month,
+                                 total_cash_amount_of_the_month):
     if int(month) <= 9:
         month = '0' + str(month)
     expense = Expense.objects.filter(shopID=shop_id,
                                      date__contains=str(year) + "-" + str(month)).order_by('date')
-    expense_list = []
+    expenses = []
     remaining_cash = total_cash_amount_of_the_month
     remaining_online = total_online_amount_of_the_month
     print(expense)
@@ -19,12 +20,12 @@ def get_all_expense_of_the_month(shop_id, month, year, total_online_amount_of_th
             remaining_cash = remaining_cash + expenseobj.amount
         if expenseobj.paymentmode == 'Online':
             remaining_online = remaining_online + expenseobj.amount
-        expense_list.append(
-            [expenseobj.date, expenseobj.purpose, expenseobj.comment, expenseobj.paymentmode, expenseobj.amount])
-    expense_list.append(['', 'Remaining Online', 'Profit', 'Online', remaining_online])
-    expense_list.append(['', 'Remaining Cash', 'Profit', 'Cash', remaining_cash])
-    expense_list.append(['', 'Remaining Amount', 'Profit', 'NA', remaining_cash+remaining_online])
-    return expense_list
+        expenses.append(
+            [expenseobj.ExpenseID, expenseobj.date, expenseobj.purpose, expenseobj.comment, expenseobj.paymentmode, expenseobj.amount])
+    remaining_balance = [['', 'Remaining Online', 'Profit', 'Online', remaining_online],
+                         ['', 'Remaining Cash', 'Profit', 'Cash', remaining_cash],
+                         ['', 'Remaining Amount', 'Profit', 'NA', remaining_cash + remaining_online]]
+    return [expenses, remaining_balance]
 
 
 class ExpenseReport(APIView):
@@ -37,9 +38,11 @@ class ExpenseReport(APIView):
         total_online_amount_of_the_month = get_total_online_amount_of_the_month(request.data['shop_id'], month, year)
         total_cash_amount_of_the_month = get_total_cash_amount_of_the_month(request.data['shop_id'], month, year)
         month_year_month_name = get_month_year_month_name_for_download()
-        return Response({'expense': get_all_expense_of_the_month(request.data['shop_id'], month, year,
-                                                                 total_online_amount_of_the_month,
-                                                                 total_cash_amount_of_the_month),
+        expense_list = get_all_expense_of_the_month(request.data['shop_id'], month, year,
+                                                    total_online_amount_of_the_month,
+                                                    total_cash_amount_of_the_month)
+        return Response({'expense': expense_list[0],
+                         'remaining_balance': expense_list[1],
                          'total_online_amount_of_the_Month': total_online_amount_of_the_month,
                          'total_cash_amount_of_the_month': total_cash_amount_of_the_month,
                          'revenue': total_online_amount_of_the_month + total_cash_amount_of_the_month,

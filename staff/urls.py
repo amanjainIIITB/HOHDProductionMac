@@ -2,12 +2,16 @@ from django.conf.urls import include, url
 from . import views, analysis, expense_report
 
 urlpatterns = [
-    url(r'^analysis/$', views.analysis, name='analysis'),
+    # API
     url(r'^getAnalysis/$', analysis.AnalysisReport.as_view()),
     url(r'^getExpense/$', expense_report.ExpenseReport.as_view()),
+
+    # Non-API
+    url(r'^analysis/$', views.analysis, name='analysis'),
     url(r'^download/(?P<download_type>[\w\-]+)/(?P<month>[\w\-]+)/(?P<year>[\w\-]+)/$', views.download, name='download'),
     url(r'^expense/$', views.expense, name='expense'),
-    url(r'^storeExpense/$', views.storeExpense, name='storeExpense'),
+    url(r'^update_expense/(?P<expense_id>[\w\-]+)/$', views.update_expense, name='update_expense'),
+    url(r'^add_expense/$', views.add_expense, name='add_expense'),
     url(r'^aboutus/$', views.aboutus, name='aboutus'),
     url(r'^shopreg/$', views.shopreg, name='shopreg'),
     url(r'^add_partner/$', views.add_partner, name='add_partner'),

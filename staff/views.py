@@ -14,19 +14,57 @@ from HOHDProductionMac.common_function import get_month_year_month_name_for_down
     get_login_user_shop_details, set_session, get_list_of_login_user_shops
 
 
-def storeExpense(request):
-    expense = Expense()
-    expense.paymentmode = request.POST.get('paymentmode')
-    expense.shopID = request.session['shop_id']
-    expense.date = request.POST.get('date')
-    expense.comment = request.POST.get('comment')
-    expense.purpose = request.POST.get('purpose')
-    if expense.purpose == 'Cash Received':
-        expense.amount = int(request.POST.get('amount'))
+def get_new_expense_id(request):
+    last_expense_id = Expense.objects.values('ExpenseID').filter(shopID=request.session['shop_id']).last()
+    if last_expense_id == None:
+        return 'E0'
     else:
-        expense.amount = int(request.POST.get('amount')) * -1
-    expense.save()
-    messages.success(request, 'Added successfully', extra_tags='alert')
+        new_expense_id = 'E' + str(int(str(last_expense_id['ExpenseID'])[1:]) + 1)
+        return new_expense_id
+
+
+def update_expense(request, expense_id):
+    if request.method == "POST":
+        expense = Expense.objects.values('date', 'purpose', 'paymentmode', 'comment', 'amount'). \
+            filter(shopID=request.session['shop_id'], ExpenseID=expense_id)
+        purpose = request.POST.get('purpose')
+        new_amount = int(request.POST.get('amount'))
+        if purpose == 'Amount Given':
+            new_amount = int(request.POST.get('amount')) * -1
+        print('Updated Data in expense' + str(expense))
+        expense.update(ExpenseID=expense_id, paymentmode=request.POST.get('paymentmode'),
+                       date=request.POST.get('date'), comment=request.POST.get('comment'),
+                       purpose=request.POST.get('purpose'), amount=new_amount)
+        messages.success(request, 'Updated successfully', extra_tags='alert')
+        return redirect('/staff/expense/')
+    else:
+        expense = Expense.objects.values('ExpenseID', 'date', 'purpose', 'paymentmode', 'comment', 'amount'). \
+            filter(shopID=request.session['shop_id'], ExpenseID=expense_id).last()
+        if expense['purpose'] == 'Amount Given':
+            expense['amount'] = int(expense['amount']) * -1
+        return render(request, 'update_expense.html', {'ExpenseID': expense['ExpenseID'],
+                                                           'date': expense['date'],
+                                                           'purpose': expense['purpose'],
+                                                           'paymentmode': expense['paymentmode'],
+                                                           'comment': expense['comment'],
+                                                           'amount': expense['amount']})
+
+
+def add_expense(request):
+    if request.method == "POST":
+        expense = Expense()
+        expense.ExpenseID = get_new_expense_id(request)
+        expense.paymentmode = request.POST.get('paymentmode')
+        expense.shopID = request.session['shop_id']
+        expense.date = request.POST.get('date')
+        expense.comment = request.POST.get('comment')
+        expense.purpose = request.POST.get('purpose')
+        if expense.purpose == 'Amount Received':
+            expense.amount = int(request.POST.get('amount'))
+        else:
+            expense.amount = int(request.POST.get('amount')) * -1
+        expense.save()
+        messages.success(request, 'Added successfully', extra_tags='alert')
     return redirect('/staff/expense/')
 
 
@@ -52,12 +90,25 @@ def analysis(request):
     r_json['month'] = now.month
     r_json['year'] = now.year
     r_json['shop_details'] = get_login_user_shop_details(request)
+    # print('before sms call')
+    # send_sms()
     return render(request, 'analysis.html', r_json)
+
+
+def send_sms():
+    contacts = '9530101150'
+    routeid = '50'
+    key = '35ED3859DED8C0'
+    campaign = '0'
+    senderid = 'SMSABS'
+    msg = 'Message from the Django Project to the House of Handsomes & Divas'
+    url = 'http://sms.autobysms.com/app/smsapi/index.php?key=' + key + '&campaign=' + campaign + '&routeid=' + routeid + \
+          '&type=text&contacts=' + contacts + '&senderid=' + senderid + '&msg=' + msg
+    response = requests.post(url)
 
 
 @login_required(login_url="/useraccount/login/")
 def expense(request):
-    # cleanDB()
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
     print(request.session['shop_id'])
@@ -210,13 +261,20 @@ def add_shop_id_in_login_user(request, shop_id):
     owner_object.save()
 
 
+def get_new_shop_id(request):
+    last_shop_id = ShopRegistration.objects.values('ShopID').last()
+    if last_shop_id == None:
+        return 'S0'
+    else:
+        new_shop_id = 'S' + str(int(str(last_shop_id['ShopID'])[1:]) + 1)
+        return new_shop_id
+
+
 @login_required(login_url="/useraccount/login/")
 def shopreg(request):
     if request.method == "POST":
         shopRegistration = ShopRegistration()
-        last_shop_id = ShopRegistration.objects.values('ShopID').last()
-        new_shop_id = int(str(last_shop_id['ShopID'])[1:]) + 1
-        shopRegistration.ShopID = 'S' + str(new_shop_id)
+        shopRegistration.ShopID = get_new_shop_id(request)
         shopRegistration.Desk_Contact_Number = request.POST.get('Desk_Contact_Number')
         shopRegistration.Shop_Name = request.POST.get('Shop_Name')
         shopRegistration.Shop_Address = request.POST.get('Shop_Address')
