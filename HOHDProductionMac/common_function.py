@@ -29,7 +29,9 @@ def get_month_year_month_name_for_download():
 
 def atleast_one_shop_registered(request):
     ownerIDobj = OwnerRegistration.objects.values('ownerID', 'shop_list').filter(user=str(request.user.id)).first()
+    print(ownerIDobj)
     if ownerIDobj['shop_list'] == 'None':
+        print('I am inside the empty list')
         messages.success(request, 'Register your Parlour or ask your partner to add you', extra_tags='alert')
         return False
     else:

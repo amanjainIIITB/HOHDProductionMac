@@ -37,20 +37,29 @@ def delete_session(request):
 
 def login_view(request):
     if request.method == "POST":
+        print('form load')
         form = AuthenticationForm(data=request.POST)
+        print('form filled')
         if form.is_valid():
+            print('form validates')
             user = form.get_user()
             login(request, user)
+            print('login done')
             if atleast_one_shop_registered(request):
                 print('Yes shop is registered')
                 shop_id = get_first_shop_id(request)
+                print('first shop id is ')
+                print(shop_id)
                 set_session(request, shop_id)
+                print('Session ID is ')
+                print(request.session['shop_id'])
             if 'next' in request.POST:
                 return redirect(request.POST.get('next'))
             else:
                 return redirect('/staff/aboutus/')
     else:
         form = AuthenticationForm
+        print('Get request to display the login form')
     return render(request, 'login.html', {'form':form})
 
 

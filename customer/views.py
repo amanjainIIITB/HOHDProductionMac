@@ -48,7 +48,11 @@ def details(request):
         customer = select_payment_mode_object(paymentmode)
         save_customer_entry(request, customer, date, bardate, time, paymentmode, amount, numberofclient)
     month_year_month_name = get_month_year_month_name_for_download()
-    return render(request, 'details.html', {"month_list": month_year_month_name[0], "year_list": month_year_month_name[2], "month_name": month_year_month_name[1], "shop_details": get_login_user_shop_details(request)})
+    return render(request, 'details.html', {"month_list": month_year_month_name[0], 
+                                            "year_list": month_year_month_name[2], 
+                                            "month_name": month_year_month_name[1], 
+                                            "shop_details": get_login_user_shop_details(request),
+                                            "shop_id": request.session['shop_id']})
 
 
 def save_customer_membership(request):
@@ -70,4 +74,8 @@ def membership(request):
     if request.method == "POST":
         save_customer_membership(request)
     month_year_month_name = get_month_year_month_name_for_download()
-    return render(request, 'membership.html', {"month_list": month_year_month_name[0], "year_list": month_year_month_name[2], "month_name": month_year_month_name[1], "shop_details": get_login_user_shop_details(request)})
+    return render(request, 'membership.html', {"month_list": month_year_month_name[0], 
+                                                "year_list": month_year_month_name[2], 
+                                                "month_name": month_year_month_name[1], 
+                                                "shop_details": get_login_user_shop_details(request),
+                                                "shop_id": request.session['shop_id']})

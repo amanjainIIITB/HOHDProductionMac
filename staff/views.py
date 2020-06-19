@@ -14,6 +14,16 @@ from HOHDProductionMac.common_function import get_month_year_month_name_for_down
     get_login_user_shop_details, set_session, get_list_of_login_user_shops
 
 
+def index(request): 
+    return render(request, 'chat/index.html', {})
+
+
+def room(request, room_name):
+    return render(request, 'chat/room.html', {
+        'room_name': room_name
+    })
+
+
 def get_new_expense_id(request):
     last_expense_id = Expense.objects.values('ExpenseID').filter(shopID=request.session['shop_id']).last()
     if last_expense_id == None:
@@ -90,6 +100,7 @@ def analysis(request):
     r_json['month'] = now.month
     r_json['year'] = now.year
     r_json['shop_details'] = get_login_user_shop_details(request)
+    r_json['shop_id'] = request.session['shop_id']
     # print('before sms call')
     # send_sms()
     return render(request, 'analysis.html', r_json)
@@ -128,6 +139,7 @@ def expense(request):
     r_json['month'] = now.month
     r_json['year'] = now.year
     r_json['shop_details'] = get_login_user_shop_details(request)
+    r_json['shop_id'] = request.session['shop_id']
     return render(request, 'expense.html', r_json)
 
 
@@ -159,7 +171,8 @@ def aboutus(request):
     month_year_month_name = get_month_year_month_name_for_download()
     return render(request, 'aboutus.html',
                   {"month_list": month_year_month_name[0], "year_list": month_year_month_name[2],
-                   "month_name": month_year_month_name[1], "shop_details": get_login_user_shop_details(request)})
+                   "month_name": month_year_month_name[1], "shop_details": get_login_user_shop_details(request),
+                   })
 
 
 def gererate_customer_data_in_excel(month, year, r_json):
@@ -287,7 +300,8 @@ def shopreg(request):
     return render(request, 'shop_registration.html', {"month_list": month_year_month_name[0],
                                                       "year_list": month_year_month_name[2],
                                                       "month_name": month_year_month_name[1],
-                                                      "shop_details": get_login_user_shop_details(request)})
+                                                      "shop_details": get_login_user_shop_details(request),
+                                                      })
 
 
 def get_all_users(request):
@@ -337,4 +351,5 @@ def add_partner(request):
                                                 "month_name": month_year_month_name[1],
                                                 "shop_details": get_login_user_shop_details(request),
                                                 "list_users": get_all_users(request),
-                                                "login_username": request.user.get_username()})
+                                                "login_username": request.user.get_username(),
+                                                "shop_id": request.session['shop_id']})
