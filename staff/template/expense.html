@@ -177,12 +177,12 @@
             </tr>
             {% for transobj in expense%}
             <tr>
-                <td class="transaction">{{transobj.1}}</td>
-                <td class="transaction">{{transobj.2}}</td>
-                <td class="transaction">{{transobj.3}}</td>
-                <td class="transaction">{{transobj.4}}</td>
-                <td class="transaction">{{transobj.5}}</td>
-                <td class="transaction"><a href="/staff/update_expense/{{transobj.0}}">Edit</a></td>
+                <td class="transaction">{{transobj.date}}</td>
+                <td class="transaction">{{transobj.purpose}}</td>
+                <td class="transaction">{{transobj.comment}}</td>
+                <td class="transaction">{{transobj.paymentmode}}</td>
+                <td class="transaction">{{transobj.amount}}</td>
+                <td class="transaction"><a href="/staff/update_expense/{{transobj.ExpenseID}}">Edit</a></td>
             </tr>
             {% endfor %}
             {% for transobj in remaining_balance%}

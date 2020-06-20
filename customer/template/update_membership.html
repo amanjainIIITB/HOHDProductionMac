@@ -4,6 +4,21 @@
         <meta charset="UTF-8">
         <title>Welcome</title>
     </head>
+    <script>
+        function setTransactionDate(){
+            console.log("Hello");
+            var d = new Date("{{DOB}}");
+            console.log(d);
+            var day = d.getDate();
+            if(day<=9)
+                day = '0'+day;
+            var month = d.getMonth()+1;
+            if(month<=9)
+                month = '0'+month;
+            console.log();
+            document.getElementById("DOB").value = d.getFullYear()+"-"+month+"-"+day;
+        }
+    </script>
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/menubar.css' %}">
     <style>
@@ -16,7 +31,7 @@
             height:40px;
         }
     </style>
-    <body>
+    <body onload="setTransactionDate()">
 
         {% if messages %}
             <script>
@@ -90,40 +105,32 @@
                 </li>
             </ul>
         </div>
-        <h1>Client Membership</h1>
-        <form method="post" action="/client/membership/">
+        <h1>Update Expense</h1>
+        <form method="post" action="/client/update_membership/{{custID}}/">
             {% csrf_token %}
             <table>
                 <tr>
                     <td>
-                        <label for="custid">Client ID</label>
+                        <label for="custID">Client ID</label>
                     </td>
                     <td>
-                        <input type="text" id="custid" name="custid">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="date">Date of Birth</label>
-                    </td>
-                    <td>
-                        <input type="date" id="DOB" name="DOB" ><br>
+                        <input type="text" id="custID" name="custID" value="{{custID}}">
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <label for="name">Client Name</label>
+                        <label for="Contact_Number">Contact_Number</label>
                     </td>
                     <td>
-                        <input type="text" id="name" name="name">
+                        <input type="text" id="Contact_Number" name="Contact_Number" value="{{Contact_Number}}">
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <label for="sex">Sex</label>
+                        <label for="Sex">Sex</label>
                     </td>
                     <td>
-                        <select id="sex" name="sex">
+                        <select id="Sex" name="Sex" value="{{Sex}}">
                             <option value="male">Male</option>
                             <option value="female">Female</option>
                         </select>
@@ -131,39 +138,22 @@
                 </tr>
                 <tr>
                     <td>
-                        <label for="contact_number">Contact Number</label>
+                        <label for="Name">Name</label>
                     </td>
                     <td>
-                        <input type="text" id="contact_number" name="contact_number">
+                        <input type="text" id="Name" name="Name" value="{{Name}}">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="DOB">Date of Birth</label>
+                    </td>
+                    <td>
+                        <input type="date" id="DOB" name="DOB"">
                     </td>
                 </tr>
             </table>
             <input type="submit" value="Submit">
         </form>
-        
-        <h1>Membership Records</h1>
-        <table border="2">
-            <th>Cust ID</th>
-            <th>Name</th>
-            <th>Sex</th>
-            <th>Contact Number</th>
-            <th>Date of Birth</th>
-            <th>Last Visited</th>
-            <th>Avg/visit</th>
-            <th>Action</th>
-            
-            {% for membership in memberships %}
-                <tr>
-                    <td class="transaction">{{membership.custID}}</td>
-                    <td class="transaction">{{membership.Contact_Number}}</td>
-                    <td class="transaction">{{membership.Sex}}</td>
-                    <td class="transaction">{{membership.Name}}</td>
-                    <td class="transaction">{{membership.DOB}}</td>
-                    <td class="transaction">{{membership.last_visit}}</td>
-                    <td class="transaction">{{membership.avg}}</td>
-                    <td class="transaction"><a href="/client/update_membership/{{membership.custID}}">Edit</a></td>
-                </tr>
-            {% endfor %}
-        </table>
     </body>
 </html>

@@ -42,6 +42,7 @@ def update_expense(request, expense_id):
             filter(shopID=request.session['shop_id'], ExpenseID=expense_id).last()
         if expense['purpose'] == 'Amount Given':
             expense['amount'] = int(expense['amount']) * -1
+        print(expense)
         return render(request, 'update_expense.html', {'ExpenseID': expense['ExpenseID'],
                                                            'date': expense['date'],
                                                            'purpose': expense['purpose'],
@@ -119,10 +120,11 @@ def expense(request):
 
     # Content type must be included in the header
     header = {"content-type": "application/json"}
-
+    print('Before response')
     # Performs a POST on the specified url to get the response
     response = requests.post(expense_url, data=json.dumps(payload), headers=header, verify=False)
-
+    print('I am response')
+    print(response)
     # convert response to json format
     r_json = response.json()
     r_json['month'] = now.month
@@ -154,7 +156,7 @@ def numberofcustomer(date, datewisedata):
     if flag == False:
         return 0
 
-
+@login_required(login_url="/useraccount/login/")
 def aboutus(request):
     month_year_month_name = get_month_year_month_name_for_download()
     return render(request, 'aboutus.html',
