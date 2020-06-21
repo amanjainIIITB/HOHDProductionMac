@@ -8,10 +8,50 @@ import requests
 import json
 import xlwt
 from .render_html_to_pdf import render_to_pdf
-from .models import Expense, ShopRegistration
+from .models import Expense, ShopRegistration, Employee
 from useraccount.models import OwnerRegistration
 from HOHDProductionMac.common_function import get_month_year_month_name_for_download, atleast_one_shop_registered, \
     get_login_user_shop_details, set_session, get_list_of_login_user_shops
+
+
+def get_new_employee_id(request):
+    last_employee_id = Employee.objects.values('EmployeeID').filter(ShopID=request.session['shop_id']).last()
+    if last_employee_id == None:
+        return 'Emp0'
+    else:
+        new_emplyee_id = 'Emp' + str(int(str(last_employee_id['EmployeeID'])[3:]) + 1)
+        return new_emplyee_id
+
+
+def employee(request):
+    if request.method == "POST":
+        Employee(EmployeeID=get_new_employee_id(request), ShopID=request.session['shop_id'], name=request.POST.get('name'), contact_number=request.POST.get('contact_number'), 
+                age=request.POST.get('age'), sex=request.POST.get('sex'), date_of_joining=request.POST.get('date_of_joining'), DOB=request.POST.get('DOB'), 
+                temporary_address=request.POST.get('temporary_address'), permanent_address=request.POST.get('permanent_address')).save()
+        messages.success(request, 'Added successfully', extra_tags='alert')
+    employees = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'age', 'sex', 'date_of_joining', 'DOB', 'temporary_address', 'permanent_address').filter(ShopID=request.session['shop_id'])
+    return render(request, 'employee.html', {'employees': employees})
+
+
+def update_employee(request, employee_id):
+    if request.method == "POST":
+        Employee.objects.filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).update(EmployeeID=employee_id, name=request.POST.get('name'),
+                       contact_number=request.POST.get('contact_number'), age=request.POST.get('age'),
+                       sex=request.POST.get('sex'), date_of_joining=request.POST.get('date_of_joining'), 
+                       DOB=request.POST.get('DOB'), temporary_address=request.POST.get('temporary_address'), 
+                       permanent_address=request.POST.get('permanent_address'))
+        messages.success(request, 'Updated successfully', extra_tags='alert')
+        return redirect('/staff/employee/')
+    else:
+        employee = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'age', 'sex', 'date_of_joining', 'DOB', 'temporary_address', 'permanent_address'). \
+            filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).last()
+    return render(request, 'update_employee.html', {'employee': employee})
+
+
+def delete_employee(request, employee_id):
+    Employee.objects.filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).delete()
+    messages.success(request, 'Deleted successfully', extra_tags='alert')
+    return redirect('/staff/employee/')
 
 
 def get_new_expense_id(request):
@@ -25,14 +65,10 @@ def get_new_expense_id(request):
 
 def update_expense(request, expense_id):
     if request.method == "POST":
-        expense = Expense.objects.values('date', 'purpose', 'paymentmode', 'comment', 'amount'). \
-            filter(shopID=request.session['shop_id'], ExpenseID=expense_id)
-        purpose = request.POST.get('purpose')
         new_amount = int(request.POST.get('amount'))
-        if purpose == 'Amount Given':
+        if request.POST.get('purpose') == 'Amount Given':
             new_amount = int(request.POST.get('amount')) * -1
-        print('Updated Data in expense' + str(expense))
-        expense.update(ExpenseID=expense_id, paymentmode=request.POST.get('paymentmode'),
+        Expense.objects.filter(shopID=request.session['shop_id'], ExpenseID=expense_id).update(ExpenseID=expense_id, paymentmode=request.POST.get('paymentmode'),
                        date=request.POST.get('date'), comment=request.POST.get('comment'),
                        purpose=request.POST.get('purpose'), amount=new_amount)
         messages.success(request, 'Updated successfully', extra_tags='alert')
@@ -42,7 +78,6 @@ def update_expense(request, expense_id):
             filter(shopID=request.session['shop_id'], ExpenseID=expense_id).last()
         if expense['purpose'] == 'Amount Given':
             expense['amount'] = int(expense['amount']) * -1
-        print(expense)
         return render(request, 'update_expense.html', {'ExpenseID': expense['ExpenseID'],
                                                            'date': expense['date'],
                                                            'purpose': expense['purpose'],
@@ -73,7 +108,6 @@ def add_expense(request):
 def analysis(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
-    print(request.session['shop_id'])
     now = datetime.datetime.now()
 
     # put the ip address or dns of your apic-em controller in this url
@@ -112,7 +146,6 @@ def send_sms():
 def expense(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
-    print(request.session['shop_id'])
     now = datetime.datetime.now()
     # put the ip address or dns of your apic-em controller in this url
     expense_url = 'http://localhost:8000/staff/getExpense/'
@@ -120,11 +153,8 @@ def expense(request):
 
     # Content type must be included in the header
     header = {"content-type": "application/json"}
-    print('Before response')
     # Performs a POST on the specified url to get the response
     response = requests.post(expense_url, data=json.dumps(payload), headers=header, verify=False)
-    print('I am response')
-    print(response)
     # convert response to json format
     r_json = response.json()
     r_json['month'] = now.month
@@ -137,7 +167,6 @@ def amount(date, datewisedata):
     i = 0
     flag = False
     while i < len(datewisedata):
-        # print(date + " " + str(datewisedata[i].get('date')))
         if str(date) == str(datewisedata[i].get('date')):
             return datewisedata[i].get('Amount')
         i = i + 1
@@ -149,7 +178,6 @@ def numberofcustomer(date, datewisedata):
     i = 0
     flag = False
     while i < len(datewisedata):
-        # print(date + " " + str(datewisedata[i].get('date')))
         if str(date) == str(datewisedata[i].get('date')):
             return datewisedata[i].get('numberOfCustomer')
         i = i + 1
@@ -223,7 +251,6 @@ def gererate_customer_data_in_excel(month, year, r_json):
 def download(request, download_type, month, year):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
-    print(request.session['shop_id'])
     # put the ip address or dns of your apic-em controller in this url
     url = ''
     if download_type == 'analysis_render' or download_type == 'analysis_excel':
@@ -231,7 +258,6 @@ def download(request, download_type, month, year):
     elif download_type == 'expense':
         url = 'http://localhost:8000/staff/getExpense/'
     payload = {"month": int(month), "year": int(year), "shop_id": request.session['shop_id']}
-    print(payload)
     # Content type must be included in the header
     header = {"content-type": "application/json"}
 
@@ -253,9 +279,7 @@ def download(request, download_type, month, year):
 def add_shop_id_in_login_user(request, shop_id):
     owner_object_values = OwnerRegistration.objects.values('ownerID', 'shop_list'). \
         filter(user=str(request.user.id)).first()
-    print(owner_object_values)
     owner_object = OwnerRegistration.objects.get(ownerID=owner_object_values['ownerID'])
-    print(owner_object)
     if owner_object_values['shop_list'] == 'None':
         owner_object.shop_list = shop_id
     else:

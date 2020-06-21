@@ -4,21 +4,6 @@
         <meta charset="UTF-8">
         <title>Welcome</title>
     </head>
-    <script>
-        function setTransactionDate(){
-            console.log("Hello");
-            var d = new Date("{{DOB}}");
-            console.log(d);
-            var day = d.getDate();
-            if(day<=9)
-                day = '0'+day;
-            var month = d.getMonth()+1;
-            if(month<=9)
-                month = '0'+month;
-            console.log();
-            document.getElementById("DOB").value = d.getFullYear()+"-"+month+"-"+day;
-        }
-    </script>
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/menubar.css' %}">
     <style>
@@ -31,7 +16,7 @@
             height:40px;
         }
     </style>
-    <body onload="setTransactionDate()">
+    <body>
 
         {% if messages %}
             <script>
@@ -44,10 +29,10 @@
             <ul>
                 <li><a href="/staff/aboutus/">About</a></li>
                 <li><a href="/client/details/">Client Form</a></li>
-                <li><a class="active" href="#membership">Membership</a></li>
+                <li><a href="/client/membership/">Membership</a></li>
                 <li><a href="/staff/analysis/">Analytics</a></li>
                 <li><a href="/staff/expense/">Expense</a></li>
-                <li><a href="/staff/employee">Employee</a></li>
+                <li><a href="#employee">Employee</a></li>
                 <li><a href="#contact">Contact US</a></li>
                 <li><a href="/staff/shopreg">Shop Reg</a></li>
                 <li><a href="/staff/add_partner">Add Partner</a></li>
@@ -106,32 +91,32 @@
                 </li>
             </ul>
         </div>
-        <h1>Update Expense</h1>
-        <form method="post" action="/client/update_membership/{{custID}}/">
+        <h1>Add Employee</h1>
+        <form method="post" action="/staff/employee/">
             {% csrf_token %}
             <table>
                 <tr>
                     <td>
-                        <label for="custID">Client ID</label>
+                        <label for="name">Employee Name</label>
                     </td>
                     <td>
-                        <input type="text" id="custID" name="custID" value="{{custID}}">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="Contact_Number">Contact_Number</label>
-                    </td>
-                    <td>
-                        <input type="text" id="Contact_Number" name="Contact_Number" value="{{Contact_Number}}">
+                        <input type="text" id="name" name="name">
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <label for="Sex">Sex</label>
+                        <label for="contact_number">Contact Number</label>
                     </td>
                     <td>
-                        <select id="Sex" name="Sex" value="{{Sex}}">
+                        <input type="text" id="contact_number" name="contact_number">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="sex">Sex</label>
+                    </td>
+                    <td>
+                        <select id="sex" name="sex">
                             <option value="male">Male</option>
                             <option value="female">Female</option>
                         </select>
@@ -139,22 +124,73 @@
                 </tr>
                 <tr>
                     <td>
-                        <label for="Name">Name</label>
+                        <label for="age">Age</label>
                     </td>
                     <td>
-                        <input type="text" id="Name" name="Name" value="{{Name}}">
+                        <input type="text" id="age" name="age">
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <label for="DOB">Date of Birth</label>
+                        <label for="date">Date of Joining</label>
                     </td>
                     <td>
-                        <input type="date" id="DOB" name="DOB"">
+                        <input type="date" id="date_of_joining" name="date_of_joining" ><br>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="date">Date of Birth</label>
+                    </td>
+                    <td>
+                        <input type="date" id="DOB" name="DOB" ><br>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="temporary_address">Temporary Address</label>
+                    </td>
+                    <td>
+                        <input type="textarea" id="temporary_address" name="temporary_address">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="permanent_address">Permanent Address</label>
+                    </td>
+                    <td>
+                        <input type="textarea" id="permanent_address" name="permanent_address">
                     </td>
                 </tr>
             </table>
             <input type="submit" value="Submit">
         </form>
+        
+        <h1>Employee Records</h1>
+        <table border="2">
+            <th>Name</th>
+            <th>Contact Number</th>
+            <th>Sex</th>
+            <th>Age</th>
+            <th>Date of Joining</th>
+            <th>Date of Birth</th>
+            <th>Temporary Address</th>
+            <th>Permanent Address</th>
+            <th>Action</th>
+            
+            {% for employee in employees %}
+                <tr>
+                    <td class="transaction">{{employee.name}}</td>
+                    <td class="transaction">{{employee.contact_number}}</td>
+                    <td class="transaction">{{employee.sex}}</td>
+                    <td class="transaction">{{employee.age}}</td>
+                    <td class="transaction">{{employee.date_of_joining}}</td>
+                    <td class="transaction">{{employee.DOB}}</td>
+                    <td class="transaction">{{employee.temporary_address}}</td>
+                    <td class="transaction">{{employee.permanent_address}}</td>
+                    <td class="transaction"><a href="/staff/update_employee/{{employee.EmployeeID}}">Edit</a>/<a href="/staff/delete_employee/{{employee.EmployeeID}}">Delete</a></td>
+                </tr>
+            {% endfor %}
+        </table>
     </body>
 </html>

@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import *
+from staff.models import Employee
 from HOHDProductionMac.common_function import get_month_year_month_name_for_download, atleast_one_shop_registered, \
     get_login_user_shop_details
 # Create your views here.
@@ -48,7 +49,12 @@ def details(request):
         customer = select_payment_mode_object(paymentmode)
         save_customer_entry(request, customer, date, bardate, time, paymentmode, amount, numberofclient)
     month_year_month_name = get_month_year_month_name_for_download()
-    return render(request, 'details.html', {"month_list": month_year_month_name[0], "year_list": month_year_month_name[2], "month_name": month_year_month_name[1], "shop_details": get_login_user_shop_details(request)})
+    employees = Employee.objects.values('EmployeeID', 'name').filter(ShopID=request.session['shop_id'])
+    return render(request, 'details.html', {"month_list": month_year_month_name[0], 
+                                            "year_list": month_year_month_name[2], 
+                                            "month_name": month_year_month_name[1], 
+                                            "shop_details": get_login_user_shop_details(request),
+                                            "employees": employees})
 
 
 def save_customer_membership(request):

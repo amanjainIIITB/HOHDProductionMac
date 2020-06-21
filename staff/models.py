@@ -28,9 +28,15 @@ class ShopRegistration(models.Model):
         return str(self.ShopID)
 
 
-# class ShopOwnerRelationship(models.Model):
-#     ShopID = models.CharField(max_length=10, null=True)
-#     ownerID = models.CharField(max_length=10, null=True)
-#
-#     def __str__(self):
-#         return str(self.ShopID)+" "+str(self.ownerID)
+class Employee(models.Model):
+    EmployeeID = models.CharField(max_length=10, null=True)
+    ShopID = models.CharField(max_length=10, null=True)
+    name = models.CharField(max_length=50, null=True)
+    contact_number = models.IntegerField(validators=[MinValueValidator(1000000000), MaxValueValidator(9999999999)],
+                                              null=True)
+    age = models.IntegerField(default=0)
+    sex = models.CharField(max_length=10, null=True)
+    date_of_joining = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
+    DOB = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
+    temporary_address = models.TextField(max_length=1000, null=True)
+    permanent_address = models.TextField(max_length=1000, null=True)

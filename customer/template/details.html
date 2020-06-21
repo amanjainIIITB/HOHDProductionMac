@@ -99,6 +99,7 @@
                 <li><a href="/client/membership">Membership</a></li>
                 <li><a href="/staff/analysis/">Analytics</a></li>
                 <li><a href="/staff/expense/">Expense</a></li>
+                <li><a href="/staff/employee">Employee</a></li>
                 <li><a href="#contact">Contact US</a></li>
                 <li><a href="/staff/shopreg">Shop Reg</a></li>
                 <li><a href="/staff/add_partner">Add Partner</a></li>
@@ -171,6 +172,12 @@
                     <option value="Bharatpe">Bharatpe</option>
                     <option value="Paytm">Paytm</option>
                     <option value="Cash">Cash</option>
+                </select>
+                <label for="selectemployee">Employee</label>
+                <select id="EmployeeID" name="EmployeeID">
+                    {% for employee in employees %}
+                        <option value="{{employee.EmployeeID}}">{{employee.name}}</option>
+                    {% endfor %}
                 </select>
                 <label for="numberofclient">Number of Client</label>
                 <input type="text" id="numberofclient" name="numberofclient" placeholder="Client count">
