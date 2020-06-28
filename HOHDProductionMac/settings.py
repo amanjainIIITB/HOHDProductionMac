@@ -34,6 +34,8 @@ INSTALLED_APPS = [
     'customer',
     'staff',
     'useraccount',
+    'adminPanel',
+    'messageManagement',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -57,7 +59,7 @@ ROOT_URLCONF = 'HOHDProductionMac.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['customer/template', 'staff/template', 'useraccount/template'],
+        'DIRS': ['customer/template', 'staff/template', 'useraccount/template', 'adminPanel/template'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

@@ -125,21 +125,7 @@ def analysis(request):
     r_json['month'] = now.month
     r_json['year'] = now.year
     r_json['shop_details'] = get_login_user_shop_details(request)
-    # print('before sms call')
-    # send_sms()
     return render(request, 'analysis.html', r_json)
-
-
-def send_sms():
-    contacts = '9530101150'
-    routeid = '50'
-    key = '35ED3859DED8C0'
-    campaign = '0'
-    senderid = 'SMSABS'
-    msg = 'Message from the Django Project to the House of Handsomes & Divas'
-    url = 'http://sms.autobysms.com/app/smsapi/index.php?key=' + key + '&campaign=' + campaign + '&routeid=' + routeid + \
-          '&type=text&contacts=' + contacts + '&senderid=' + senderid + '&msg=' + msg
-    response = requests.post(url)
 
 
 @login_required(login_url="/useraccount/login/")
@@ -304,6 +290,7 @@ def shopreg(request):
         shopRegistration.Desk_Contact_Number = request.POST.get('Desk_Contact_Number')
         shopRegistration.Shop_Name = request.POST.get('Shop_Name')
         shopRegistration.Shop_Address = request.POST.get('Shop_Address')
+        shopRegistration.owner_list = OwnerRegistration.objects.values('ownerID').filter(user=str(request.user.id)).first()['ownerID']
         add_shop_id_in_login_user(request, shopRegistration.ShopID)
         shopRegistration.save()
         if len(get_list_of_login_user_shops(request)) == 1:
@@ -345,6 +332,19 @@ def selectparlour(request, shop_id):
     return redirect('/staff/aboutus/')
 
 
+def add_owner_id_in_shop_registration_for_entered_user(request, entered_user_name, list_of_shop_id):
+    owner = OwnerRegistration.objects.values('ownerID').filter(username=entered_user_name).first()
+    print('Owner data is')
+    print(owner)
+    for shop_id in list_of_shop_id:
+        print(shop_id)
+        shopRegistration = ShopRegistration.objects.values('owner_list').filter(ShopID=shop_id).first()
+        print(shopRegistration)
+        list_of_owners = shopRegistration['owner_list'] + ","+owner['ownerID']
+        print(list_of_owners)
+        ShopRegistration.objects.values('owner_list').filter(ShopID=shop_id).update(owner_list=list_of_owners)
+
+
 @login_required(login_url="/useraccount/login/")
 def add_partner(request):
     if not atleast_one_shop_registered(request):
@@ -356,6 +356,7 @@ def add_partner(request):
             messages.success(request, 'Select parlour to add', extra_tags='alert')
         else:
             add_shop_id_in_entered_user(request, entered_user_name, list_of_shop_id)
+            add_owner_id_in_shop_registration_for_entered_user(request, entered_user_name, list_of_shop_id)
             messages.success(request, 'Selected Parlour Added successfully', extra_tags='alert')
     month_year_month_name = get_month_year_month_name_for_download()
     return render(request, 'add_partner.html', {"month_list": month_year_month_name[0],

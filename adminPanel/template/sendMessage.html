@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Welcome</title>
+    </head>
+    <script>
+        
+        function get_owner_or_client(clients)
+        {
+            var message_receiver = document.getElementById('receiver').value;
+            var shop_id = document.getElementById('shop_id').value;
+            if(message_receiver == "client")
+            {
+                console.log('hey');
+                html = "<select id=\"client_selector\" name=\"client_selector\">";
+                html = html + "<option value=\"all\">All</option>";
+                for(var i=0; i<clients.length; i++)
+                {
+                    console.log(shop_id);
+                    console.log(clients[i][3]);
+                    if(clients[i][4]==shop_id)
+                        html = html + "<option value=\'" + clients[i][0] + "\'>"+clients[i][0]+" - "+clients[i][3]+"</option>";
+                }
+                html = html + "</select>";
+                document.getElementById('employee_or_client_span').innerHTML=html;
+            }
+            else
+            {
+                document.getElementById('employee_or_client_span').innerHTML="";
+            }
+        }
+    </script>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/menubar.css' %}">
+    <style>
+
+    input[type=text], select, textarea {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    input[type=submit] {
+        width: 80%;
+        background-color: #4CAF50;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    input[type=submit]:hover {
+        background-color: #45a049;
+    }
+
+    input.largerCheckbox
+    {
+        width:18px;
+        height:18px;
+    }
+
+    /* Box styles */
+    .myBox {
+        border: none;
+        padding: 5px;
+        <!--font: 24px/36px sans-serif;-->
+        width:100px;
+        height: 200px;
+        overflow: scroll;
+    }
+
+    #leftleftbox {
+        float:left;
+        width:4%;
+        height:360px;
+    }
+    #leftrightbox {
+        float:left;
+        width:20%;
+        height:360px;
+        background:#ffcccb;
+    }
+    #middleleftbox{
+        float:left;
+        background:#ffcccb;
+        width:20%;
+        height:360px;
+    }
+    #middlerightbox{
+        float:left;
+        background:grey;
+        width:20%;
+        height:350px;
+    }
+    #rightbox{
+        float:right;
+        width:30%;
+        height:430px;
+    }
+
+    #submit{
+        text-align:center;
+    }
+
+    </style>
+    <body style="background-color: pink;">
+
+        {% if messages %}
+            <script>
+                {% for message in messages %}
+                    alert("{{ message }}");
+                {% endfor %}
+            </script>
+        {% endif %}
+        <div class="menu-bar">
+            <ul>
+                <li><a class="active" href="#sendMessage">Send Message</a></li>
+                <li>
+                    <div>
+                        <form action="/useraccount/logout/" method="post">
+                            {% csrf_token %}
+                            <button type="submit">Logout</button>
+                        </form>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <form method="post" action="/message/send/">
+        <h1>Send Message</h1>
+        <div id = "boxes">
+            {% csrf_token %}
+            <div id="leftleftbox"></div>
+            <div id = "leftrightbox">
+                <label for="shop_id">Select Shop</label>
+                <select id="shop_id" name="shop_id" onchange="get_owner_or_client({{clients}})">
+                     <option value="all">All</option>
+                    {% for shop in shops %}
+                        <option value="{{shop.ShopID}}">{{shop.ShopID}} {{shop.name}}</option>
+                    {% endfor %}
+                </select>
+                <label for="receiver">Message Receiver</label>
+                <select id="receiver" name="receiver" onchange="get_owner_or_client({{clients}})">
+                    <option value="all">All</option>
+                    <option value="shop_owner">Shop Owner</option>
+                    <option value="client">Client</option>
+                </select>
+                <span id="employee_or_client_span"></span>
+                <label for="greeting_choice">Do you want to add Greeting in the Message?</label>
+                <select id="greeting_choice" name="greeting_choice">
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                </select>
+                <label for="name">Greeting</label>
+                <input type="text" id="greeting" name="greeting">
+                <label for="name">Message</label>
+                <textarea id="message" name="message"></textarea>
+                <input type="submit" id="mysubmit" value="Submit">
+            </div>
+        </div><br>
+        </form>
+    </body>
+</html>

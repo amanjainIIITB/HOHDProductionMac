@@ -69,7 +69,17 @@ def save_customer_membership(request):
     messages.success(request, 'Added successfully', extra_tags='alert')
 
 
-def get_all_membership(request):
+def get_all_membership():
+    memberships = Membership.objects.all()
+    list_users = []
+    for membership in memberships:
+        user = [membership.custID, membership.Contact_Number, membership.Sex,
+                membership.Name, membership.shopID]
+        list_users.append(user)
+    return list_users
+
+
+def get_all_membership_based_on_shop_id(request):
     memberships = Membership.objects.values('custID', 'Contact_Number', 'Sex', 'Name', 'DOB', 'last_visit', 'total_amount', 'number_of_visit').filter(shopID=request.session['shop_id'])
     for membership in memberships:
         if membership['total_amount'] == 0 or membership['number_of_visit'] == 0:
@@ -91,7 +101,7 @@ def membership(request):
                                                 "year_list": month_year_month_name[2], 
                                                 "month_name": month_year_month_name[1], 
                                                 "shop_details": get_login_user_shop_details(request),
-                                                "memberships": get_all_membership(request)})
+                                                "memberships": get_all_membership_based_on_shop_id(request)})
 
 
 

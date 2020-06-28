@@ -23,6 +23,7 @@ class ShopRegistration(models.Model):
                                               null=True)
     Shop_Name = models.CharField(max_length=50, null=True)
     Shop_Address = models.CharField(max_length=200, null=True)
+    owner_list = models.TextField(null=True)
 
     def __str__(self):
         return str(self.ShopID)

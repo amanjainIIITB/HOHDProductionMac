@@ -9,5 +9,6 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^client/', include('customer.urls')),
     url(r'^staff/', include('staff.urls')),
+    url(r'^message/', include('adminPanel.urls')),
     url(r'^useraccount/', include('useraccount.urls')),
 ]
