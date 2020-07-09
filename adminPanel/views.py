@@ -2,7 +2,7 @@ from django.shortcuts import render
 from staff.models import ShopRegistration
 from customer.views import get_all_membership
 from messageManagement.views import send_message_to_all_shop_all_owner, send_message_to_all_shop_all_client, send_message_to_particular_shop_all_owner, send_message_to_particular_shop_all_client, send_message_to_particular_shop_specific_client
-
+from .data_export import get_complete_database
 
 def send(request):
     if request.method == 'POST':
@@ -42,6 +42,10 @@ def send(request):
     shops = ShopRegistration.objects.values('ShopID', 'Shop_Name', 'Shop_Address')
     return render(request, 'sendMessage.html', {'shops': shops, 
                                                 'clients': get_all_membership()})
+
+
+def exportDB(request):
+    return get_complete_database()
 
 
 # def send_sms():
