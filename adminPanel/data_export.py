@@ -15,73 +15,73 @@ def set_table_header(wb, sheet_name, table_header, font_style):
     return ws
 
 
-def get_bharatpe_data(wb, row_num, font_style):
+def get_bharatpe_data(wb, row_num, date_format, font_style):
     ws = set_table_header(wb, "bharatpe_data", ['date', 'ShopID', 'bardate', 'time', 'numberofclient', 'amount'], font_style)
     bharatpes = BharatPe.objects.values('date', 'ShopID', 'bardate', 'time', 'numberofclient', 'amount')
     
     for bharatpe in bharatpes:
         row_num = row_num + 1
-        ws.write(row_num, 0, bharatpe['date'], font_style)
+        ws.write(row_num, 0, bharatpe['date'], date_format)
         ws.write(row_num, 1, bharatpe['ShopID'], font_style)
-        ws.write(row_num, 2, bharatpe['bardate'], font_style)
+        ws.write(row_num, 2, bharatpe['bardate'], date_format)
         ws.write(row_num, 3, bharatpe['time'], font_style)
         ws.write(row_num, 4, bharatpe['numberofclient'], font_style)
         ws.write(row_num, 5, bharatpe['amount'], font_style)
 
 
-def get_paytm_data(wb, row_num, font_style):
+def get_paytm_data(wb, row_num, date_format, font_style):
     ws = set_table_header(wb, "paytm_data", ['date', 'ShopID', 'bardate', 'time', 'numberofclient', 'amount'], font_style)
     paytms = Paytm.objects.values('date', 'ShopID', 'bardate', 'time', 'numberofclient', 'amount')
     
     for paytm in paytms:
         row_num = row_num + 1
-        ws.write(row_num, 0, paytm['date'], font_style)
+        ws.write(row_num, 0, paytm['date'], date_format)
         ws.write(row_num, 1, paytm['ShopID'], font_style)
-        ws.write(row_num, 2, paytm['bardate'], font_style)
+        ws.write(row_num, 2, paytm['bardate'], date_format)
         ws.write(row_num, 3, paytm['time'], font_style)
         ws.write(row_num, 4, paytm['numberofclient'], font_style)
         ws.write(row_num, 5, paytm['amount'], font_style)
 
 
-def get_cash_data(wb, row_num, font_style):
+def get_cash_data(wb, row_num, date_format, font_style):
     ws = set_table_header(wb, "cash_data", ['date', 'ShopID', 'bardate', 'time', 'numberofclient', 'amount'], font_style)
     cashs = client.objects.values('date', 'ShopID', 'bardate', 'time', 'numberofclient', 'amount')
     
     for cash in cashs:
         row_num = row_num + 1
-        ws.write(row_num, 0, cash['date'], font_style)
+        ws.write(row_num, 0, cash['date'], date_format)
         ws.write(row_num, 1, cash['ShopID'], font_style)
-        ws.write(row_num, 2, cash['bardate'], font_style)
+        ws.write(row_num, 2, cash['bardate'], date_format)
         ws.write(row_num, 3, cash['time'], font_style)
         ws.write(row_num, 4, cash['numberofclient'], font_style)
         ws.write(row_num, 5, cash['amount'], font_style)
 
 
-def get_membership_data(wb, row_num, font_style):
+def get_membership_data(wb, row_num, date_format, font_style):
     ws = set_table_header(wb, "membership_data", ['custID', 'shopID', 'Contact_Number', 'Sex', 'Name', 'DOB', 'last_visit', 'total_amount', 'number_of_visit'], font_style)
     memberships = Membership.objects.values('custID', 'shopID', 'Contact_Number', 'Sex', 'Name', 'DOB', 'last_visit', 'total_amount', 'number_of_visit')
     
     for memebership in memberships:
-        row_num = row_num + 1
+        row_num = row_num + 1        
         ws.write(row_num, 0, memebership['custID'], font_style)
         ws.write(row_num, 1, memebership['shopID'], font_style)
         ws.write(row_num, 2, memebership['Contact_Number'], font_style)
         ws.write(row_num, 3, memebership['Sex'], font_style)
         ws.write(row_num, 4, memebership['Name'], font_style)
-        ws.write(row_num, 5, memebership['DOB'], font_style)
-        ws.write(row_num, 6, memebership['last_visit'], font_style)
+        ws.write(row_num, 5, memebership['DOB'], date_format)
+        ws.write(row_num, 6, memebership['last_visit'], date_format)
         ws.write(row_num, 7, memebership['total_amount'], font_style)
         ws.write(row_num, 8, memebership['number_of_visit'], font_style)
 
 
-def get_expense_data(wb, row_num, font_style):
+def get_expense_data(wb, row_num, date_format, font_style):
     ws = set_table_header(wb, "expense_data", ['ExpenseID', 'date', 'shopID', 'purpose', 'paymentmode', 'comment', 'amount'], font_style)
     expenses = Expense.objects.values('ExpenseID', 'date', 'shopID', 'purpose', 'paymentmode', 'comment', 'amount')
     
     for expense in expenses:
         row_num = row_num + 1
         ws.write(row_num, 0, expense['ExpenseID'], font_style)
-        ws.write(row_num, 1, expense['date'], font_style)
+        ws.write(row_num, 1, expense['date'], date_format)
         ws.write(row_num, 2, expense['shopID'], font_style)
         ws.write(row_num, 3, expense['purpose'], font_style)
         ws.write(row_num, 4, expense['paymentmode'], font_style)
@@ -102,7 +102,7 @@ def get_shop_registration_data(wb, row_num, font_style):
         ws.write(row_num, 4, shop_registration['owner_list'], font_style)
 
 
-def get_employee_data(wb, row_num, font_style):
+def get_employee_data(wb, row_num, date_format, font_style):
     ws = set_table_header(wb, "employee_data", ['EmployeeID', 'ShopID', 'name', 'contact_number', 'age', 'sex', 'date_of_joining', 'DOB', 'temporary_address', 'permanent_address'], font_style)
     employees = Employee.objects.values('EmployeeID', 'ShopID', 'name', 'contact_number', 'age', 'sex', 'date_of_joining', 'DOB', 'temporary_address', 'permanent_address')
     
@@ -114,8 +114,8 @@ def get_employee_data(wb, row_num, font_style):
         ws.write(row_num, 3, employee['contact_number'], font_style)
         ws.write(row_num, 4, employee['age'], font_style)
         ws.write(row_num, 5, employee['sex'], font_style)
-        ws.write(row_num, 6, employee['date_of_joining'], font_style)
-        ws.write(row_num, 7, employee['DOB'], font_style)
+        ws.write(row_num, 6, employee['date_of_joining'], date_format)
+        ws.write(row_num, 7, employee['DOB'], date_format)
         ws.write(row_num, 8, employee['temporary_address'], font_style)
         ws.write(row_num, 9, employee['permanent_address'], font_style)
 
@@ -159,13 +159,17 @@ def get_complete_database():
     # Sheet body, remaining rows
     font_style = xlwt.XFStyle()
 
-    get_bharatpe_data(wb, row_num, font_style)
-    get_paytm_data(wb, row_num, font_style)
-    get_cash_data(wb, row_num, font_style)
-    get_membership_data(wb, row_num, font_style)
-    get_expense_data(wb, row_num, font_style)
+    # set date format
+    date_format = xlwt.XFStyle()
+    date_format.num_format_str = 'yyyy-mm-dd'
+
+    get_bharatpe_data(wb, row_num, date_format, font_style)
+    get_paytm_data(wb, row_num, date_format, font_style)
+    get_cash_data(wb, row_num, date_format, font_style)
+    get_membership_data(wb, row_num, date_format, font_style)
+    get_expense_data(wb, row_num, date_format, font_style)
     get_shop_registration_data(wb, row_num, font_style)
-    get_employee_data(wb, row_num, font_style)
+    get_employee_data(wb, row_num, date_format, font_style)
     get_owner_registration_data(wb, row_num, font_style)
     wb.save(response)
     return response
