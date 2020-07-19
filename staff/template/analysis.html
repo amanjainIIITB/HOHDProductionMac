@@ -15,72 +15,7 @@
         }
     </style>
     <body>
-        <div class="menu-bar">
-            <ul>
-                <li><a href="/staff/aboutus/">About</a></li>
-                <li><a href="/client/details/">Client Form</a></li>
-                <li><a href="/client/membership">Membership</a></li>
-                <li><a class="active" href="#analytics">Analytics</a></li>
-                <li><a href="/staff/expense/">Expense</a></li>
-                <li><a href="/staff/employee">Employee</a></li>
-                <li><a href="#contact">Contact US</a></li>
-                <li><a href="/staff/shopreg">Shop Reg</a></li>
-                <li><a href="/staff/add_partner">Add Partner</a></li>
-                <li><a href="#parlour">Select Parlour</a>
-                    <div class="sub-menu">
-                        <ul>
-                            {% for shopobj in shop_details %}
-                                <li><a href="/staff/selectparlour/{{shopobj.ShopID}}">{{shopobj.ShopID}} {{shopobj.Shop_Name}}</a></li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </li>
-                <li><a href="#download">Download</a>
-                    <div class="sub-menu">
-                        <ul>
-                            <li><a href="#Expense">Expense</a>
-                                <div class="sub-sub-menu">
-                                    <ul>
-                                        <li><a href="/staff/download/expense/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
-                                        <li><a href="/staff/download/expense/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
-                                        <li><a href="/staff/download/expense/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
-                                        <li><a href="/staff/download/expense/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
-                                    </ul>
-                                </div>
-                            </li>
-                            <li><a href="#Analysis">Analysis</a>
-                                <div class="sub-sub-menu">
-                                    <ul>
-                                        <li><a href="/staff/download/analysis_render/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
-                                        <li><a href="/staff/download/analysis_render/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
-                                        <li><a href="/staff/download/analysis_render/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
-                                        <li><a href="/staff/download/analysis_render/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
-                                    </ul>
-                                </div>
-                            </li>
-                            <li><a href="#Customer Data">Customer Data</a>
-                                <div class="sub-sub-menu">
-                                    <ul>
-                                        <li><a href="/staff/download/analysis_excel/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
-                                        <li><a href="/staff/download/analysis_excel/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
-                                        <li><a href="/staff/download/analysis_excel/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
-                                        <li><a href="/staff/download/analysis_excel/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
-                                    </ul>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
-                <li>
-                    <div>
-                        <form action="/useraccount/logout/" method="post">
-                            {% csrf_token %}
-                            <button type="submit">Logout</button>
-                        </form>
-                    </div>
-                </li>
-            </ul>
-        </div>
+        {% include 'menubar.html' with active_menubar_item="Analytics" %}
         <div id="piechart"></div>
 
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -162,10 +97,11 @@
 
         function income_of_the_month(){
 
+            console.log('income of the month')
             var data = google.visualization.arrayToDataTable([
                 ['Task', 'Amount'],
                 ['Cash', {{ total_cash_amount_Of_The_Month }}],
-                ['Online', {{total_online_amount_Of_The_Month}}],
+                ['Online', {{ total_online_amount_Of_The_Month }}],
             ]);
             // Optional; add a title and set the width and height of the chart
             var options = {'title':'Income', 'width':1200, 'height':400};
@@ -202,45 +138,67 @@
         <div id="numberofcustomersdiv"></div>
         <br>
 
+        <h1>Customer wise Data</h1><br>
+        <table border="2">
+            <tr>
+                <th>Client ID</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Employee</th>
+                <th>payment Mode</th>
+                <th>Amount</th>
+                <th>Number of Client</th>
+                <th>Action</th>
+            </tr>
+            {% for customer_obj in client_data_based_on_shop_id %}
+                <tr>
+                    <td>{{customer_obj.custID}}</td>
+                    <td>{{customer_obj.date}}</td>
+                    <td>{{customer_obj.time}}</td>
+                    <td>{{customer_obj.employee}}</td>
+                    <td>{{customer_obj.payment_mode}}</td>
+                    <td>{{customer_obj.amount}}</td>
+                    <td>{{customer_obj.numberofclient}}</td>
+                    {% if customer_obj.isMember == True %}
+                        <td><a href="/client/update_mem_client_visit/{{customer_obj.visitID}}/">Edit</a> / <a href="/client/delete_client_visit/{{customer_obj.visitID}}/">Delete</a></td>
+                    {% else %}
+                        <td><a href="/client/update_non_mem_client_visit/{{customer_obj.visitID}}/">Edit</a> / <a href="/client/delete_client_visit/{{customer_obj.visitID}}/">Delete</a></td>
+                    {% endif %}
+                </tr>>
+            {% endfor %}
+        </table>
+        
         <h1>Date wise Data</h1><br>
         <table border="2">
             <tr>
                 <th>Date</th>
-                <th>Bharatpe</th>
-                <th>Bharatpe Customer</th>
-                <th>Paytm</th>
-                <th>Paytm Customer</th>
+                <th>Online</th>
+                <th>Online Customer</th>
                 <th>Cash</th>
                 <th>Cash Customer</th>
                 <th>Total Amount</th>
                 <th>Total Customer</th>
             </tr>
-        {% for dateobj in listOfDates %}
-            <tr>
-                <td>{{dateobj}}</td>
-                <td>{{ dateobj|amount:dayWiseBharatpeOfTheMonth}}</td>
-                <td>{{ dateobj|numberofcustomer:dayWiseBharatpeOfTheMonth}}</td>
-                <td>{{ dateobj|amount:dayWisePaytmOfTheMonth}}</td>
-                <td>{{ dateobj|numberofcustomer:dayWisePaytmOfTheMonth}}</td>
-                <td>{{ dateobj|amount:dayWiseCashOfTheMonth}}</td>
-                <td>{{ dateobj|numberofcustomer:dayWiseCashOfTheMonth}}</td>
+            {% for dateobj in listOfDates %}
+                <tr>
+                    <td>{{dateobj}}</td>
+                    <td>{{ dateobj|total_amount_of_the_day:dayWiseOnlineOfTheMonth}}</td>
+                    <td>{{ dateobj|total_numberofcustomer_of_the_day:dayWiseOnlineOfTheMonth}}</td>
+                    <td>{{ dateobj|total_amount_of_the_day:dayWiseCashOfTheMonth}}</td>
+                    <td>{{ dateobj|total_numberofcustomer_of_the_day:dayWiseCashOfTheMonth}}</td>
 
-                {% with cashamount=dateobj|amount:dayWiseCashOfTheMonth  %}
-                    {% with paytmamount=dateobj|amount:dayWisePaytmOfTheMonth %}
-                        {% with bharatpeamount=dateobj|amount:dayWiseBharatpeOfTheMonth %}
-                            <td>{{cashamount|add:paytmamount|add:bharatpeamount}}</td>
+                    {% with cashamount=dateobj|total_amount_of_the_day:dayWiseCashOfTheMonth  %}
+                        {% with onlineamount=dateobj|total_amount_of_the_day:dayWiseOnlineOfTheMonth %}
+                            <td>{{cashamount|add:onlineamount}}</td>
                         {% endwith %}
                     {% endwith %}
-                {% endwith %}
-                {% with numberofcashcustomer=dateobj|numberofcustomer:dayWiseCashOfTheMonth  %}
-                    {% with numberofpaytmcustomer=dateobj|numberofcustomer:dayWisePaytmOfTheMonth %}
-                        {% with numberofbharatpecustomer=dateobj|numberofcustomer:dayWiseBharatpeOfTheMonth %}
-                            <td>{{numberofcashcustomer|add:numberofpaytmcustomer|add:numberofbharatpecustomer}}</td>
+                    {% with numberofcashcustomer=dateobj|total_numberofcustomer_of_the_day:dayWiseCashOfTheMonth  %}
+                        {% with numberofonlinecustomer=dateobj|total_numberofcustomer_of_the_day:dayWiseOnlineOfTheMonth %}
+                            <td>{{numberofcashcustomer|add:numberofonlinecustomer}}</td>
                         {% endwith %}
                     {% endwith %}
-                {% endwith %}
-            </tr>
-        {% endfor %}
+                </tr>
+            {% endfor %}
         </table>
         <br><br>
 

@@ -4,32 +4,13 @@ from django.db import models
 
 
 # Create your models here.
-class client(models.Model):
+class ClientVisit(models.Model):
+    visitID = models.CharField(max_length=10, null=True)
+    isMember = models.BooleanField(default=False)
+    custID = models.CharField(max_length=10, default='None')
     date = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
-    ShopID = models.CharField(max_length=10, default='S1')
-    bardate = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
-    time = models.TimeField(default=datetime.datetime.now().strftime('%H:%M:%S'))
-    numberofclient = models.IntegerField(default=0)
-    amount = models.IntegerField(default=0)
-
-    def __str__(self):
-        return str(self.date)+" "+str(self.time)
-
-
-class BharatPe(models.Model):
-    date = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
-    ShopID = models.CharField(max_length=10, default='S1')
-    bardate = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
-    time = models.TimeField(default=datetime.datetime.now().strftime('%H:%M:%S'))
-    numberofclient = models.IntegerField(default=0)
-    amount = models.IntegerField(default=0)
-
-    def __str__(self):
-        return str(self.date)+" "+str(self.time)
-
-
-class Paytm(models.Model):
-    date = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
+    employee_id = models.CharField(max_length=50, null=True)
+    payment_mode = models.CharField(max_length=50, null=True)
     ShopID = models.CharField(max_length=10, default='S1')
     bardate = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
     time = models.TimeField(default=datetime.datetime.now().strftime('%H:%M:%S'))

@@ -25,72 +25,7 @@
                 {% endfor %}
             </script>
         {% endif %}
-        <div class="menu-bar">
-            <ul>
-                <li><a href="/staff/aboutus/">About</a></li>
-                <li><a href="/client/details/">Client Form</a></li>
-                <li><a href="/client/membership/">Membership</a></li>
-                <li><a href="/staff/analysis/">Analytics</a></li>
-                <li><a href="/staff/expense/">Expense</a></li>
-                <li><a href="#employee">Employee</a></li>
-                <li><a href="#contact">Contact US</a></li>
-                <li><a href="/staff/shopreg">Shop Reg</a></li>
-                <li><a href="/staff/add_partner">Add Partner</a></li>
-                <li><a href="#parlour">Select Parlour</a>
-                    <div class="sub-menu">
-                        <ul>
-                            {% for shopobj in shop_details %}
-                                <li><a href="/staff/selectparlour/{{shopobj.ShopID}}">{{shopobj.ShopID}} {{shopobj.Shop_Name}}</a></li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </li>
-                <li><a href="#download">Download</a>
-                    <div class="sub-menu">
-                        <ul>
-                            <li><a href="#Expense">Expense</a>
-                                <div class="sub-sub-menu">
-                                    <ul>
-                                        <li><a href="/staff/download/expense/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
-                                        <li><a href="/staff/download/expense/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
-                                        <li><a href="/staff/download/expense/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
-                                        <li><a href="/staff/download/expense/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
-                                    </ul>
-                                </div>
-                            </li>
-                            <li><a href="#Analysis">Analysis</a>
-                                <div class="sub-sub-menu">
-                                    <ul>
-                                        <li><a href="/staff/download/analysis_render/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
-                                        <li><a href="/staff/download/analysis_render/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
-                                        <li><a href="/staff/download/analysis_render/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
-                                        <li><a href="/staff/download/analysis_render/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
-                                    </ul>
-                                </div>
-                            </li>
-                            <li><a href="#Customer Data">Customer Data</a>
-                                <div class="sub-sub-menu">
-                                    <ul>
-                                        <li><a href="/staff/download/analysis_excel/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
-                                        <li><a href="/staff/download/analysis_excel/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
-                                        <li><a href="/staff/download/analysis_excel/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
-                                        <li><a href="/staff/download/analysis_excel/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
-                                    </ul>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
-                <li>
-                    <div>
-                        <form action="/useraccount/logout/" method="post">
-                            {% csrf_token %}
-                            <button type="submit">Logout</button>
-                        </form>
-                    </div>
-                </li>
-            </ul>
-        </div>
+        {% include 'menubar.html' with active_menubar_item="Employee" %}
         <h1>Add Employee</h1>
         <form method="post" action="/staff/employee/">
             {% csrf_token %}
@@ -196,7 +131,7 @@
                     <td class="transaction">{{employee.DOB}}</td>
                     <td class="transaction">{{employee.temporary_address}}</td>
                     <td class="transaction">{{employee.permanent_address}}</td>
-                    <td class="transaction"><a href="/staff/update_employee/{{employee.EmployeeID}}">Edit</a>/<a href="/staff/delete_employee/{{employee.EmployeeID}}">Delete</a></td>
+                    <td class="transaction"><a href="/staff/update_employee/{{employee.EmployeeID}}">Edit</a> / <a href="/staff/delete_employee/{{employee.EmployeeID}}">Delete</a></td>
                 </tr>
             {% endfor %}
         </table>

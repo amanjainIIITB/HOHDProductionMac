@@ -4,13 +4,12 @@ register = template.Library()
 
 @register.filter
 def getMonth(date):
-    print('Hello World')
-    print(date)
     monthlist = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     return monthlist[int(str(date).split('-')[1])-1]
 
+
 @register.filter
-def amount(date, datewisedata):
+def total_amount_of_the_day(date, datewisedata):
     i = 0
     flag = False
     while i < len(datewisedata):
@@ -23,7 +22,7 @@ def amount(date, datewisedata):
 
 
 @register.filter
-def numberofcustomer(date, datewisedata):
+def total_numberofcustomer_of_the_day(date, datewisedata):
     i = 0
     flag = False
     while i < len(datewisedata):
@@ -36,9 +35,8 @@ def numberofcustomer(date, datewisedata):
 
 @register.filter
 def add(value1, value2):
-    print(value1)
-    print(value2)
     return int(value1)+int(value2)
+
 
 @register.filter
 def finalAmount(total_online, expense_list):

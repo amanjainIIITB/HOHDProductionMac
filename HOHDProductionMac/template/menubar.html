@@ -1,0 +1,47 @@
+<script>
+    function set_menubar_items(){
+        var active_menubar_item = "{{active_menubar_item}}";
+        hyper_reference_link = ['/staff/aboutus/', '/client/details/', '/client/membership', '/staff/analysis/', '/staff/expense/', '/staff/employee', '#contact', '/staff/shopreg', '/staff/add_partner']
+        menubar_items_name = ['About', 'Client Form', 'Membership', 'Analytics', 'Expense', 'Employee', 'Contact US', 'Shop Reg', 'Add Partner']
+        var html = '';
+        for(i=0; i<hyper_reference_link.length; i++)
+        {
+            if(menubar_items_name[i] == active_menubar_item){
+                html = html + "<li><a class=\"active\" href=\"#\" >"+menubar_items_name[i]+"</a></li>";
+                console.log('active');
+                console.log(menubar_items_name[i]);
+            }
+            else{
+                html = html + "<li><a href=\'" + hyper_reference_link[i] + "\'>"+menubar_items_name[i]+"</a></li>";
+                console.log('inactive');
+                console.log(menubar_items_name[i]);
+            }
+        }
+        document.getElementById('menubar_items').innerHTML=html;
+    }
+</script>
+<body onload="set_menubar_items()">
+    <div class="menu-bar">
+        <ul>
+            <span id="menubar_items"></span>
+            <li><a href="#parlour">Select Parlour</a>
+                <div class="sub-menu">
+                    <ul>
+                        {% for shopobj in shop_details %}
+                            <li><a href="/staff/select_parlour/{{shopobj.ShopID}}">{{shopobj.ShopID}} {{shopobj.Shop_Name}}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </li>
+            {% include 'download.html' %}
+            <li>
+                <div>
+                    <form action="/useraccount/logout/" method="post">
+                        {% csrf_token %}
+                        <button type="submit">Logout</button>
+                    </form>
+                </div>
+            </li>
+        </ul>
+    </div>
+</body>

@@ -1,9 +1,10 @@
 from django.http import HttpResponse
-from customer.models import Membership, BharatPe, Paytm, client
+from customer.models import Membership, ClientVisit
 from staff.models import Expense, ShopRegistration, Employee
 from useraccount.models import OwnerRegistration
 import xlwt
-from datetime import datetime, timedelta
+from HOHDProductionMac.common_function import get_current_date_time
+
 
 def set_table_header(wb, sheet_name, table_header, font_style):
     # adding sheet
@@ -15,37 +16,23 @@ def set_table_header(wb, sheet_name, table_header, font_style):
     return ws
 
 
-def get_bharatpe_data(wb, row_num, date_format, font_style):
-    ws = set_table_header(wb, "bharatpe_data", ['date', 'ShopID', 'bardate', 'time', 'numberofclient', 'amount'], font_style)
-    bharatpes = BharatPe.objects.values('date', 'ShopID', 'bardate', 'time', 'numberofclient', 'amount')
+def get_online_data(wb, row_num, date_format, font_style):
+    ws = set_table_header(wb, "online_data", ['date', 'ShopID', 'bardate', 'time', 'numberofclient', 'amount'], font_style)
+    onlines = ClientVisit.objects.values('date', 'ShopID', 'bardate', 'time', 'numberofclient', 'amount').filter(payment_mode='online')
     
-    for bharatpe in bharatpes:
+    for online in onlines:
         row_num = row_num + 1
-        ws.write(row_num, 0, bharatpe['date'], date_format)
-        ws.write(row_num, 1, bharatpe['ShopID'], font_style)
-        ws.write(row_num, 2, bharatpe['bardate'], date_format)
-        ws.write(row_num, 3, bharatpe['time'], font_style)
-        ws.write(row_num, 4, bharatpe['numberofclient'], font_style)
-        ws.write(row_num, 5, bharatpe['amount'], font_style)
-
-
-def get_paytm_data(wb, row_num, date_format, font_style):
-    ws = set_table_header(wb, "paytm_data", ['date', 'ShopID', 'bardate', 'time', 'numberofclient', 'amount'], font_style)
-    paytms = Paytm.objects.values('date', 'ShopID', 'bardate', 'time', 'numberofclient', 'amount')
-    
-    for paytm in paytms:
-        row_num = row_num + 1
-        ws.write(row_num, 0, paytm['date'], date_format)
-        ws.write(row_num, 1, paytm['ShopID'], font_style)
-        ws.write(row_num, 2, paytm['bardate'], date_format)
-        ws.write(row_num, 3, paytm['time'], font_style)
-        ws.write(row_num, 4, paytm['numberofclient'], font_style)
-        ws.write(row_num, 5, paytm['amount'], font_style)
+        ws.write(row_num, 0, online['date'], date_format)
+        ws.write(row_num, 1, online['ShopID'], font_style)
+        ws.write(row_num, 2, online['bardate'], date_format)
+        ws.write(row_num, 3, online['time'], font_style)
+        ws.write(row_num, 4, online['numberofclient'], font_style)
+        ws.write(row_num, 5, online['amount'], font_style)
 
 
 def get_cash_data(wb, row_num, date_format, font_style):
     ws = set_table_header(wb, "cash_data", ['date', 'ShopID', 'bardate', 'time', 'numberofclient', 'amount'], font_style)
-    cashs = client.objects.values('date', 'ShopID', 'bardate', 'time', 'numberofclient', 'amount')
+    cashs = ClientVisit.objects.values('date', 'ShopID', 'bardate', 'time', 'numberofclient', 'amount').filter(payment_mode='cash')
     
     for cash in cashs:
         row_num = row_num + 1
@@ -137,14 +124,11 @@ def get_owner_registration_data(wb, row_num, font_style):
 def get_complete_database():
     print('Excel file is getting ready')
 
-    # current date and time
-    now = datetime.now() + timedelta(hours=5, minutes=30)
-
     # content-type of response
     response = HttpResponse(content_type='application/ms-excel')
 
     # decide file name
-    response['Content-Disposition'] = 'attachment; filename='+str(now.strftime("%d/%m/%Y %H:%M:%S"))+'-DB.xls'
+    response['Content-Disposition'] = 'attachment; filename='+str(get_current_date_time())+'-DB.xls'
     
     # creating workbook
     wb = xlwt.Workbook(encoding='utf-8')
@@ -163,8 +147,7 @@ def get_complete_database():
     date_format = xlwt.XFStyle()
     date_format.num_format_str = 'yyyy-mm-dd'
 
-    get_bharatpe_data(wb, row_num, date_format, font_style)
-    get_paytm_data(wb, row_num, date_format, font_style)
+    get_online_data(wb, row_num, date_format, font_style)
     get_cash_data(wb, row_num, date_format, font_style)
     get_membership_data(wb, row_num, date_format, font_style)
     get_expense_data(wb, row_num, date_format, font_style)

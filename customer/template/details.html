@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -6,6 +8,28 @@
     </head>
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/menubar.css' %}">
+    <script>
+        function validate_client(){
+            var client_id_or_contact_number = (document.getElementById('client_id').value).toUpperCase();
+            var all_membership_based_on_shop_id = {{membership_based_on_shop_id|safe}};
+            for(i=0; i < all_membership_based_on_shop_id.length; i++)
+            {
+                var membership_found = false;
+                if(client_id_or_contact_number == all_membership_based_on_shop_id[i].custID)
+                {
+                    document.getElementById('client_details').innerHTML = "<table ><tr><td>ID</td><td>"+all_membership_based_on_shop_id[i].custID+"</td</tr><tr><td>Name</td><td>"+all_membership_based_on_shop_id[i].Name+"</td></tr><tr><td>Date of Birth</td><td>"+all_membership_based_on_shop_id[i].DOB+"</td></tr><tr><td>Contact Number</td><td>"+all_membership_based_on_shop_id[i].Contact_Number+"</td></tr></table><br><br>";
+                    membership_found = true;
+                    break;
+                }
+            }
+            if(membership_found == false){
+                if(client_id_or_contact_number == "")
+                    document.getElementById('client_details').innerHTML = "Please Enter Membership ID";
+                else
+                    document.getElementById('client_details').innerHTML = "";
+            }
+        }
+    </script>
     <style>
 
     input[type=text], select, textarea {
@@ -43,7 +67,6 @@
     .myBox {
         border: none;
         padding: 5px;
-        <!--font: 24px/36px sans-serif;-->
         width:100px;
         height: 200px;
         overflow: scroll;
@@ -92,89 +115,49 @@
                 {% endfor %}
             </script>
         {% endif %}
-        <div class="menu-bar">
-            <ul>
-                <li><a href="/staff/aboutus/">About</a></li>
-                <li><a class="active" href="#client">Client Form</a></li>
-                <li><a href="/client/membership">Membership</a></li>
-                <li><a href="/staff/analysis/">Analytics</a></li>
-                <li><a href="/staff/expense/">Expense</a></li>
-                <li><a href="/staff/employee">Employee</a></li>
-                <li><a href="#contact">Contact US</a></li>
-                <li><a href="/staff/shopreg">Shop Reg</a></li>
-                <li><a href="/staff/add_partner">Add Partner</a></li>
-                <li><a href="#parlour">Select Parlour</a>
-                    <div class="sub-menu">
-                        <ul>
-                            {% for shopobj in shop_details %}
-                                <li><a href="/staff/selectparlour/{{shopobj.ShopID}}">{{shopobj.ShopID}} {{shopobj.Shop_Name}}</a></li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </li>
-                <li><a href="#download">Download</a>
-                    <div class="sub-menu">
-                        <ul>
-                            <li><a href="#Expense">Expense</a>
-                                <div class="sub-sub-menu">
-                                    <ul>
-                                        <li><a href="/staff/download/expense/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
-                                        <li><a href="/staff/download/expense/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
-                                        <li><a href="/staff/download/expense/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
-                                        <li><a href="/staff/download/expense/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
-                                    </ul>
-                                </div>
-                            </li>
-                            <li><a href="#Analysis">Analysis</a>
-                                <div class="sub-sub-menu">
-                                    <ul>
-                                        <li><a href="/staff/download/analysis_render/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
-                                        <li><a href="/staff/download/analysis_render/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
-                                        <li><a href="/staff/download/analysis_render/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
-                                        <li><a href="/staff/download/analysis_render/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
-                                    </ul>
-                                </div>
-                            </li>
-                            <li><a href="#Customer Data">Customer Data</a>
-                                <div class="sub-sub-menu">
-                                    <ul>
-                                        <li><a href="/staff/download/analysis_excel/{{month_list.3}}/{{year_list.3}}">{{month_name.3}}</a></li>
-                                        <li><a href="/staff/download/analysis_excel/{{month_list.2}}/{{year_list.2}}">{{month_name.2}}</a></li>
-                                        <li><a href="/staff/download/analysis_excel/{{month_list.1}}/{{year_list.1}}">{{month_name.1}}</a></li>
-                                        <li><a href="/staff/download/analysis_excel/{{month_list.0}}/{{year_list.0}}">{{month_name.0}}</a></li>
-                                    </ul>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
-                <li>
-                    <div>
-                        <form action="/useraccount/logout/" method="post">
-                            {% csrf_token %}
-                            <button type="submit">Logout</button>
-                        </form>
-                    </div>
-                </li>
-            </ul>
-        </div>
-        {{month}}
+        {% include 'menubar.html' with active_menubar_item="Client Form" %}
         <form method="post" action="/client/details/">
-        <h1>Client Data</h1>
+        <h1>Membership Client</h1>
         <div id = "boxes">
             {% csrf_token %}
-            <div id="leftleftbox"></div>
             <div id = "leftrightbox">
+                <label for="mem_date">Date</label>
+                <input type="date" id="mem_date" name="mem_date" ><br>
+                <label for="client_id">Membership ID</label>
+                <input onmouseleave="validate_client()" type="text" id="client_id" name="client_id">
+                <span id="client_details"></span><br>
+                <label for="mem_paymentmode">Payment Mode</label>
+                <select id="mem_paymentmode" name="mem_paymentmode">
+                    <option value="online">Online</option>
+                    <option value="cash">cash</option>
+                </select>
+                <label for="mem_selectemployee">Employee</label>
+                <select id="mem_EmployeeID" name="mem_EmployeeID">
+                    <option value="None">None</option>
+                    {% for employee in employees %}
+                        <option value="{{employee.EmployeeID}}">{{employee.name}}</option>
+                    {% endfor %}
+                </select>
+                <label for="mem_amount">Amount</label>
+                <input type="text" id="mem_amount" name="mem_amount" placeholder="Enter Amount..">
+                <input type="submit" id="mem_submit_button" value="Submit">
+            </div>
+        </div>
+        <div id = "rightbox">
+            <form method="post" action="/client/details/">
+            <h1>Non-Membership Client/Bulk Data</h1>
+            <div id = "boxes">
+                {% csrf_token %}
                 <label for="date">Date</label>
                 <input type="date" id="date" name="date" ><br>
                 <label for="paymentmode">Payment Mode</label>
                 <select id="paymentmode" name="paymentmode">
-                    <option value="Bharatpe">Bharatpe</option>
-                    <option value="Paytm">Paytm</option>
-                    <option value="Cash">Cash</option>
+                    <option value="online">Online</option>
+                    <option value="cash">cash</option>
                 </select>
                 <label for="selectemployee">Employee</label>
                 <select id="EmployeeID" name="EmployeeID">
+                    <option value="None">None</option>
                     {% for employee in employees %}
                         <option value="{{employee.EmployeeID}}">{{employee.name}}</option>
                     {% endfor %}
@@ -185,16 +168,7 @@
                 <input type="text" id="amount" name="amount" placeholder="Enter Amount..">
                 <input type="submit" value="Submit">
             </div>
-            <!--<div id = "middleleftbox">-->
-                <!--{% csrf_token %}-->
-            <!--</div>-->
-            <!--<div id = "middlerightbox" class="myBox">-->
-
-            <!--</div>-->
-            <!--<div id = "rightbox">-->
-                <!--<img src="{% static 'customer/images/hoh.jpg' %}">-->
-            <!--</div>-->
-        </div><br>
-        </form>
+            </form>
+        </div>
     </body>
 </html>

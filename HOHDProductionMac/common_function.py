@@ -1,15 +1,29 @@
 from django.contrib import messages
-import datetime
+from datetime import datetime, timedelta
 from useraccount.models import OwnerRegistration
 from staff.models import ShopRegistration
 
+
+def get_current_time():
+    # current date and time
+    return (datetime.now() + timedelta(hours=5, minutes=30)).strftime("%H:%M:%S")
+
+
+def get_current_date():
+    return datetime.now().strftime("%d/%m/%Y")
+
+
+def get_current_date_time():
+    return str(get_current_date())+" "+str(get_current_time())
+
+
 def get_month_year_month_name_for_download():
-    now = datetime.datetime.now()
-    month_year_month_name = []
-    month_list = []
+    now = datetime.now()
+    month_year_month_name = {}
+    month_index = []
     year_list = []
     month_name = []
-    number_to_month_name = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov',
+    index_to_month_name = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov',
                             'Dec']
     current_month = now.month
     current_year = now.year
@@ -17,13 +31,13 @@ def get_month_year_month_name_for_download():
         if current_month == 0:
             current_month = 12
             current_year = current_year - 1
-        month_list.append(current_month)
-        month_name.append(number_to_month_name[current_month - 1])
+        month_index.append(current_month)
+        month_name.append(index_to_month_name[current_month - 1])
         year_list.append(current_year)
         current_month = current_month - 1
-    month_year_month_name.append(month_list)
-    month_year_month_name.append(month_name)
-    month_year_month_name.append(year_list)
+    month_year_month_name['month_index'] = month_index
+    month_year_month_name['month_name'] = month_name
+    month_year_month_name['year_list'] = year_list
     return month_year_month_name
 
 

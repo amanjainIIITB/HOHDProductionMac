@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Welcome</title>
+    </head>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/menubar.css' %}">
+    <script>
+        function onload_behaviour(){
+            set_menubar_items();
+            setDate();
+        }
+        function validate_client(){
+            var client_id_or_contact_number = (document.getElementById('custID').value).toUpperCase();
+            var all_membership_based_on_shop_id = {{membership_based_on_shop_id|safe}};
+            for(i=0; i < all_membership_based_on_shop_id.length; i++)
+            {
+                var membership_found = false;
+                if(client_id_or_contact_number == all_membership_based_on_shop_id[i].custID)
+                {
+                    document.getElementById('client_details').innerHTML = "<table ><tr><td>ID</td><td>"+all_membership_based_on_shop_id[i].custID+"</td</tr><tr><td>Name</td><td>"+all_membership_based_on_shop_id[i].Name+"</td></tr><tr><td>Date of Birth</td><td>"+all_membership_based_on_shop_id[i].DOB+"</td></tr><tr><td>Contact Number</td><td>"+all_membership_based_on_shop_id[i].Contact_Number+"</td></tr></table><br><br>";
+                    document.getElementById("submit_button").disabled = false;
+                    membership_found = true;
+                    break;
+                }
+            }
+            if(membership_found == false){
+                document.getElementById('client_details').innerHTML = "Entered Membership ID not found in the system ";
+                document.getElementById("submit_button").disabled = true;
+            }
+        }
+
+        function setDate(){
+            console.log("Hello");
+            var d = new Date("{{client_data.date}}");
+            console.log(d);
+            var day = d.getDate();
+            if(day<=9)
+                day = '0'+day;
+            var month = d.getMonth()+1;
+            if(month<=9)
+                month = '0'+month;
+            console.log();
+            document.getElementById("date").value = d.getFullYear()+"-"+month+"-"+day;
+        }
+    </script>
+    <style>
+
+    input[type=text], select, textarea {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    input[type=submit] {
+        width: 80%;
+        background-color: #4CAF50;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    input[type=submit]:hover {
+        background-color: #45a049;
+    }
+
+    input.largerCheckbox
+    {
+        width:18px;
+        height:18px;
+    }
+
+    /* Box styles */
+    .myBox {
+        border: none;
+        padding: 5px;
+        width:100px;
+        height: 200px;
+        overflow: scroll;
+    }
+
+    #leftleftbox {
+        float:left;
+        width:4%;
+        height:360px;
+    }
+    #leftrightbox {
+        float:left;
+        width:20%;
+        height:360px;
+        background:#ffcccb;
+    }
+    #middleleftbox{
+        float:left;
+        background:#ffcccb;
+        width:20%;
+        height:360px;
+    }
+    #middlerightbox{
+        float:left;
+        background:grey;
+        width:20%;
+        height:350px;
+    }
+    #rightbox{
+        float:right;
+        width:30%;
+        height:430px;
+    }
+
+    #submit{
+        text-align:center;
+    }
+
+    </style>
+    <body style="background-color: pink;" onload="onload_behaviour()">
+
+        {% if messages %}
+            <script>
+                {% for message in messages %}
+                    alert("{{ message }}");
+                {% endfor %}
+            </script>
+        {% endif %}
+        {% include 'menubar.html' with active_menubar_item="NA" %}
+        <form method="post" action="/client/update_mem_client_visit/{{client_data.visitID}}/">
+        <h1>Membership Client</h1>
+        <div id = "boxes">
+            {% csrf_token %}
+            <div id = "leftrightbox">
+                <label for="date">Date</label>
+                <input type="date" id="date" name="date" value="{{client_data.date}}"><br>
+                <label for="custID">Membership ID</label>
+                <input onmouseleave="validate_client()" type="text" id="custID" name="custID" value="{{client_data.custID}}">
+                <span id="client_details"></span><br>
+                <label for="payment_mode">Payment Mode</label>
+                <select id="payment_mode" name="payment_mode">
+                    {% if client_data.payment_mode == "online" %}
+                        <option value="online" selected>Online</option>
+                        <option value="cash">cash</option>
+                    {% elif client_data.payment_mode == "cash" %}
+                        <option value="online">Online</option>
+                        <option value="cash" selected>cash</option>
+                    {% endif %}
+                </select>
+                <label for="selectemployee">Employee</label>
+                <select id="EmployeeID" name="EmployeeID" value="{{client_data.employee}}">
+                    <option value="None">None</option>
+                    {% for employee in employees %}
+                        {% if client_data.employee == employee.EmployeeID %}
+                            <option value="{{employee.EmployeeID}}" selected>{{employee.name}}</option>
+                        {% else %}
+                            <option value="{{employee.EmployeeID}}">{{employee.name}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                <label for="amount">Amount</label>
+                <input type="text" id="amount" name="amount" placeholder="Enter Amount.." value="{{client_data.amount}}">
+                <input type="submit" id="submit_button" value="Submit">
+            </div>
+        </div>
+        <div id = "rightbox">
+        </div>
+    </body>
+</html>

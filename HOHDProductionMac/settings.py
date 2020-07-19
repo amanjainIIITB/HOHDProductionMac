@@ -59,7 +59,7 @@ ROOT_URLCONF = 'HOHDProductionMac.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['customer/template', 'staff/template', 'useraccount/template', 'adminPanel/template'],
+        'DIRS': ['customer/template', 'staff/template', 'useraccount/template', 'adminPanel/template', 'HOHDProductionMac/template'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

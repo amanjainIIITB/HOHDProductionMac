@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^download/(?P<download_type>[\w\-]+)/(?P<month>[\w\-]+)/(?P<year>[\w\-]+)/$', views.download, name='download'),
     url(r'^expense/$', views.expense, name='expense'),
     url(r'^update_expense/(?P<expense_id>[\w\-]+)/$', views.update_expense, name='update_expense'),
+    url(r'^delete_expense/(?P<expense_id>[\w\-]+)/$', views.delete_expense, name='delete_expense'),
     url(r'^employee/$', views.employee, name='employee'),
     url(r'^update_employee/(?P<employee_id>[\w\-]+)/$', views.update_employee, name='update_employee'),
     url(r'^delete_employee/(?P<employee_id>[\w\-]+)/$', views.delete_employee, name='delete_employee'),
@@ -18,5 +19,5 @@ urlpatterns = [
     url(r'^aboutus/$', views.aboutus, name='aboutus'),
     url(r'^shopreg/$', views.shopreg, name='shopreg'),
     url(r'^add_partner/$', views.add_partner, name='add_partner'),
-    url(r'^selectparlour/(?P<shop_id>[\w\-]+)/$', views.selectparlour, name='selectparlour'),
+    url(r'^select_parlour/(?P<shop_id>[\w\-]+)/$', views.select_parlour, name='select_parlour'),
 ]

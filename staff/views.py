@@ -30,7 +30,8 @@ def employee(request):
                 temporary_address=request.POST.get('temporary_address'), permanent_address=request.POST.get('permanent_address')).save()
         messages.success(request, 'Added successfully', extra_tags='alert')
     employees = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'age', 'sex', 'date_of_joining', 'DOB', 'temporary_address', 'permanent_address').filter(ShopID=request.session['shop_id'])
-    return render(request, 'employee.html', {'employees': employees})
+    return render(request, 'employee.html', {"month_year_month_name": get_month_year_month_name_for_download(),
+                                            'employees': employees})
 
 
 def update_employee(request, employee_id):
@@ -45,7 +46,8 @@ def update_employee(request, employee_id):
     else:
         employee = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'age', 'sex', 'date_of_joining', 'DOB', 'temporary_address', 'permanent_address'). \
             filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).last()
-    return render(request, 'update_employee.html', {'employee': employee})
+    return render(request, 'update_employee.html', {"month_year_month_name": get_month_year_month_name_for_download(),
+                                                    'employee': employee})
 
 
 def delete_employee(request, employee_id):
@@ -78,30 +80,51 @@ def update_expense(request, expense_id):
             filter(shopID=request.session['shop_id'], ExpenseID=expense_id).last()
         if expense['purpose'] == 'Amount Given':
             expense['amount'] = int(expense['amount']) * -1
-        return render(request, 'update_expense.html', {'ExpenseID': expense['ExpenseID'],
-                                                           'date': expense['date'],
-                                                           'purpose': expense['purpose'],
-                                                           'paymentmode': expense['paymentmode'],
-                                                           'comment': expense['comment'],
-                                                           'amount': expense['amount']})
+        return render(request, 'update_expense.html', { "month_year_month_name": get_month_year_month_name_for_download(),
+                                                        'ExpenseID': expense['ExpenseID'],
+                                                        'date': expense['date'],
+                                                        'purpose': expense['purpose'],
+                                                        'paymentmode': expense['paymentmode'],
+                                                        'comment': expense['comment'],
+                                                        'amount': expense['amount']})
+
+def delete_expense(request, expense_id):
+    Expense.objects.filter(shopID=request.session['shop_id'], ExpenseID=expense_id).delete()
+    messages.success(request, 'Deleted successfully', extra_tags='alert')
+    return redirect('/staff/expense/')
 
 
 def add_expense(request):
     if request.method == "POST":
-        expense = Expense()
-        expense.ExpenseID = get_new_expense_id(request)
-        expense.paymentmode = request.POST.get('paymentmode')
-        expense.shopID = request.session['shop_id']
-        expense.date = request.POST.get('date')
-        expense.comment = request.POST.get('comment')
-        expense.purpose = request.POST.get('purpose')
-        if expense.purpose == 'Amount Received':
+        if request.POST.get('purpose') == 'Amount Received':
             expense.amount = int(request.POST.get('amount'))
         else:
             expense.amount = int(request.POST.get('amount')) * -1
-        expense.save()
+        Expense(ExpenseID=get_new_expense_id(request), paymentmode=request.POST.get('paymentmode'), shopID=request.session['shop_id'], date=request.POST.get('date'), 
+                comment=request.POST.get('comment'), purpose=request.POST.get('purpose'), amount=expense.amount).save()
         messages.success(request, 'Added successfully', extra_tags='alert')
     return redirect('/staff/expense/')
+
+
+@login_required(login_url="/useraccount/login/")
+def expense(request):
+    if not atleast_one_shop_registered(request):
+        return redirect('/staff/shopreg/')
+    now = datetime.datetime.now()
+    # put the ip address or dns of your apic-em controller in this url
+    expense_url = 'http://localhost:8000/staff/getExpense/'
+    payload = {"month": now.month, "year": now.year, "shop_id": request.session['shop_id']}
+
+    # Content type must be included in the header
+    header = {"content-type": "application/json"}
+    # Performs a POST on the specified url to get the response
+    response = requests.post(expense_url, data=json.dumps(payload), headers=header, verify=False)
+    # convert response to json format
+    r_json = response.json()
+    r_json['month'] = now.month
+    r_json['year'] = now.year
+    r_json['shop_details'] = get_login_user_shop_details(request)
+    return render(request, 'expense.html', r_json)
 
 
 @login_required(login_url="/useraccount/login/")
@@ -128,28 +151,7 @@ def analysis(request):
     return render(request, 'analysis.html', r_json)
 
 
-@login_required(login_url="/useraccount/login/")
-def expense(request):
-    if not atleast_one_shop_registered(request):
-        return redirect('/staff/shopreg/')
-    now = datetime.datetime.now()
-    # put the ip address or dns of your apic-em controller in this url
-    expense_url = 'http://localhost:8000/staff/getExpense/'
-    payload = {"month": now.month, "year": now.year, "shop_id": request.session['shop_id']}
-
-    # Content type must be included in the header
-    header = {"content-type": "application/json"}
-    # Performs a POST on the specified url to get the response
-    response = requests.post(expense_url, data=json.dumps(payload), headers=header, verify=False)
-    # convert response to json format
-    r_json = response.json()
-    r_json['month'] = now.month
-    r_json['year'] = now.year
-    r_json['shop_details'] = get_login_user_shop_details(request)
-    return render(request, 'expense.html', r_json)
-
-
-def amount(date, datewisedata):
+def total_amount_of_the_day(date, datewisedata):
     i = 0
     flag = False
     while i < len(datewisedata):
@@ -160,7 +162,7 @@ def amount(date, datewisedata):
         return 0
 
 
-def numberofcustomer(date, datewisedata):
+def total_numberofcustomer_of_the_day(date, datewisedata):
     i = 0
     flag = False
     while i < len(datewisedata):
@@ -174,11 +176,11 @@ def numberofcustomer(date, datewisedata):
 def aboutus(request):
     month_year_month_name = get_month_year_month_name_for_download()
     return render(request, 'aboutus.html',
-                  {"month_list": month_year_month_name[0], "year_list": month_year_month_name[2],
-                   "month_name": month_year_month_name[1], "shop_details": get_login_user_shop_details(request)})
+                  {"month_year_month_name": get_month_year_month_name_for_download(),
+                  "shop_details": get_login_user_shop_details(request)})
 
 
-def gererate_customer_data_in_excel(month, year, r_json):
+def gererate_all_customer_data_for_a_month_in_excel(month, year, r_json):
     print('Excel file is getting ready')
     # content-type of response
     response = HttpResponse(content_type='application/ms-excel')
@@ -216,19 +218,18 @@ def gererate_customer_data_in_excel(month, year, r_json):
     for date in r_json['listOfDates']:
         row_num = row_num + 1
         ws.write(row_num, 0, date, font_style)
-        ws.write(row_num, 1, amount(date, r_json['dayWiseBharatpeOfTheMonth']), font_style)
-        ws.write(row_num, 2, numberofcustomer(date, r_json['dayWiseBharatpeOfTheMonth']), font_style)
-        ws.write(row_num, 3, amount(date, r_json['dayWisePaytmOfTheMonth']), font_style)
-        ws.write(row_num, 4, numberofcustomer(date, r_json['dayWisePaytmOfTheMonth']), font_style)
-        ws.write(row_num, 5, amount(date, r_json['dayWiseCashOfTheMonth']), font_style)
-        ws.write(row_num, 6, numberofcustomer(date, r_json['dayWiseCashOfTheMonth']), font_style)
-        ws.write(row_num, 7, int(amount(date, r_json['dayWiseBharatpeOfTheMonth'])) + int(
-            amount(date, r_json['dayWisePaytmOfTheMonth'])) + int(amount(date, r_json['dayWiseCashOfTheMonth'])),
+        ws.write(row_num, 1, total_amount_of_the_day(date, r_json['dayWiseBharatpeOfTheMonth']), font_style)
+        ws.write(row_num, 2, total_numberofcustomer_of_the_day(date, r_json['dayWiseBharatpeOfTheMonth']), font_style)
+        ws.write(row_num, 3, total_amount_of_the_day(date, r_json['dayWisePaytmOfTheMonth']), font_style)
+        ws.write(row_num, 4, total_numberofcustomer_of_the_day(date, r_json['dayWisePaytmOfTheMonth']), font_style)
+        ws.write(row_num, 5, total_amount_of_the_day(date, r_json['dayWiseCashOfTheMonth']), font_style)
+        ws.write(row_num, 6, total_numberofcustomer_of_the_day(date, r_json['dayWiseCashOfTheMonth']), font_style)
+        ws.write(row_num, 7, int(total_amount_of_the_day(date, r_json['dayWiseBharatpeOfTheMonth'])) + int(
+            total_amount_of_the_day(date, r_json['dayWisePaytmOfTheMonth'])) + int(total_amount_of_the_day(date, r_json['dayWiseCashOfTheMonth'])),
                  font_style)
-        ws.write(row_num, 8, int(numberofcustomer(date, r_json['dayWiseBharatpeOfTheMonth'])) + int(
-            numberofcustomer(date, r_json['dayWisePaytmOfTheMonth'])) + int(
-            numberofcustomer(date, r_json['dayWiseCashOfTheMonth'])), font_style)
-
+        ws.write(row_num, 8, int(total_numberofcustomer_of_the_day(date, r_json['dayWiseBharatpeOfTheMonth'])) + int(
+            total_numberofcustomer_of_the_day(date, r_json['dayWisePaytmOfTheMonth'])) + int(
+            total_numberofcustomer_of_the_day(date, r_json['dayWiseCashOfTheMonth'])), font_style)
     wb.save(response)
     return response
 
@@ -259,7 +260,7 @@ def download(request, download_type, month, year):
         pdf = render_to_pdf('expense.html', r_json)
         return HttpResponse(pdf, content_type='application/pdf')
     elif download_type == 'analysis_excel':
-        return gererate_customer_data_in_excel(month, year, r_json)
+        return gererate_all_customer_data_for_a_month_in_excel(month, year, r_json)
 
 
 def add_shop_id_in_login_user(request, shop_id):
@@ -267,10 +268,26 @@ def add_shop_id_in_login_user(request, shop_id):
         filter(user=str(request.user.id)).first()
     owner_object = OwnerRegistration.objects.get(ownerID=owner_object_values['ownerID'])
     if owner_object_values['shop_list'] == 'None':
+        # if it is first parlour
         owner_object.shop_list = shop_id
     else:
+        # if user has already at least one parlour
         owner_object.shop_list = owner_object_values['shop_list'] + ',' + shop_id
     owner_object.save()
+
+
+def add_shop_id_in_entered_user(request, entered_user_name, list_of_shop_id):
+    users = OwnerRegistration.objects.values('shop_list').filter(username=entered_user_name).first()
+    shops = ""
+    if users['shop_list'] != 'None':
+        shops = users['shop_list']
+        for shop_id in list_of_shop_id:
+            shops = shops + "," + str(shop_id)
+    else:
+        shops = list_of_shop_id[0]
+        for shop_index in range(1, len(list_of_shop_id)):
+            shops = shops + "," + str(list_of_shop_id[shop_index])
+    OwnerRegistration.objects.values('shop_list').filter(username=entered_user_name).update(shop_list=shops)
 
 
 def get_new_shop_id(request):
@@ -294,16 +311,14 @@ def shopreg(request):
         add_shop_id_in_login_user(request, shopRegistration.ShopID)
         shopRegistration.save()
         if len(get_list_of_login_user_shops(request)) == 1:
+            # check if it is first parlour to be registered then set it as the default parlour
             set_session(request, 'S' + str(new_shop_id))
         messages.success(request, 'Added successfully', extra_tags='alert')
-    month_year_month_name = get_month_year_month_name_for_download()
-    return render(request, 'shop_registration.html', {"month_list": month_year_month_name[0],
-                                                      "year_list": month_year_month_name[2],
-                                                      "month_name": month_year_month_name[1],
+    return render(request, 'shop_registration.html', {"month_year_month_name": get_month_year_month_name_for_download(),
                                                       "shop_details": get_login_user_shop_details(request)})
 
 
-def get_all_users(request):
+def get_all_owners(request):
     users = OwnerRegistration.objects.all()
     list_users = []
     for userobj in users:
@@ -313,21 +328,7 @@ def get_all_users(request):
     return list_users
 
 
-def add_shop_id_in_entered_user(request, entered_user_name, list_of_shop_id):
-    users = OwnerRegistration.objects.values('shop_list').filter(username=entered_user_name).first()
-    shops = ""
-    if users['shop_list'] != 'None':
-        shops = users['shop_list']
-        for shop_id in list_of_shop_id:
-            shops = shops + "," + str(shop_id)
-    else:
-        shops = list_of_shop_id[0]
-        for shop_index in range(1, len(list_of_shop_id)):
-            shops = shops + "," + str(list_of_shop_id[shop_index])
-    OwnerRegistration.objects.values('shop_list').filter(username=entered_user_name).update(shop_list=shops)
-
-
-def selectparlour(request, shop_id):
+def select_parlour(request, shop_id):
     set_session(request, shop_id)
     return redirect('/staff/aboutus/')
 
@@ -358,10 +359,7 @@ def add_partner(request):
             add_shop_id_in_entered_user(request, entered_user_name, list_of_shop_id)
             add_owner_id_in_shop_registration_for_entered_user(request, entered_user_name, list_of_shop_id)
             messages.success(request, 'Selected Parlour Added successfully', extra_tags='alert')
-    month_year_month_name = get_month_year_month_name_for_download()
-    return render(request, 'add_partner.html', {"month_list": month_year_month_name[0],
-                                                "year_list": month_year_month_name[2],
-                                                "month_name": month_year_month_name[1],
+    return render(request, 'add_partner.html', {"month_year_month_name": get_month_year_month_name_for_download(),
                                                 "shop_details": get_login_user_shop_details(request),
-                                                "list_users": get_all_users(request),
+                                                "list_users": get_all_owners(request),
                                                 "login_username": request.user.get_username()})

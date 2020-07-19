@@ -44,7 +44,6 @@ class ExpenseReport(APIView):
         year = request.data['year']
         total_online_amount_of_the_month = get_total_online_amount_of_the_month(request.data['shop_id'], month, year)
         total_cash_amount_of_the_month = get_total_cash_amount_of_the_month(request.data['shop_id'], month, year)
-        month_year_month_name = get_month_year_month_name_for_download()
         return Response({
                          'expense': expense_of_the_month(request.data['shop_id'], month, year),
                          'remaining_balance': profit_of_the_month(request.data['shop_id'], month, year,
@@ -53,5 +52,4 @@ class ExpenseReport(APIView):
                          'total_online_amount_of_the_Month': total_online_amount_of_the_month,
                          'total_cash_amount_of_the_month': total_cash_amount_of_the_month,
                          'revenue': total_online_amount_of_the_month + total_cash_amount_of_the_month,
-                         "month_list": month_year_month_name[0], "year_list": month_year_month_name[2],
-                         "month_name": month_year_month_name[1]})
+                         "month_year_month_name": get_month_year_month_name_for_download()})
