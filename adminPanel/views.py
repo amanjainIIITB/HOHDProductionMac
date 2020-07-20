@@ -1,8 +1,14 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from staff.models import ShopRegistration
 from customer.views import get_all_membership
 from messageManagement.views import send_message_to_all_shop_all_owner, send_message_to_all_shop_all_client, send_message_to_particular_shop_all_owner, send_message_to_particular_shop_all_client, send_message_to_particular_shop_specific_client
 from .data_export import get_complete_database
+
+# Import smtplib for the actual sending function
+import smtplib
+
+# Import the email modules we'll need
+from email.message import EmailMessage
 
 def send(request):
     if request.method == 'POST':
@@ -46,6 +52,35 @@ def send(request):
 
 def exportDB(request):
     return get_complete_database()
+
+
+def send_email(sender, sender_password, receiver):
+    message_greeting = 'Hello '+str(receiver)+','
+    message_body='Another testing mail, Please find the statistics Below for the Registered Parlour'
+    message_closing = 'Yours truely,\nHouse of Handsomes and Divas'
+
+    # Create a text/plain message
+    msg = EmailMessage()
+    msg.set_content(message_greeting+'\n\n'+message_body+'\n\n'+message_closing)
+    msg['Subject'] = 'HOHD Testing Mail'
+    msg['From'] = sender
+    msg['To'] = receiver
+
+    # Send the message via our own SMTP server.
+    s = smtplib.SMTP('smtp.gmail.com', 587)
+    s.starttls()
+    s.login(sender, sender_password)
+    s.send_message(msg)
+    s.quit()
+
+
+def email(request):
+    sender='houseofhandsomes@gmail.com'
+    sender_password = 'hohrockx@123'
+    receivers = ['amanjain2016@gmail.com', 'jain2jain10@gmail.com']
+    for receiver in receivers:
+        send_email(sender, sender_password, receiver)
+    return redirect('/message/send/')
 
 
 # def send_sms():
