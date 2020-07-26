@@ -1,29 +1,50 @@
-<script>
-    function set_menubar_items(){
-        var active_menubar_item = "{{active_menubar_item}}";
-        hyper_reference_link = ['/staff/aboutus/', '/client/details/', '/client/membership', '/staff/analysis/', '/staff/expense/', '/staff/employee', '#contact', '/staff/shopreg', '/staff/add_partner']
-        menubar_items_name = ['About', 'Client Form', 'Membership', 'Analytics', 'Expense', 'Employee', 'Contact US', 'Shop Reg', 'Add Partner']
-        var html = '';
-        for(i=0; i<hyper_reference_link.length; i++)
-        {
-            if(menubar_items_name[i] == active_menubar_item){
-                html = html + "<li><a class=\"active\" href=\"#\" >"+menubar_items_name[i]+"</a></li>";
-                console.log('active');
-                console.log(menubar_items_name[i]);
-            }
-            else{
-                html = html + "<li><a href=\'" + hyper_reference_link[i] + "\'>"+menubar_items_name[i]+"</a></li>";
-                console.log('inactive');
-                console.log(menubar_items_name[i]);
-            }
-        }
-        document.getElementById('menubar_items').innerHTML=html;
-    }
-</script>
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/menubar.css' %}">
 <body onload="set_menubar_items()">
     <div class="menu-bar">
         <ul>
-            <span id="menubar_items"></span>
+            {% if active_menubar_item == "About" %}
+                <li><a class="active" href="#">About</a></li>
+            {% else %}
+                <li><a href="/staff/aboutus/">About</a></li>
+            {% endif %}
+            {% if active_menubar_item == "Client Form" %}
+                <li><a class="active" href="#">Client Form</a></li>
+            {% else %}
+                <li><a href="/client/details/">Client Form</a></li>
+            {% endif %}
+            {% if active_menubar_item == "Membership" %}
+                <li><a class="active" href="#">Membership</a></li>
+            {% else %}
+                <li><a href="/client/membership">Membership</a></li>
+            {% endif %}
+            {% if active_menubar_item == "Analytics" %}
+                <li><a class="active" href="#">Analytics</a></li>
+            {% else %}
+                <li><a href="/staff/analysis/">Analytics</a></li>
+            {% endif %}
+            {% if active_menubar_item == "Expense" %}
+                <li><a class="active" href="#">Expense</a></li>
+            {% else %}
+                <li><a href="/staff/expense/">Expense</a></li>
+            {% endif %}
+            {% if active_menubar_item == "Employee" %}
+                <li><a class="active" href="#">Employee</a></li>
+            {% else %}
+                <li><a href="/staff/employee">Employee</a></li>
+            {% endif %}
+                <li><a href="#contact">Contact US</a></li>
+            {% if active_menubar_item == "Shop Reg" %}
+                <li><a class="active" href="#">Shop Reg</a></li>
+            {% else %}
+                <li><a href="/staff/shopreg">Shop Reg</a></li>
+            {% endif %}
+            {% if active_menubar_item == "Add Partner" %}
+                <li><a class="active" href="#">Add Partner</a></li>
+            {% else %}
+                <li><a href="/staff/add_partner">Add Partner</a></li>
+            {% endif %}
+            <!-- <span id="menubar_items"></span> -->
             <li><a href="#parlour">Select Parlour</a>
                 <div class="sub-menu">
                     <ul>

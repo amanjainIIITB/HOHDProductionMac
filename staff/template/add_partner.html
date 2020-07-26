@@ -98,8 +98,6 @@
         }
         function onload_behaviour()
         {
-            set_menubar_items();
-            
             // Disable the tile
             document.getElementById('shop_list').innerHTML = "";
 
@@ -112,7 +110,6 @@
         }
     </script>
     {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/menubar.css' %}">
     <style>
 
     input[type=text], select, textarea {

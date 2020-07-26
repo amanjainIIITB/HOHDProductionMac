@@ -22,8 +22,9 @@ class ShopRegistration(models.Model):
     Desk_Contact_Number = models.IntegerField(validators=[MinValueValidator(1000000000), MaxValueValidator(9999999999)],
                                               null=True)
     Shop_Name = models.CharField(max_length=50, null=True)
-    Shop_Address = models.CharField(max_length=200, null=True)
+    Shop_Address = models.TextField(max_length=1000, null=True)
     owner_list = models.TextField(null=True)
+    email = models.CharField(max_length=100, null=True)
 
     def __str__(self):
         return str(self.ShopID)
@@ -38,6 +39,7 @@ class Employee(models.Model):
     age = models.IntegerField(default=0)
     sex = models.CharField(max_length=10, null=True)
     date_of_joining = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
+    position = models.CharField(max_length=50, null=True)
     DOB = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
     temporary_address = models.TextField(max_length=1000, null=True)
     permanent_address = models.TextField(max_length=1000, null=True)

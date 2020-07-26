@@ -6,12 +6,18 @@ from django.db.models.utils import *
 import datetime
 import requests
 import json
+import os
 import xlwt
 from .render_html_to_pdf import render_to_pdf
 from .models import Expense, ShopRegistration, Employee
 from useraccount.models import OwnerRegistration
 from HOHDProductionMac.common_function import get_month_year_month_name_for_download, atleast_one_shop_registered, \
     get_login_user_shop_details, set_session, get_list_of_login_user_shops
+from fpdf import FPDF
+from django.core.files.storage import FileSystemStorage
+import cv2
+
+employee_id_path = 'staticfiles/images/employee_verification/'
 
 
 def get_new_employee_id(request):
@@ -22,16 +28,76 @@ def get_new_employee_id(request):
         new_emplyee_id = 'Emp' + str(int(str(last_employee_id['EmployeeID'])[3:]) + 1)
         return new_emplyee_id
 
+def get_employee_govt_id_name_based_on_shopId_employeeID(shop_id, employee_id):
+    for imagename in os.listdir(str(employee_id_path)+str(shop_id)):
+        print(imagename)
+        img = cv2.imread(str(employee_id_path)+str(shop_id)+'/'+imagename)
+        print('outside image')
+        if img is not None:
+            print('inside image')
+            existed_file_name, file_extension = os.path.splitext(imagename)
+            if existed_file_name == employee_id:
+                return imagename
+
+
+def handle_uploaded_file(file, shop_id, employee_id):  
+    if os.path.exists(str(employee_id_path)+str(shop_id)) == False:
+        os.mkdir(os.path.join(employee_id_path,shop_id))
+    if os.path.exists(str(employee_id_path)+str(shop_id)+'/'+str(get_employee_govt_id_name_based_on_shopId_employeeID(shop_id, employee_id))):
+        os.remove(str(employee_id_path)+str(shop_id)+'/'+str(get_employee_govt_id_name_based_on_shopId_employeeID(shop_id, employee_id)))
+    filename, file_extension = os.path.splitext(file.name)
+    fs = FileSystemStorage(location=os.path.join(employee_id_path,shop_id)) #defaults to   MEDIA_ROOT  
+    filename = fs.save(employee_id+file_extension, file)
+
+
+def download_employee_govt_id(request, employee_id):
+    shop_id = request.session['shop_id']
+    employee_govt_id_name = get_employee_govt_id_name_based_on_shopId_employeeID(shop_id, employee_id)
+    if os.path.exists(str(employee_id_path)+str(shop_id)+'/'+str(get_employee_govt_id_name_based_on_shopId_employeeID(shop_id, employee_id))):
+        response = HttpResponse(content_type='application/vnd.ms-excel')
+        filepath = str(employee_id_path)+str(shop_id)+'/'+str(get_employee_govt_id_name_based_on_shopId_employeeID(shop_id, employee_id))
+        with open((filepath), "rb") as image:
+            data = image.read()
+        response['Content-Disposition'] = 'attachment; filename="' + str(employee_govt_id_name) +'"'
+        response.write(data)
+        return response
+
+
+def get_current_shop_employees(shop_id):
+    if os.path.exists(str(employee_id_path)+str(shop_id)) == False:
+        os.mkdir(os.path.join(employee_id_path,shop_id))
+    images = {}
+    for imagename in os.listdir(str(employee_id_path)+str(shop_id)):
+        img = cv2.imread(str(employee_id_path)+str(shop_id)+'/'+imagename)
+        if img is not None:
+            existed_file_name, file_extension = os.path.splitext(imagename)
+            images[existed_file_name] = 'images/employee_verification/'+str(shop_id)+'/'+imagename
+    return images
+
 
 def employee(request):
     if request.method == "POST":
-        Employee(EmployeeID=get_new_employee_id(request), ShopID=request.session['shop_id'], name=request.POST.get('name'), contact_number=request.POST.get('contact_number'), 
+        employee_id=get_new_employee_id(request)
+        Employee(EmployeeID=employee_id, ShopID=request.session['shop_id'], name=request.POST.get('name'), contact_number=request.POST.get('contact_number'), 
                 age=request.POST.get('age'), sex=request.POST.get('sex'), date_of_joining=request.POST.get('date_of_joining'), DOB=request.POST.get('DOB'), 
-                temporary_address=request.POST.get('temporary_address'), permanent_address=request.POST.get('permanent_address')).save()
-        messages.success(request, 'Added successfully', extra_tags='alert')
-    employees = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'age', 'sex', 'date_of_joining', 'DOB', 'temporary_address', 'permanent_address').filter(ShopID=request.session['shop_id'])
+                position=request.POST.get('position'), temporary_address=request.POST.get('temporary_address'), permanent_address=request.POST.get('permanent_address')).save()
+        print(request)
+        handle_uploaded_file(request.FILES.get('employee_gov_id'), request.session['shop_id'], employee_id)  
+        filename, file_extension = os.path.splitext(request.FILES.get('employee_gov_id').name)
+        if file_extension not in ('jpg', 'jpeg', 'png'):
+            messages.success(request, 'Please provide the govt id in jpg, jpeg or png format only', extra_tags='alert')
+        else:
+            messages.success(request, 'Added successfully', extra_tags='alert')
+    employees = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'ShopID', 'age', 'sex', 'date_of_joining', 'position', 'DOB', 'temporary_address', 'permanent_address').filter(ShopID=request.session['shop_id'])
+    images = get_current_shop_employees(request.session['shop_id'])
+    for employee in employees:
+        if employee['EmployeeID'] in images.keys(): 
+            employee['govt_id'] = images[employee['EmployeeID']]
+        else:
+            employee['govt_id'] = 'images/not_found.png'
     return render(request, 'employee.html', {"month_year_month_name": get_month_year_month_name_for_download(),
-                                            'employees': employees})
+                                            'employees': employees,
+                                            "shop_details": get_login_user_shop_details(request)})
 
 
 def update_employee(request, employee_id):
@@ -39,21 +105,42 @@ def update_employee(request, employee_id):
         Employee.objects.filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).update(EmployeeID=employee_id, name=request.POST.get('name'),
                        contact_number=request.POST.get('contact_number'), age=request.POST.get('age'),
                        sex=request.POST.get('sex'), date_of_joining=request.POST.get('date_of_joining'), 
+                       position=request.POST.get('position'),
                        DOB=request.POST.get('DOB'), temporary_address=request.POST.get('temporary_address'), 
                        permanent_address=request.POST.get('permanent_address'))
-        messages.success(request, 'Updated successfully', extra_tags='alert')
+        if request.FILES.get('employee_gov_id')!=None:
+            filename, file_extension = os.path.splitext(request.FILES.get('employee_gov_id').name)
+            if file_extension not in ('.jpg', '.jpeg', '.png'):
+                messages.success(request, 'Please provide the govt id in jpg, jpeg or png format only', extra_tags='alert')
+            else:
+                handle_uploaded_file(request.FILES.get('employee_gov_id'), request.session['shop_id'], employee_id)  
+                messages.success(request, 'Updated successfully', extra_tags='alert')
+        else:
+            messages.success(request, 'Updated successfully', extra_tags='alert')
         return redirect('/staff/employee/')
     else:
-        employee = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'age', 'sex', 'date_of_joining', 'DOB', 'temporary_address', 'permanent_address'). \
+        employee = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'age', 'sex', 'date_of_joining', 'position', 'DOB', 'temporary_address', 'permanent_address'). \
             filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).last()
     return render(request, 'update_employee.html', {"month_year_month_name": get_month_year_month_name_for_download(),
-                                                    'employee': employee})
+                                                    'employee': employee,
+                                                    "shop_details": get_login_user_shop_details(request)})
 
 
 def delete_employee(request, employee_id):
     Employee.objects.filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).delete()
+    delete_existed_image(str(request.session['shop_id']+'_'+employee_id))
+    # delete_file(request.session['shop_id'], employee_id)
     messages.success(request, 'Deleted successfully', extra_tags='alert')
     return redirect('/staff/employee/')
+
+
+def download_appointment_letter(request, employee_id):
+    employee = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'age', 'sex', 'date_of_joining', 'position', 'DOB', 'temporary_address', 'permanent_address'). \
+            filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).last()
+    current_shop_details = ShopRegistration.objects.values('Shop_Name', 'Shop_Address', 'Desk_Contact_Number', 'email').filter(ShopID=request.session['shop_id']).first()
+    pdf = render_to_pdf('appointment_letter.html', {'employee': employee, 'current_shop_details': current_shop_details})
+    return HttpResponse(pdf, content_type='application/pdf')
+    # return render(request, 'appointment_letter.html')
 
 
 def get_new_expense_id(request):
@@ -86,7 +173,8 @@ def update_expense(request, expense_id):
                                                         'purpose': expense['purpose'],
                                                         'paymentmode': expense['paymentmode'],
                                                         'comment': expense['comment'],
-                                                        'amount': expense['amount']})
+                                                        'amount': expense['amount'],
+                                                        "shop_details": get_login_user_shop_details(request)})
 
 def delete_expense(request, expense_id):
     Expense.objects.filter(shopID=request.session['shop_id'], ExpenseID=expense_id).delete()
@@ -307,6 +395,7 @@ def shopreg(request):
         shopRegistration.Desk_Contact_Number = request.POST.get('Desk_Contact_Number')
         shopRegistration.Shop_Name = request.POST.get('Shop_Name')
         shopRegistration.Shop_Address = request.POST.get('Shop_Address')
+        shopRegistration.email = request.POST.get('email')
         shopRegistration.owner_list = OwnerRegistration.objects.values('ownerID').filter(user=str(request.user.id)).first()['ownerID']
         add_shop_id_in_login_user(request, shopRegistration.ShopID)
         shopRegistration.save()

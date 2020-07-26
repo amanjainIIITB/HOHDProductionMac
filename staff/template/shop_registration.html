@@ -5,7 +5,6 @@
         <title>Welcome</title>
     </head>
     {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/menubar.css' %}">
     <style>
 
     input[type=text], select, textarea {
@@ -104,7 +103,9 @@
                 <label for="Desk_Contact_Number">Desk Contact Number</label>
                 <input type="text" id="Desk_Contact_Number" name="Desk_Contact_Number" ><br>
                 <label for="Shop_Address">Shop Address</label>
-                <input type="text" id="Shop_Address" name="Shop_Address" ><br>
+                <textarea id="Shop_Address" name="Shop_Address" ></textarea><br>
+                <label for="email">Email</label>
+                <input type="text" id="email" name="email" ><br>
                 <input type="submit" value="Submit">
             </div>
             <!--<div id = "middleleftbox">-->

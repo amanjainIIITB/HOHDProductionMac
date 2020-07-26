@@ -1,5 +1,6 @@
 from django.conf.urls import include, url
 from . import views, analysis, expense_report
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = [
     # API
@@ -15,9 +16,13 @@ urlpatterns = [
     url(r'^employee/$', views.employee, name='employee'),
     url(r'^update_employee/(?P<employee_id>[\w\-]+)/$', views.update_employee, name='update_employee'),
     url(r'^delete_employee/(?P<employee_id>[\w\-]+)/$', views.delete_employee, name='delete_employee'),
+    url(r'^download_appointment_letter/(?P<employee_id>[\w\-]+)/$', views.download_appointment_letter, name='download_appointment_letter'),
+    url(r'^download_employee_govt_id/(?P<employee_id>[\w\-]+)/$', views.download_employee_govt_id, name='download_employee_govt_id'),
     url(r'^add_expense/$', views.add_expense, name='add_expense'),
     url(r'^aboutus/$', views.aboutus, name='aboutus'),
     url(r'^shopreg/$', views.shopreg, name='shopreg'),
     url(r'^add_partner/$', views.add_partner, name='add_partner'),
     url(r'^select_parlour/(?P<shop_id>[\w\-]+)/$', views.select_parlour, name='select_parlour'),
 ]
+
+urlpatterns += staticfiles_urlpatterns()

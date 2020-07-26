@@ -16,13 +16,12 @@
             document.getElementById(id).value = d.getFullYear()+"-"+month+"-"+day;
         }
         function onload_behaviour(){
-            set_menubar_items();
             setDate("{{employee.DOB}}", "DOB");
             setDate("{{employee.date_of_joining}}", "date_of_joining");
+            setDate("{{employee.date_of_appointment}}", "date_of_appointment")
         }
     </script>
     {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/menubar.css' %}">
     <style>
         .transaction{
             width:180px;
@@ -44,7 +43,7 @@
         {% endif %}
         {% include 'menubar.html' with active_menubar_item="NA" %}
         <h1>Update Employee Record</h1>
-        <form method="post" action="/staff/update_employee/{{employee.EmployeeID}}/">
+        <form method="post" enctype="multipart/form-data" action="/staff/update_employee/{{employee.EmployeeID}}/">
             {% csrf_token %}
             <table>
                 <tr>
@@ -92,6 +91,14 @@
                 </tr>
                 <tr>
                     <td>
+                        <label for="position">Position</label>
+                    </td>
+                    <td>
+                        <input type="text" id="position" name="position" value="{{employee.position}}"><br>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
                         <label for="DOB">Date of Birth</label>
                     </td>
                     <td>
@@ -112,6 +119,14 @@
                     </td>
                     <td>
                         <input type="text" id="permanent_address" name="permanent_address" value="{{employee.permanent_address}}">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="employee_gov_id">Upload Govt ID</label>
+                    </td>
+                    <td>
+                        <input type="file" id="employee_gov_id" name="employee_gov_id">
                     </td>
                 </tr>
             </table>

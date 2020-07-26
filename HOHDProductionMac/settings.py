@@ -27,10 +27,14 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+CRONJOBS = [
+    ('* * * * *', 'customer.cron.my_scheduled_job')
+]
 
 # Application definition
 
 INSTALLED_APPS = [
+    'django_crontab',
     'customer',
     'staff',
     'useraccount',
@@ -122,3 +126,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'staticfiles'),
+)

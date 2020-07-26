@@ -19,8 +19,8 @@ def update_non_mem_client_visit(request, visit_id):
         client_data = ClientVisit.objects.values('visitID', 'date', 'employee_id', 'payment_mode', 'numberofclient', 'amount').filter(visitID=visit_id, ShopID=request.session['shop_id']).last()
     return render(request, 'update_non_mem_client_visit.html', {"month_year_month_name": get_month_year_month_name_for_download(),
                                                                 'client_data': client_data, 
-                                                                "employees": Employee.objects.values('EmployeeID', 'name').filter(ShopID=request.session['shop_id'],
-                                                                )})
+                                                                "employees": Employee.objects.values('EmployeeID', 'name').filter(ShopID=request.session['shop_id']),
+                                                                "shop_details": get_login_user_shop_details(request)})
 
 
 def update_mem_client_visit(request, visit_id):
@@ -35,7 +35,7 @@ def update_mem_client_visit(request, visit_id):
                                                             'client_data': client_data,
                                                             "employees": Employee.objects.values('EmployeeID', 'name').filter(ShopID=request.session['shop_id']),
                                                             "membership_based_on_shop_id": list(get_all_membership_based_on_shop_id(request)),
-                                                            })
+                                                            "shop_details": get_login_user_shop_details(request)})
 
 
 def delete_client_visit(request, visit_id):
@@ -149,7 +149,8 @@ def update_membership(request, cust_id):
                                                            'Sex': membership['Sex'],
                                                            'Name': membership['Name'],
                                                            'DOB': membership['DOB'],
-                                                           'memberships': list(get_all_membership_based_on_shop_id(request))})
+                                                           'memberships': list(get_all_membership_based_on_shop_id(request)),
+                                                           "shop_details": get_login_user_shop_details(request)})
 
 def delete_all_visit_of_client(client_id, shop_id):
     ClientVisit.objects.filter(custID=client_id, ShopID=shop_id).update(isMember=False, custID='None')

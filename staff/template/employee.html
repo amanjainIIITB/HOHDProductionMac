@@ -5,7 +5,6 @@
         <title>Welcome</title>
     </head>
     {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/menubar.css' %}">
     <style>
         .transaction{
             width:180px;
@@ -15,9 +14,36 @@
             width:150px;
             height:40px;
         }
+        #myBox {
+            border: dotted;
+            padding: 20px;
+            width:100px;
+            height: 480px;
+            overflow: scroll;
+        }
+        #leftleftbox {
+            float:left;
+            width:20%;
+            height:480px;
+        }
+        #leftrightbox {
+            float:left;
+            width:30%;
+            height:480px;
+            background:#ffcccb;
+        }
+        #rightleftbox{
+            float:left;
+            width:30%;
+            height:480px;
+        }
+        #rightrightbox{
+            float:right;
+            width:20%;
+            height:480px;
+        }
     </style>
     <body>
-
         {% if messages %}
             <script>
                 {% for message in messages %}
@@ -27,7 +53,7 @@
         {% endif %}
         {% include 'menubar.html' with active_menubar_item="Employee" %}
         <h1>Add Employee</h1>
-        <form method="post" action="/staff/employee/">
+        <form method="post" enctype="multipart/form-data" action="/staff/employee/">
             {% csrf_token %}
             <table>
                 <tr>
@@ -75,6 +101,14 @@
                 </tr>
                 <tr>
                     <td>
+                        <label for="position">Position</label>
+                    </td>
+                    <td>
+                        <input type="text" id="position" name="position" ><br>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
                         <label for="date">Date of Birth</label>
                     </td>
                     <td>
@@ -99,10 +133,10 @@
                 </tr>
                 <tr>
                     <td>
-                        <label for="permanent_address">Upload Govt ID</label>
+                        <label for="employee_gov_id">Upload Govt ID</label>
                     </td>
                     <td>
-                        <input type="file" id="myFile" name="filename">
+                        <input type="file" id="employee_gov_id" name="employee_gov_id">
                     </td>
                 </tr>
             </table>
@@ -110,30 +144,37 @@
         </form>
         
         <h1>Employee Records</h1>
-        <table border="2">
-            <th>Name</th>
-            <th>Contact Number</th>
-            <th>Sex</th>
-            <th>Age</th>
-            <th>Date of Joining</th>
-            <th>Date of Birth</th>
-            <th>Temporary Address</th>
-            <th>Permanent Address</th>
-            <th>Action</th>
-            
-            {% for employee in employees %}
-                <tr>
-                    <td class="transaction">{{employee.name}}</td>
-                    <td class="transaction">{{employee.contact_number}}</td>
-                    <td class="transaction">{{employee.sex}}</td>
-                    <td class="transaction">{{employee.age}}</td>
-                    <td class="transaction">{{employee.date_of_joining}}</td>
-                    <td class="transaction">{{employee.DOB}}</td>
-                    <td class="transaction">{{employee.temporary_address}}</td>
-                    <td class="transaction">{{employee.permanent_address}}</td>
-                    <td class="transaction"><a href="/staff/update_employee/{{employee.EmployeeID}}">Edit</a> / <a href="/staff/delete_employee/{{employee.EmployeeID}}">Delete</a></td>
-                </tr>
-            {% endfor %}
-        </table>
+        {% for employee in employees %}
+            <div id="mybox">
+                <div id="leftleftbox"></div>
+                <div id="leftrightbox">
+                    <b>Name</b>:{{employee.name}}</br>
+                    </br>
+                    <b>Contact Number</b>:{{employee.contact_number}}</br>
+                    </br>
+                    <b>Sex</b>:{{employee.sex}}</br>
+                    </br>
+                    <b>Age</b>:{{employee.age}}</br>
+                    </br>
+                    <b>Date of Joining</b>:{{employee.date_of_joining}}</br>
+                    </br>
+                    <b>Position</b>:{{employee.position}}</br>
+                    </br>
+                    <b>Date of Birth</b>:{{employee.DOB}}</br>
+                    </br>
+                    <b>Temporary Address</b>:{{employee.temporary_address}}</br>
+                    </br>
+                    <b>Permanent Address</b>:{{employee.permanent_address}}</br>
+                    </br>
+                    <a href="/staff/update_employee/{{employee.EmployeeID}}">Edit</a> / <a href="/staff/delete_employee/{{employee.EmployeeID}}">Delete</a></br>
+                    </br>
+                    <a href="/staff/download_appointment_letter/{{employee.EmployeeID}}">Download Appointment Letter</a></br>
+                    </br>
+                    <a href="/staff/download_employee_govt_id/{{employee.EmployeeID}}">Download Employee Govt ID</a>
+                </div>
+                <img id="rightleftbox" src="{% static employee.govt_id %}">
+                <div id="rightrightbox"></div>
+            </div>
+        {% endfor %}
     </body>
 </html>
