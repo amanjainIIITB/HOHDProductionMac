@@ -12,7 +12,7 @@ from .render_html_to_pdf import render_to_pdf
 from .models import Expense, ShopRegistration, Employee
 from useraccount.models import OwnerRegistration
 from HOHDProductionMac.common_function import get_month_year_month_name_for_download, atleast_one_shop_registered, \
-    get_login_user_shop_details, set_session, get_list_of_login_user_shops
+    get_login_user_shop_details, set_session, get_list_of_login_user_shops, get_current_date
 from fpdf import FPDF
 from django.core.files.storage import FileSystemStorage
 import cv2
@@ -134,13 +134,18 @@ def delete_employee(request, employee_id):
     return redirect('/staff/employee/')
 
 
+def format_current_date(date):
+    date = str(date).split("-")
+    return datetime.datetime(int(date[0]), int(date[1]), int(date[2])).strftime("%B")+" "+date[2]+", "+date[0]
+
+
 def download_appointment_letter(request, employee_id):
     employee = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'age', 'sex', 'date_of_joining', 'position', 'DOB', 'temporary_address', 'permanent_address'). \
             filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).last()
     current_shop_details = ShopRegistration.objects.values('Shop_Name', 'Shop_Address', 'Desk_Contact_Number', 'email').filter(ShopID=request.session['shop_id']).first()
-    pdf = render_to_pdf('appointment_letter.html', {'employee': employee, 'current_shop_details': current_shop_details})
+    pdf = render_to_pdf('appointment_letter.html', {'employee': employee, 'current_shop_details': current_shop_details, 'current_date': format_current_date(get_current_date())})
     return HttpResponse(pdf, content_type='application/pdf')
-    # return render(request, 'appointment_letter.html')
+    # return render(request, 'appointment_letter.html', {'employee': employee, 'current_shop_details': current_shop_details, 'current_date': format_current_date(get_current_date())})
 
 
 def get_new_expense_id(request):
@@ -290,8 +295,8 @@ def gererate_all_customer_data_for_a_month_in_excel(month, year, r_json):
     font_style.font.bold = True
 
     # column header names, you can use your own headers here
-    columns = ['Date', 'Bharatpe', 'Bharatpe Customer', 'Paytm', 'Paytm Customer', 'Cash', 'Cash Customer',
-               'Total Amount', 'Total Customer']
+    columns = ['Date', 'Online', 'Online Customer', 'Cash', 'Cash Customer', 'Total Amount', 'Total Customer']
+
 
     # write column headers in sheet
     for col_num in range(len(columns)):
@@ -299,25 +304,19 @@ def gererate_all_customer_data_for_a_month_in_excel(month, year, r_json):
 
     # Sheet body, remaining rows
     font_style = xlwt.XFStyle()
-
-    max_length = max(len(r_json['dayWiseBharatpeOfTheMonth']), len(r_json['dayWisePaytmOfTheMonth']),
-                     len(r_json['dayWiseCashOfTheMonth']))
+    max_length = max(len(r_json['dayWiseOnlineOfTheMonth']), len(r_json['dayWiseCashOfTheMonth']))
     # get your data, from database or from a text file...
     for date in r_json['listOfDates']:
         row_num = row_num + 1
         ws.write(row_num, 0, date, font_style)
-        ws.write(row_num, 1, total_amount_of_the_day(date, r_json['dayWiseBharatpeOfTheMonth']), font_style)
-        ws.write(row_num, 2, total_numberofcustomer_of_the_day(date, r_json['dayWiseBharatpeOfTheMonth']), font_style)
-        ws.write(row_num, 3, total_amount_of_the_day(date, r_json['dayWisePaytmOfTheMonth']), font_style)
-        ws.write(row_num, 4, total_numberofcustomer_of_the_day(date, r_json['dayWisePaytmOfTheMonth']), font_style)
-        ws.write(row_num, 5, total_amount_of_the_day(date, r_json['dayWiseCashOfTheMonth']), font_style)
-        ws.write(row_num, 6, total_numberofcustomer_of_the_day(date, r_json['dayWiseCashOfTheMonth']), font_style)
-        ws.write(row_num, 7, int(total_amount_of_the_day(date, r_json['dayWiseBharatpeOfTheMonth'])) + int(
-            total_amount_of_the_day(date, r_json['dayWisePaytmOfTheMonth'])) + int(total_amount_of_the_day(date, r_json['dayWiseCashOfTheMonth'])),
-                 font_style)
-        ws.write(row_num, 8, int(total_numberofcustomer_of_the_day(date, r_json['dayWiseBharatpeOfTheMonth'])) + int(
-            total_numberofcustomer_of_the_day(date, r_json['dayWisePaytmOfTheMonth'])) + int(
-            total_numberofcustomer_of_the_day(date, r_json['dayWiseCashOfTheMonth'])), font_style)
+        ws.write(row_num, 1, total_amount_of_the_day(date, r_json['dayWiseOnlineOfTheMonth']), font_style)
+        ws.write(row_num, 2, total_numberofcustomer_of_the_day(date, r_json['dayWiseOnlineOfTheMonth']), font_style)
+        ws.write(row_num, 3, total_amount_of_the_day(date, r_json['dayWiseCashOfTheMonth']), font_style)
+        ws.write(row_num, 4, total_numberofcustomer_of_the_day(date, r_json['dayWiseCashOfTheMonth']), font_style)
+        ws.write(row_num, 5, int(total_amount_of_the_day(date, r_json['dayWiseOnlineOfTheMonth'])) + 
+            int(total_amount_of_the_day(date, r_json['dayWiseCashOfTheMonth'])),font_style)
+        ws.write(row_num, 6, int(total_numberofcustomer_of_the_day(date, r_json['dayWiseOnlineOfTheMonth'])) +
+            int(total_numberofcustomer_of_the_day(date, r_json['dayWiseCashOfTheMonth'])), font_style)
     wb.save(response)
     return response
 
@@ -405,6 +404,17 @@ def shopreg(request):
         messages.success(request, 'Added successfully', extra_tags='alert')
     return render(request, 'shop_registration.html', {"month_year_month_name": get_month_year_month_name_for_download(),
                                                       "shop_details": get_login_user_shop_details(request)})
+
+
+def edit_parlour(request, shop_id):
+    if request.method == "POST":
+        ShopRegistration.objects.filter(ShopID=shop_id).update(Desk_Contact_Number=request.POST.get('Desk_Contact_Number'),
+        Shop_Name=request.POST.get('Shop_Name'), Shop_Address=request.POST.get('Shop_Address'), email=request.POST.get('email'))
+        messages.success(request, 'Updated successfully', extra_tags='alert')
+    shop = ShopRegistration.objects.values('ShopID', 'Desk_Contact_Number', 'Shop_Name', 'Shop_Address', 'email').filter(ShopID=shop_id).first()
+    set_session(request, shop_id)
+    return render(request, 'update_shop.html', {"month_year_month_name": get_month_year_month_name_for_download(),
+                                                            "shop_details": get_login_user_shop_details(request),"shop": shop})
 
 
 def get_all_owners(request):

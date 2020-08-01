@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Welcome</title>
+    </head>
+    {% load static %}
+    <style>
+
+    input[type=text], select, textarea {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    input[type=submit] {
+        width: 80%;
+        background-color: #4CAF50;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    input[type=submit]:hover {
+        background-color: #45a049;
+    }
+
+    input.largerCheckbox
+    {
+        width:18px;
+        height:18px;
+    }
+
+    /* Box styles */
+    .myBox {
+        border: none;
+        padding: 5px;
+        <!--font: 24px/36px sans-serif;-->
+        width:100px;
+        height: 200px;
+        overflow: scroll;
+    }
+
+    #leftleftbox {
+        float:left;
+        width:4%;
+        height:360px;
+    }
+    #leftrightbox {
+        float:left;
+        width:20%;
+        height:360px;
+        background:#ffcccb;
+    }
+    #middleleftbox{
+        float:left;
+        background:#ffcccb;
+        width:20%;
+        height:360px;
+    }
+    #middlerightbox{
+        float:left;
+        background:grey;
+        width:20%;
+        height:350px;
+    }
+    #rightbox{
+        float:right;
+        width:30%;
+        height:430px;
+    }
+
+    #submit{
+        text-align:center;
+    }
+
+    </style>
+    <body style="background-color: pink;">
+
+        {% if messages %}
+            <script>
+                {% for message in messages %}
+                    alert("{{ message }}");
+                {% endfor %}
+            </script>
+        {% endif %}
+        {% include 'menubar.html' with active_menubar_item="#" %}
+        <form method="post" action="/staff/edit_parlour/{{shop.ShopID}}/">
+        <h1>Shop Data</h1>
+        <div id = "boxes">
+            <div id="leftleftbox"></div>
+            <div id = "leftrightbox">
+                {% csrf_token %}
+                <label for="Shop_Name">Shop Name</label>
+                <input type="text" id="Shop_Name" name="Shop_Name" value="{{shop.Shop_Name}}"><br>
+                <label for="Desk_Contact_Number">Desk Contact Number</label>
+                <input type="text" id="Desk_Contact_Number" name="Desk_Contact_Number" value="{{shop.Desk_Contact_Number}}"><br>
+                <label for="Shop_Address">Shop Address</label>
+                <textarea id="Shop_Address" name="Shop_Address">{{shop.Shop_Address}}</textarea><br>
+                <label for="email">Email</label>
+                <input type="text" id="email" name="email" value="{{shop.email}}"><br>
+                <input type="submit" value="Submit">
+            </div>
+            <!--<div id = "middleleftbox">-->
+                <!--{% csrf_token %}-->
+            <!--</div>-->
+            <!--<div id = "middlerightbox" class="myBox">-->
+
+            <!--</div>-->
+            <!--<div id = "rightbox">-->
+                <!--<img src="{% static 'customer/images/hoh.jpg' %}">-->
+            <!--</div>-->
+        </div><br>
+        </form>
+    </body>
+</html>

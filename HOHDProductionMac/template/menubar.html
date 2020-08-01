@@ -44,13 +44,27 @@
             {% else %}
                 <li><a href="/staff/add_partner">Add Partner</a></li>
             {% endif %}
-            <!-- <span id="menubar_items"></span> -->
             <li><a href="#parlour">Select Parlour</a>
                 <div class="sub-menu">
                     <ul>
-                        {% for shopobj in shop_details %}
-                            <li><a href="/staff/select_parlour/{{shopobj.ShopID}}">{{shopobj.ShopID}} {{shopobj.Shop_Name}}</a></li>
-                        {% endfor %}
+                        <li><a href="#Select">Select</a>
+                            <div class="sub-sub-menu">
+                                <ul>
+                                    {% for shopobj in shop_details %}
+                                        <li><a href="/staff/select_parlour/{{shopobj.ShopID}}">{{shopobj.ShopID}} {{shopobj.Shop_Name}}</a></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </li>
+                        <li><a href="#Edit">Edit</a>
+                            <div class="sub-sub-menu">
+                                <ul>
+                                    {% for shopobj in shop_details %}
+                                        <li><a href="/staff/edit_parlour/{{shopobj.ShopID}}">{{shopobj.ShopID}} {{shopobj.Shop_Name}}</a></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </li>
                     </ul>
                 </div>
             </li>

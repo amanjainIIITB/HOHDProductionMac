@@ -10,11 +10,27 @@ def get_current_time():
 
 
 def get_current_date():
-    return datetime.now().strftime("%d/%m/%Y")
+    return datetime.now().strftime("%Y-%m-%d")
+
+
+def add_date(date, days):
+    return date + timedelta(days=days)
 
 
 def get_current_date_time():
     return str(get_current_date())+" "+str(get_current_time())
+
+
+def is_date_greater(date1, date2):
+    date1split = str(date1).split("-")
+    date2split = date2.split("-")
+    return datetime(int(date1split[0]), int(date1split[1]), int(date1split[2])) > datetime(int(date2split[0]), int(date2split[1]), int(date2split[2]))
+
+
+def is_date_less(date1, date2):
+    date1split = str(date1).split("-")
+    date2split = date2.split("-")
+    return datetime(int(date1split[0]), int(date1split[1]), int(date1split[2])) < datetime(int(date2split[0]), int(date2split[1]), int(date2split[2]))
 
 
 def get_month_year_month_name_for_download():

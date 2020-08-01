@@ -23,10 +23,16 @@ def update_non_mem_client_visit(request, visit_id):
                                                                 "shop_details": get_login_user_shop_details(request)})
 
 
+def update_membership_after_update_mem_client_visit(request, custID):
+    client_visit = ClientVisit.objects.values('date').filter(custID=custID, ShopID=request.session['shop_id']).order_by('date').last()
+    Membership.objects.filter(custID=custID, shopID=request.session['shop_id']).update(last_visit=client_visit['date'])
+
+
 def update_mem_client_visit(request, visit_id):
     if request.method == "POST":
         ClientVisit.objects.filter(visitID=visit_id, ShopID=request.session['shop_id']).update(custID=request.POST.get('custID'), date=request.POST.get('date'),
                        time=get_current_time(), employee_id=request.POST.get('EmployeeID'), payment_mode=request.POST.get('payment_mode'), amount=request.POST.get('amount'))
+        update_membership_after_update_mem_client_visit(request, request.POST.get('custID'))
         # messages.success(request, 'Updated successfully', extra_tags='alert')
         return redirect('/staff/analysis/')
     else:
@@ -126,7 +132,7 @@ def membership(request):
                                                 "memberships": list(get_all_membership_based_on_shop_id(request))})
 
 
-def update_all_visit_of_client(current_client_id, changed_client_id, shop_id):
+def update_client_visit_after_update_membership(current_client_id, changed_client_id, shop_id):
     ClientVisit.objects.filter(custID=current_client_id, ShopID=shop_id).update(custID=changed_client_id)
 
 
@@ -137,7 +143,7 @@ def update_membership(request, cust_id):
         membership.update(custID=request.POST.get('custID').upper(), Contact_Number=request.POST.get('Contact_Number'),
                        Sex=request.POST.get('Sex'), Name=request.POST.get('Name'),
                        DOB=request.POST.get('DOB'))
-        update_all_visit_of_client(cust_id, request.POST.get('custID').upper(), request.session['shop_id'])
+        update_client_visit_after_update_membership(cust_id, request.POST.get('custID').upper(), request.session['shop_id'])
         messages.success(request, 'Updated successfully', extra_tags='alert')
         return redirect('/client/membership')
     else:
