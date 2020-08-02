@@ -146,15 +146,11 @@ def download_appointment_letter(request, employee_id):
             filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).last()
     current_shop_details = ShopRegistration.objects.values('Shop_Name', 'Shop_Address', 'Desk_Contact_Number', 'email').filter(ShopID=request.session['shop_id']).first()
     
-    # html = render_to_string('appointment_letter.html', {'employee': employee, 'current_shop_details': current_shop_details})
-    # response = HttpResponse(content_type='application/pdf')
-    # if request.GET.get('attachment') == 'true':
-    #     response['Content-Disposition'] = 'attachment; filename="report.pdf"'
-    # HTML(string=html).write_pdf(response)
-    # return response
-
-    pdf = render_to_pdf('appointment_letter.html', {'employee': employee, 'current_shop_details': current_shop_details})
-    return HttpResponse(pdf, content_type='application/pdf')
+    html_template = render_to_string('appointment_letter.html', {'employee': employee, 'current_shop_details': current_shop_details})
+    pdf_file = HTML(string=html_template, base_url=request.build_absolute_uri()).write_pdf()
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = 'filename="appointment_letter.pdf"'
+    return response
 
     # return render(request, 'appointment_letter.html', {'employee': employee, 'current_shop_details': current_shop_details})
 
