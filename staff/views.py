@@ -9,6 +9,8 @@ import json
 import os
 import xlwt
 from .render_html_to_pdf import render_to_pdf
+from django.template.loader import render_to_string
+from weasyprint import HTML
 from .models import Expense, ShopRegistration, Employee
 from useraccount.models import OwnerRegistration
 from HOHDProductionMac.common_function import get_month_year_month_name_for_download, atleast_one_shop_registered, \
@@ -143,9 +145,18 @@ def download_appointment_letter(request, employee_id):
     employee = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'age', 'sex', 'date_of_joining', 'position', 'DOB', 'temporary_address', 'permanent_address'). \
             filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).last()
     current_shop_details = ShopRegistration.objects.values('Shop_Name', 'Shop_Address', 'Desk_Contact_Number', 'email').filter(ShopID=request.session['shop_id']).first()
-    pdf = render_to_pdf('appointment_letter.html', {'employee': employee, 'current_shop_details': current_shop_details, 'current_date': format_current_date(get_current_date())})
+    
+    # html = render_to_string('appointment_letter.html', {'employee': employee, 'current_shop_details': current_shop_details})
+    # response = HttpResponse(content_type='application/pdf')
+    # if request.GET.get('attachment') == 'true':
+    #     response['Content-Disposition'] = 'attachment; filename="report.pdf"'
+    # HTML(string=html).write_pdf(response)
+    # return response
+
+    pdf = render_to_pdf('appointment_letter.html', {'employee': employee, 'current_shop_details': current_shop_details})
     return HttpResponse(pdf, content_type='application/pdf')
-    # return render(request, 'appointment_letter.html', {'employee': employee, 'current_shop_details': current_shop_details, 'current_date': format_current_date(get_current_date())})
+
+    # return render(request, 'appointment_letter.html', {'employee': employee, 'current_shop_details': current_shop_details})
 
 
 def get_new_expense_id(request):

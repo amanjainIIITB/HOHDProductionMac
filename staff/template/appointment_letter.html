@@ -49,17 +49,15 @@
             </div>
         <div>
         <div class='details'>
-            <img src="{% static 'images/hoh.jpg' %}">
             <p style="color: red;">{{current_shop_details.Shop_Name}}</p>
             <!-- #21, Sangeeta Nilaya,<br/>
             4th Cross, Devarbisanahalli,<br/>
             Bellandur, Bengaluru - 560103<br/>
             hohd.jobs@hohd.in<br/> -->
+            <img src="{% static 'images/hoh.jpg' %}">
             {{current_shop_details.Shop_Address|linebreaks}}
             {{current_shop_details.email}}
             <hr class='hrItem' />
-            <br>
-            <b>{{current_date}}</b><br>
             <br>
             <b>Sub:</b> Your appointment as {{employee.position}}<br>
             <br>
