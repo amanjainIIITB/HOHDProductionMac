@@ -206,7 +206,7 @@ def add_expense(request):
     return redirect('/staff/expense/')
 
 
-@login_required(login_url="/useraccount/login/")
+@login_required(login_url="/")
 def expense(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
@@ -227,7 +227,7 @@ def expense(request):
     return render(request, 'expense.html', r_json)
 
 
-@login_required(login_url="/useraccount/login/")
+@login_required(login_url="/")
 def analysis(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
@@ -272,7 +272,7 @@ def total_numberofcustomer_of_the_day(date, datewisedata):
     if flag == False:
         return 0
 
-@login_required(login_url="/useraccount/login/")
+@login_required(login_url="/")
 def aboutus(request):
     month_year_month_name = get_month_year_month_name_for_download()
     return render(request, 'aboutus.html',
@@ -328,7 +328,7 @@ def gererate_all_customer_data_for_a_month_in_excel(month, year, r_json):
     return response
 
 
-@login_required(login_url="/useraccount/login/")
+@login_required(login_url="/")
 def download(request, download_type, month, year):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
@@ -393,7 +393,7 @@ def get_new_shop_id(request):
         return new_shop_id
 
 
-@login_required(login_url="/useraccount/login/")
+@login_required(login_url="/")
 def shopreg(request):
     if request.method == "POST":
         shopRegistration = ShopRegistration()
@@ -452,7 +452,7 @@ def add_owner_id_in_shop_registration_for_entered_user(request, entered_user_nam
         ShopRegistration.objects.values('owner_list').filter(ShopID=shop_id).update(owner_list=list_of_owners)
 
 
-@login_required(login_url="/useraccount/login/")
+@login_required(login_url="/")
 def add_partner(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')

@@ -58,7 +58,7 @@ def get_new_visit_id(request):
         return new_visit_id
 
 
-@login_required(login_url="/useraccount/login/")
+@login_required(login_url="/")
 def details(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
@@ -120,7 +120,7 @@ def get_all_membership_based_on_shop_id(request):
     return memberships
 
 
-@login_required(login_url="/useraccount/login/")
+@login_required(login_url="/")
 def membership(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')

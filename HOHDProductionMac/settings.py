@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'useraccount',
     'adminPanel',
     'messageManagement',
+    'widget_tweaks',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
