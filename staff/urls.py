@@ -24,6 +24,7 @@ urlpatterns = [
     url(r'^add_partner/$', views.add_partner, name='add_partner'),
     url(r'^select_parlour/(?P<shop_id>[\w\-]+)/$', views.select_parlour, name='select_parlour'),
     url(r'^edit_parlour/(?P<shop_id>[\w\-]+)/$', views.edit_parlour, name='edit_parlour'),
+    url(r'^appointment/$', views.appointment, name='appointment'),
 ]
 
 urlpatterns += staticfiles_urlpatterns()

@@ -1,5 +1,6 @@
 from django.contrib import messages
 from datetime import datetime, timedelta
+from customer.models import Membership
 from useraccount.models import OwnerRegistration
 from staff.models import ShopRegistration
 
@@ -83,3 +84,15 @@ def get_login_user_shop_details(request):
 
 def set_session(request, shop_id):
     request.session['shop_id'] = shop_id
+
+
+def get_all_membership_based_on_shop_id(request):
+    memberships = Membership.objects.values('custID', 'Contact_Number', 'Sex', 'Name', 'DOB', 'last_visit', 'total_amount', 'number_of_visit').filter(shopID=request.session['shop_id'])
+    for membership in memberships:
+        membership['DOB'] = membership['DOB'].strftime("%Y-%m-%d")
+        membership['last_visit'] = membership['last_visit'].strftime("%Y-%m-%d")
+        if membership['total_amount'] == 0 or membership['number_of_visit'] == 0:
+            membership['avg'] = 0
+        else:
+            membership['avg'] = round(membership['total_amount']/membership['number_of_visit'], 2)
+    return memberships

@@ -4,43 +4,48 @@
     <div class="menu-bar">
         <ul>
             {% if active_menubar_item == "About" %}
-                <li><a class="active" href="#">About</a></li>
+                <li class="active" ><a href="#">About</a></li>
             {% else %}
                 <li><a href="/staff/aboutus/">About</a></li>
             {% endif %}
             {% if active_menubar_item == "Client Form" %}
-                <li><a class="active" href="#">Client Form</a></li>
+                <li class="active" ><a href="#">Client Form</a></li>
             {% else %}
                 <li><a href="/client/details/">Client Form</a></li>
             {% endif %}
             {% if active_menubar_item == "Membership" %}
-                <li><a class="active" href="#">Membership</a></li>
+                <li class="active" ><a href="#">Membership</a></li>
             {% else %}
                 <li><a href="/client/membership">Membership</a></li>
             {% endif %}
             {% if active_menubar_item == "Analytics" %}
-                <li><a class="active" href="#">Analytics</a></li>
+                <li class="active" ><a href="#">Analytics</a></li>
             {% else %}
                 <li><a href="/staff/analysis/">Analytics</a></li>
             {% endif %}
             {% if active_menubar_item == "Expense" %}
-                <li><a class="active" href="#">Expense</a></li>
+                <li class="active" ><a href="#">Expense</a></li>
             {% else %}
                 <li><a href="/staff/expense/">Expense</a></li>
             {% endif %}
             {% if active_menubar_item == "Employee" %}
-                <li><a class="active" href="#">Employee</a></li>
+                <li class="active" ><a href="#">Employee</a></li>
             {% else %}
                 <li><a href="/staff/employee">Employee</a></li>
             {% endif %}
                 <li><a href="#contact">Contact US</a></li>
             {% if active_menubar_item == "Shop Reg" %}
-                <li><a class="active" href="#">Shop Reg</a></li>
+                <li class="active" ><a href="#">Shop Reg</a></li>
             {% else %}
                 <li><a href="/staff/shopreg">Shop Reg</a></li>
             {% endif %}
+            {% if active_menubar_item == "Appointment" %}
+                <li class="active" ><a href="#">Appointment</a></li>
+            {% else %}
+                <li><a href="/staff/appointment">Appointment</a></li>
+            {% endif %}
             {% if active_menubar_item == "Add Partner" %}
-                <li><a class="active" href="#">Add Partner</a></li>
+                <li class="active" ><a href="#">Add Partner</a></li>
             {% else %}
                 <li><a href="/staff/add_partner">Add Partner</a></li>
             {% endif %}

@@ -11,10 +11,11 @@ import xlwt
 from .render_html_to_pdf import render_to_pdf
 from django.template.loader import render_to_string
 from weasyprint import HTML
-from .models import Expense, ShopRegistration, Employee
+from .models import Expense, ShopRegistration, Employee, Appointment
+from customer.models import Membership
 from useraccount.models import OwnerRegistration
 from HOHDProductionMac.common_function import get_month_year_month_name_for_download, atleast_one_shop_registered, \
-    get_login_user_shop_details, set_session, get_list_of_login_user_shops, get_current_date
+    get_login_user_shop_details, set_session, get_list_of_login_user_shops, get_current_date, get_all_membership_based_on_shop_id
 from fpdf import FPDF
 from django.core.files.storage import FileSystemStorage
 import cv2
@@ -469,3 +470,31 @@ def add_partner(request):
                                                 "shop_details": get_login_user_shop_details(request),
                                                 "list_users": get_all_owners(request),
                                                 "login_username": request.user.get_username()})
+
+
+def appointment(request):
+    if request.method == 'POST':
+        if request.POST.get('client_id') != None:
+            custID = request.POST.get('client_id').upper()
+            client = Membership.objects.values('Name', 'Contact_Number').filter(custID=custID, shopID=request.session['shop_id']).first()
+            Appointment(name=client['Name'], contact_number=client['Contact_Number'],
+                                       date=request.POST.get('mem_date'), start_time=request.POST.get('mem_start_time'), end_time=request.POST.get('mem_end_time')).save()
+        else:
+            Appointment(name=request.POST.get('cust_name'), contact_number=request.POST.get('contact_number'), date=request.POST.get('date'), start_time=request.POST.get('start_time'), end_time=request.POST.get('end_time')).save()
+    events = Appointment.objects.values('name', 'contact_number', 'date', 'start_time', 'end_time')
+    shop_name = ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']
+    for event in events:
+        event['day'] = event['date'].day
+        event['month'] = event['date'].month
+        event['year'] = event['date'].year
+        event['date'] = str(event['date'])
+        event['start_hour'] = event['start_time'].hour
+        event['start_minute'] = event['start_time'].minute
+        event['end_hour'] = event['end_time'].hour
+        event['end_minute'] = event['end_time'].minute
+        event['start_time'] = str(event['start_time'])
+        event['end_time'] = str(event['end_time'])
+    return render(request, 'calendar.html', {'events': list(events), 
+                                             "membership_based_on_shop_id": list(get_all_membership_based_on_shop_id(request)),   
+                                             "login_username": request.user.get_username(),
+                                             'shop_name': shop_name})

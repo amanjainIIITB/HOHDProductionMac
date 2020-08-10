@@ -43,3 +43,13 @@ class Employee(models.Model):
     DOB = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
     temporary_address = models.TextField(max_length=1000, null=True)
     permanent_address = models.TextField(max_length=1000, null=True)
+
+
+class Appointment(models.Model):
+    name = models.CharField(max_length=50, null=True)
+    contact_number = models.IntegerField(validators=[MinValueValidator(1000000000), MaxValueValidator(9999999999)],
+                                              null=True)
+    date = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
+    start_time = models.TimeField(max_length=50, null=True)
+    end_time = models.TimeField(max_length=50, null=True)
+
