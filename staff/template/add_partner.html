@@ -72,18 +72,18 @@
         }
         function validate_username(users, list_shop_details)
         {
-            var entered_username = document.getElementById('name').value;
+            var entered_username_or_contact_number = document.getElementById('name').value;
             var login_username="{{login_username}}";
             var flag="False";
             for(i=0; i<users.length; i++)
             {
-                if(entered_username==login_username)
+                if(entered_username_or_contact_number==login_username)
                 {
                     cannot_add_yourself()
                     flag="True";
                     break;
                 }
-                else if(entered_username==users[i][0])
+                else if(entered_username_or_contact_number==users[i][0] || entered_username_or_contact_number==users[i][3])
                 {
                     found_correct_username(users[i], list_shop_details)
                     flag="True";

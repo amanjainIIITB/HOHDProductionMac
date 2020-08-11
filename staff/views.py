@@ -31,34 +31,27 @@ def get_new_employee_id(request):
         new_emplyee_id = 'Emp' + str(int(str(last_employee_id['EmployeeID'])[3:]) + 1)
         return new_emplyee_id
 
-def get_employee_govt_id_name_based_on_shopId_employeeID(shop_id, employee_id):
-    for imagename in os.listdir(str(employee_id_path)+str(shop_id)):
-        print(imagename)
-        img = cv2.imread(str(employee_id_path)+str(shop_id)+'/'+imagename)
-        print('outside image')
-        if img is not None:
-            print('inside image')
-            existed_file_name, file_extension = os.path.splitext(imagename)
-            if existed_file_name == employee_id:
-                return imagename
+
+def delete_file(shop_id, employee_id):
+    if os.path.exists(str(employee_id_path)+str(shop_id)+'/'+str(employee_id)+'.png'):
+        os.remove(str(employee_id_path)+str(shop_id)+'/'+str(employee_id)+'.png')
 
 
 def handle_uploaded_file(file, shop_id, employee_id):  
+    delete_file(shop_id, employee_id)
     if os.path.exists(str(employee_id_path)+str(shop_id)) == False:
         os.mkdir(os.path.join(employee_id_path,shop_id))
-    if os.path.exists(str(employee_id_path)+str(shop_id)+'/'+str(get_employee_govt_id_name_based_on_shopId_employeeID(shop_id, employee_id))):
-        os.remove(str(employee_id_path)+str(shop_id)+'/'+str(get_employee_govt_id_name_based_on_shopId_employeeID(shop_id, employee_id)))
     filename, file_extension = os.path.splitext(file.name)
     fs = FileSystemStorage(location=os.path.join(employee_id_path,shop_id)) #defaults to   MEDIA_ROOT  
-    filename = fs.save(employee_id+file_extension, file)
+    filename = fs.save(employee_id+'.png', file)
 
 
 def download_employee_govt_id(request, employee_id):
     shop_id = request.session['shop_id']
-    employee_govt_id_name = get_employee_govt_id_name_based_on_shopId_employeeID(shop_id, employee_id)
-    if os.path.exists(str(employee_id_path)+str(shop_id)+'/'+str(get_employee_govt_id_name_based_on_shopId_employeeID(shop_id, employee_id))):
+    employee_govt_id_name = str(employee_id)+'.png'
+    if os.path.exists(str(employee_id_path)+str(shop_id)+'/'+str(employee_id)+'.png'):
         response = HttpResponse(content_type='application/vnd.ms-excel')
-        filepath = str(employee_id_path)+str(shop_id)+'/'+str(get_employee_govt_id_name_based_on_shopId_employeeID(shop_id, employee_id))
+        filepath = str(employee_id_path)+str(shop_id)+'/'+str(employee_id)+'.png'
         with open((filepath), "rb") as image:
             data = image.read()
         response['Content-Disposition'] = 'attachment; filename="' + str(employee_govt_id_name) +'"'
@@ -69,12 +62,12 @@ def download_employee_govt_id(request, employee_id):
 def get_current_shop_employees(shop_id):
     if os.path.exists(str(employee_id_path)+str(shop_id)) == False:
         os.mkdir(os.path.join(employee_id_path,shop_id))
-    images = {}
+    images = []
     for imagename in os.listdir(str(employee_id_path)+str(shop_id)):
         img = cv2.imread(str(employee_id_path)+str(shop_id)+'/'+imagename)
         if img is not None:
             existed_file_name, file_extension = os.path.splitext(imagename)
-            images[existed_file_name] = 'images/employee_verification/'+str(shop_id)+'/'+imagename
+            images.append(existed_file_name)
     return images
 
 
@@ -94,8 +87,8 @@ def employee(request):
     employees = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'ShopID', 'age', 'sex', 'date_of_joining', 'position', 'DOB', 'temporary_address', 'permanent_address').filter(ShopID=request.session['shop_id'])
     images = get_current_shop_employees(request.session['shop_id'])
     for employee in employees:
-        if employee['EmployeeID'] in images.keys(): 
-            employee['govt_id'] = images[employee['EmployeeID']]
+        if employee['EmployeeID'] in images: 
+            employee['govt_id'] = 'images/employee_verification/'+str(request.session['shop_id'])+'/'+ str(employee['EmployeeID']) +'.png'
         else:
             employee['govt_id'] = 'images/not_found.png'
     return render(request, 'employee.html', {"month_year_month_name": get_month_year_month_name_for_download(),
@@ -130,8 +123,8 @@ def update_employee(request, employee_id):
 
 
 def delete_employee(request, employee_id):
+    delete_file(request.session['shop_id'], employee_id)
     Employee.objects.filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).delete()
-    delete_existed_image(str(request.session['shop_id']+'_'+employee_id))
     # delete_file(request.session['shop_id'], employee_id)
     messages.success(request, 'Deleted successfully', extra_tags='alert')
     return redirect('/staff/employee/')

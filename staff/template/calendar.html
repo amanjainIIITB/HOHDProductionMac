@@ -659,7 +659,7 @@
       for(i=0; i < all_membership_based_on_shop_id.length; i++)
       {
           var membership_found = false;
-          if(client_id_or_contact_number == all_membership_based_on_shop_id[i].custID)
+          if(client_id_or_contact_number == all_membership_based_on_shop_id[i].custID || client_id_or_contact_number == all_membership_based_on_shop_id[i].Contact_Number)
           {
               document.getElementById("mem_submit_button").disabled = false;
               document.getElementById('client_details').innerHTML = "<table ><tr><td><b>ID</b></td><td>"+all_membership_based_on_shop_id[i].custID+"</td</tr><tr><td><b>Name</b></td><td>"+all_membership_based_on_shop_id[i].Name+"</td></tr><tr><td><b>Date of Birth</b></td><td>"+all_membership_based_on_shop_id[i].DOB+"</td></tr><tr><td><b>Contact Number</b></td><td>"+all_membership_based_on_shop_id[i].Contact_Number+"</td></tr></table>";
@@ -672,6 +672,8 @@
               document.getElementById('client_details').innerHTML = "Please Enter Membership ID<br>";
           else
               document.getElementById('client_details').innerHTML = "Membership ID doesn't exist<br>";
+          // Disable the Submit Button
+          document.getElementById("mem_submit_button").disabled = true;
       }
   }
 
