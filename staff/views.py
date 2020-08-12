@@ -487,7 +487,9 @@ def appointment(request):
         event['end_minute'] = event['end_time'].minute
         event['start_time'] = str(event['start_time'])
         event['end_time'] = str(event['end_time'])
-    return render(request, 'calendar.html', {'events': list(events), 
+    return render(request, 'calendar.html', {"month_year_month_name": get_month_year_month_name_for_download(),
+                                             "shop_details": get_login_user_shop_details(request),
+                                             'events': list(events), 
                                              "membership_based_on_shop_id": list(get_all_membership_based_on_shop_id(request)),   
                                              "login_username": request.user.get_username(),
                                              'shop_name': shop_name})

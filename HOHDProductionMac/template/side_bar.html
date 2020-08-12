@@ -1,0 +1,247 @@
+{% load static %}
+<!-- Main Sidebar Container -->
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <!-- Brand Logo -->
+    <a href="../index3.html" class="brand-link">
+      <img src="{% static 'appointment/dist/img/AdminLTELogo.png' %}"
+           alt="AdminLTE Logo"
+           class="brand-image img-circle elevation-3"
+           style="opacity: .8">
+      <span class="brand-text font-weight-light">{{shop_name}}</span>
+    </a>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Sidebar user panel (optional) -->
+      <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        <div class="image">
+          <img src="{% static 'appointment/dist/img/user2-160x160.jpg' %}" class="img-circle elevation-2" alt="User Image">
+        </div>
+        <div class="info">
+          <a href="#" class="d-block">{{login_username}}</a>
+        </div>
+      </div>
+
+      <!-- Sidebar Menu -->
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+          <!-- Add icons to the links using the .nav-icon class
+               with font-awesome or any other icon font library -->
+          <li class="nav-item">
+            <a href="/client/details/" class="nav-link">
+              <i class="nav-icon fas fa-th"></i>
+              <p>
+                Client Form
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/client/membership/" class="nav-link">
+              <i class="nav-icon fas fa-copy"></i>
+              <p>
+                Membership
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/staff/analysis/" class="nav-link">
+              <i class="nav-icon fas fa-chart-pie"></i>
+              <p>
+                Analytics
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/staff/expense/" class="nav-link">
+              <i class="nav-icon fas fa-tree"></i>
+              <p>
+                Expense
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/staff/employee/" class="nav-link">
+              <i class="nav-icon fas fa-edit"></i>
+              <p>
+                Employee
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/staff/shopreg/" class="nav-link">
+              <i class="nav-icon fas fa-table"></i>
+              <p>
+                Shop Reg
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <i class="nav-icon far fa-calendar-alt"></i>
+              <p>
+                Appointment
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/staff/add_partner/" class="nav-link">
+              <i class="nav-icon fas fa-tachometer-alt"></i>
+              <p>
+                Add Partner
+              </p>
+            </a>
+          </li>
+          <li class="nav-header">Parlour</li>
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <i class="fas fa-circle nav-icon"></i>
+              <p>Select</p>
+              <i class="right fas fa-angle-left"></i>
+            </a>
+            <ul class="nav nav-treeview">
+              {% for shopobj in shop_details %}
+                <li class="nav-item">
+                  <a href="/staff/select_parlour/{{shopobj.ShopID}}" class="nav-link">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>{{shopobj.ShopID}} {{shopobj.Shop_Name}}</p>
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          </li>
+          <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fas fa-circle"></i>
+              <p>
+                Edit
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              {% for shopobj in shop_details %}
+                <li class="nav-item">
+                  <a href="/staff/edit_parlour/{{shopobj.ShopID}}" class="nav-link">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>{{shopobj.ShopID}} {{shopobj.Shop_Name}}</p>
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          </li>
+          <li class="nav-header">Download</li>
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <i class="fas fa-circle nav-icon"></i>
+              <p>Expense</p>
+              <i class="right fas fa-angle-left"></i>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="/staff/download/expense/{{month_year_month_name.month_index.3}}/{{month_year_month_name.year_list.3}}" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>{{month_year_month_name.month_name.3}}</p>
+                </a>
+              </li>
+              <li class="nav-item has-treeview">
+                <a href="/staff/download/expense/{{month_year_month_name.month_index.2}}/{{month_year_month_name.year_list.2}}" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>
+                    {{month_year_month_name.month_name.2}}
+                  </p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="/staff/download/expense/{{month_year_month_name.month_index.1}}/{{month_year_month_name.year_list.1}}" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>{{month_year_month_name.month_name.1}}</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="/staff/download/expense/{{month_year_month_name.month_index.0}}/{{month_year_month_name.year_list.0}}" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>{{month_year_month_name.month_name.0}}</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fas fa-circle"></i>
+              <p>
+                Analysis
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="/staff/download/analysis_render/{{month_year_month_name.month_index.3}}/{{month_year_month_name.year_list.3}}" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>{{month_year_month_name.month_name.3}}</p>
+                </a>
+              </li>
+              <li class="nav-item has-treeview">
+                <a href="/staff/download/analysis_render/{{month_year_month_name.month_index.2}}/{{month_year_month_name.year_list.2}}" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>
+                    {{month_year_month_name.month_name.2}}
+                  </p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="/staff/download/analysis_render/{{month_year_month_name.month_index.1}}/{{month_year_month_name.year_list.1}}" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>{{month_year_month_name.month_name.1}}</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="/staff/download/analysis_render/{{month_year_month_name.month_index.0}}/{{month_year_month_name.year_list.0}}" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>{{month_year_month_name.month_name.0}}</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fas fa-circle"></i>
+              <p>
+                Customer Data
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="/staff/download/analysis_excel/{{month_year_month_name.month_index.3}}/{{month_year_month_name.year_list.3}}" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>{{month_year_month_name.month_name.3}}</p>
+                </a>
+              </li>
+              <li class="nav-item has-treeview">
+                <a href="/staff/download/analysis_excel/{{month_year_month_name.month_index.2}}/{{month_year_month_name.year_list.2}}" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>
+                    {{month_year_month_name.month_name.2}}
+                  </p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="/staff/download/analysis_excel/{{month_year_month_name.month_index.1}}/{{month_year_month_name.year_list.1}}" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>{{month_year_month_name.month_name.1}}</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="/staff/download/analysis_excel/{{month_year_month_name.month_index.0}}/{{month_year_month_name.year_list.0}}" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>{{month_year_month_name.month_name.0}}</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <!-- /.sidebar-menu -->
+    </div>
+    <!-- /.sidebar -->
+</aside>
+<!-- /Main Sidebar Container -->
