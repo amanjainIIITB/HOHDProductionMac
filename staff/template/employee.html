@@ -61,7 +61,7 @@
                         <label for="name">Employee Name</label>
                     </td>
                     <td>
-                        <input type="text" id="name" name="name">
+                        <input type="text" id="name" name="name" required>
                     </td>
                 </tr>
                 <tr>
@@ -69,7 +69,7 @@
                         <label for="contact_number">Contact Number</label>
                     </td>
                     <td>
-                        <input type="text" id="contact_number" name="contact_number">
+                        <input type="text" id="contact_number" name="contact_number" required>
                     </td>
                 </tr>
                 <tr>
@@ -85,18 +85,10 @@
                 </tr>
                 <tr>
                     <td>
-                        <label for="age">Age</label>
-                    </td>
-                    <td>
-                        <input type="text" id="age" name="age">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
                         <label for="date">Date of Joining</label>
                     </td>
                     <td>
-                        <input type="date" id="date_of_joining" name="date_of_joining" ><br>
+                        <input type="date" id="date_of_joining" name="date_of_joining" required><br>
                     </td>
                 </tr>
                 <tr>
@@ -104,7 +96,7 @@
                         <label for="position">Position</label>
                     </td>
                     <td>
-                        <input type="text" id="position" name="position" ><br>
+                        <input type="text" id="position" name="position" required><br>
                     </td>
                 </tr>
                 <tr>
@@ -153,8 +145,6 @@
                     <b>Contact Number</b>:{{employee.contact_number}}</br>
                     </br>
                     <b>Sex</b>:{{employee.sex}}</br>
-                    </br>
-                    <b>Age</b>:{{employee.age}}</br>
                     </br>
                     <b>Date of Joining</b>:{{employee.date_of_joining}}</br>
                     </br>

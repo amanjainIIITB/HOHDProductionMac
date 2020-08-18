@@ -75,16 +75,17 @@ def employee(request):
     if request.method == "POST":
         employee_id=get_new_employee_id(request)
         Employee(EmployeeID=employee_id, ShopID=request.session['shop_id'], name=request.POST.get('name'), contact_number=request.POST.get('contact_number'), 
-                age=request.POST.get('age'), sex=request.POST.get('sex'), date_of_joining=request.POST.get('date_of_joining'), DOB=request.POST.get('DOB'), 
+                sex=request.POST.get('sex'), date_of_joining=request.POST.get('date_of_joining'), DOB=request.POST.get('DOB'), 
                 position=request.POST.get('position'), temporary_address=request.POST.get('temporary_address'), permanent_address=request.POST.get('permanent_address')).save()
         print(request)
-        handle_uploaded_file(request.FILES.get('employee_gov_id'), request.session['shop_id'], employee_id)  
-        filename, file_extension = os.path.splitext(request.FILES.get('employee_gov_id').name)
-        if file_extension not in ('jpg', 'jpeg', 'png'):
-            messages.success(request, 'Please provide the govt id in jpg, jpeg or png format only', extra_tags='alert')
-        else:
-            messages.success(request, 'Added successfully', extra_tags='alert')
-    employees = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'ShopID', 'age', 'sex', 'date_of_joining', 'position', 'DOB', 'temporary_address', 'permanent_address').filter(ShopID=request.session['shop_id'])
+        print(request.FILES.get('employee_gov_id'))
+        if request.FILES.get('employee_gov_id') != None:
+            handle_uploaded_file(request.FILES.get('employee_gov_id'), request.session['shop_id'], employee_id)  
+            filename, file_extension = os.path.splitext(request.FILES.get('employee_gov_id').name)
+            if file_extension not in ('jpg', 'jpeg', 'png'):
+                messages.success(request, 'Please provide the govt id in jpg, jpeg or png format only', extra_tags='alert')
+        messages.success(request, 'Added successfully', extra_tags='alert')
+    employees = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'ShopID', 'sex', 'date_of_joining', 'position', 'DOB', 'temporary_address', 'permanent_address').filter(ShopID=request.session['shop_id'])
     images = get_current_shop_employees(request.session['shop_id'])
     for employee in employees:
         if employee['EmployeeID'] in images: 
@@ -99,7 +100,7 @@ def employee(request):
 def update_employee(request, employee_id):
     if request.method == "POST":
         Employee.objects.filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).update(EmployeeID=employee_id, name=request.POST.get('name'),
-                       contact_number=request.POST.get('contact_number'), age=request.POST.get('age'),
+                       contact_number=request.POST.get('contact_number'),
                        sex=request.POST.get('sex'), date_of_joining=request.POST.get('date_of_joining'), 
                        position=request.POST.get('position'),
                        DOB=request.POST.get('DOB'), temporary_address=request.POST.get('temporary_address'), 
@@ -111,11 +112,10 @@ def update_employee(request, employee_id):
             else:
                 handle_uploaded_file(request.FILES.get('employee_gov_id'), request.session['shop_id'], employee_id)  
                 messages.success(request, 'Updated successfully', extra_tags='alert')
-        else:
-            messages.success(request, 'Updated successfully', extra_tags='alert')
+        messages.success(request, 'Updated successfully', extra_tags='alert')
         return redirect('/staff/employee/')
     else:
-        employee = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'age', 'sex', 'date_of_joining', 'position', 'DOB', 'temporary_address', 'permanent_address'). \
+        employee = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'sex', 'date_of_joining', 'position', 'DOB', 'temporary_address', 'permanent_address'). \
             filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).last()
     return render(request, 'update_employee.html', {"month_year_month_name": get_month_year_month_name_for_download(),
                                                     'employee': employee,
@@ -136,7 +136,7 @@ def format_current_date(date):
 
 
 def download_appointment_letter(request, employee_id):
-    employee = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'age', 'sex', 'date_of_joining', 'position', 'DOB', 'temporary_address', 'permanent_address'). \
+    employee = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'sex', 'date_of_joining', 'position', 'DOB', 'temporary_address', 'permanent_address'). \
             filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).last()
     current_shop_details = ShopRegistration.objects.values('Shop_Name', 'Shop_Address', 'Desk_Contact_Number', 'email').filter(ShopID=request.session['shop_id']).first()
     
@@ -460,18 +460,17 @@ def add_partner(request):
             add_owner_id_in_shop_registration_for_entered_user(request, entered_user_name, list_of_shop_id)
             messages.success(request, 'Selected Parlour Added successfully', extra_tags='alert')
     return render(request, 'add_partner.html', {"month_year_month_name": get_month_year_month_name_for_download(),
-                                                "shop_details": get_login_user_shop_details(request),
-                                                "list_users": get_all_owners(request),
+                                                "shop_details": list(get_login_user_shop_details(request)),
+                                                "list_users": list(get_all_owners(request)),
                                                 "login_username": request.user.get_username()})
 
 
 def appointment(request):
     if request.method == 'POST':
-        if request.POST.get('client_id') != None:
-            custID = request.POST.get('client_id').upper()
-            client = Membership.objects.values('Name', 'Contact_Number').filter(custID=custID, shopID=request.session['shop_id']).first()
-            Appointment(name=client['Name'], contact_number=client['Contact_Number'],
-                                       date=request.POST.get('mem_date'), start_time=request.POST.get('mem_start_time'), end_time=request.POST.get('mem_end_time')).save()
+        if request.POST.get('mem_contact_number') != None:
+            membership = Membership.objects.values('Name', 'Contact_Number').filter(shopID=request.session['shop_id'], Contact_Number=request.POST.get('mem_contact_number')).first()
+            Appointment(name=membership['Name'], contact_number=membership['Contact_Number'],
+                                    date=request.POST.get('mem_date'), start_time=request.POST.get('mem_start_time'), end_time=request.POST.get('mem_end_time')).save()
         else:
             Appointment(name=request.POST.get('cust_name'), contact_number=request.POST.get('contact_number'), date=request.POST.get('date'), start_time=request.POST.get('start_time'), end_time=request.POST.get('end_time')).save()
     events = Appointment.objects.values('name', 'contact_number', 'date', 'start_time', 'end_time')

@@ -89,10 +89,22 @@ def set_session(request, shop_id):
 def get_all_membership_based_on_shop_id(request):
     memberships = Membership.objects.values('custID', 'Contact_Number', 'Sex', 'Name', 'DOB', 'last_visit', 'total_amount', 'number_of_visit').filter(shopID=request.session['shop_id'])
     for membership in memberships:
-        membership['DOB'] = membership['DOB'].strftime("%Y-%m-%d")
+        membership['DOB'] = membership['DOB']
         membership['last_visit'] = membership['last_visit'].strftime("%Y-%m-%d")
         if membership['total_amount'] == 0 or membership['number_of_visit'] == 0:
             membership['avg'] = 0
         else:
             membership['avg'] = round(membership['total_amount']/membership['number_of_visit'], 2)
+        custID_number = 0
+        custID_character = ''
+        for c in membership['custID']:
+            if c >= '0' and c <='9':
+                custID_number = custID_number*10 + int(c)
+            else:
+                custID_character = custID_character + c
+        membership['custID_number'] = custID_number
+        membership['custID_character'] = custID_character
+    memberships = list(memberships)
+    memberships = sorted(memberships, key=lambda d:(d['custID_character'], d['custID_number']))
+    print(memberships)
     return memberships

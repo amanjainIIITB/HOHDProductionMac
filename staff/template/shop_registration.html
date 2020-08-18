@@ -99,11 +99,11 @@
             <div id = "leftrightbox">
                 {% csrf_token %}
                 <label for="Shop_Name">Shop Name</label>
-                <input type="text" id="Shop_Name" name="Shop_Name" ><br>
+                <input type="text" id="Shop_Name" name="Shop_Name" required><br>
                 <label for="Desk_Contact_Number">Desk Contact Number</label>
-                <input type="text" id="Desk_Contact_Number" name="Desk_Contact_Number" ><br>
+                <input type="text" id="Desk_Contact_Number" name="Desk_Contact_Number" required><br>
                 <label for="Shop_Address">Shop Address</label>
-                <textarea id="Shop_Address" name="Shop_Address" ></textarea><br>
+                <textarea id="Shop_Address" name="Shop_Address" required></textarea><br>
                 <label for="email">Email</label>
                 <input type="text" id="email" name="email" ><br>
                 <input type="submit" value="Submit">

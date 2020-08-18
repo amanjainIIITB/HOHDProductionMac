@@ -23,12 +23,45 @@
             {
                 document.getElementById('membership_details').innerHTML="This Membership ID has already been assigned to another Client, try another ID";
                 document.getElementById("submit_button").disabled = true;
+                return true;
             }    
             else
             {
                 document.getElementById('membership_details').innerHTML= "";
                 document.getElementById("submit_button").disabled = false;
+                return false;
             }    
+        }
+
+        function validate_contact_number(){
+            var memberships = {{memberships|safe}};
+            var user_entered_contact_number = document.getElementById('contact_number').value;
+            console.log(user_entered_contact_number)
+            var is_membership_exist = false;
+            for(i=0; i<memberships.length; i++)
+            {
+                console.log(memberships[i].Contact_Number);
+                console.log(user_entered_contact_number);
+                if(user_entered_contact_number == memberships[i].Contact_Number)
+                {
+                    is_membership_exist = true;
+                    break;
+                }
+            }
+            if(is_membership_exist == true)
+            {
+                document.getElementById('membership_contact').innerHTML="This contact number has already been assigned to another Client, try another Number";
+                document.getElementById("submit_button").disabled = true;
+            }    
+            else
+            {
+                document.getElementById('membership_contact').innerHTML= "";
+                document.getElementById("submit_button").disabled = false;
+            }    
+        }
+
+        function onload_behaviour(){
+            document.getElementById("submit_button").disabled = true;
         }
     </script>
     {% load static %}
@@ -42,7 +75,7 @@
             height:40px;
         }
     </style>
-    <body>
+    <body onload="onload_behaviour()">
 
         {% if messages %}
             <script>
@@ -61,7 +94,7 @@
                         <label for="custid">Client ID</label>
                     </td>
                     <td>
-                        <input onmouseleave="validate_membership_id()" type="text" id="custid" name="custid">
+                        <input oninput="validate_membership_id()" type="text" id="custid" name="custid" required>
                     </td>
                 </tr>
                 <tr>
@@ -99,8 +132,11 @@
                         <label for="contact_number">Contact Number</label>
                     </td>
                     <td>
-                        <input type="text" id="contact_number" name="contact_number">
+                        <input oninput="validate_contact_number()" type="text" id="contact_number" name="contact_number" required>
                     </td>
+                </tr>
+                <tr>
+                    <td><span id="membership_contact"></span></td>
                 </tr>
             </table>
             <input type="submit" id="submit_button" value="Submit">

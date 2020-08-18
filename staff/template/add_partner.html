@@ -70,10 +70,12 @@
             document.getElementById("mysubmit").disabled = false;
             document. getElementById('mysubmit'). style. backgroundColor = 'Green';
         }
-        function validate_username(users, list_shop_details)
+        function validate_username()
         {
             var entered_username_or_contact_number = document.getElementById('name').value;
             var login_username="{{login_username}}";
+            var users = {{list_users|safe}};
+            var list_shop_details = {{shop_details|safe}};
             var flag="False";
             for(i=0; i<users.length; i++)
             {
@@ -96,6 +98,7 @@
                 incorrect_username();
             }
         }
+        
         function onload_behaviour()
         {
             // Disable the tile
@@ -188,7 +191,6 @@
 
     </style>
     <body style="background-color: pink;" onload="onload_behaviour()">
-
         {% if messages %}
             <script>
                 {% for message in messages %}
@@ -204,7 +206,7 @@
             <div id="leftleftbox"></div>
             <div id = "leftrightbox">
                 <label for="name">Partner Username</label>
-                <input onmouseleave="validate_username({{list_users}}, {{shop_details}})" type="text" id="name" name="name">
+                <input oninput="validate_username()" type="text" id="name" name="name">
                 <span id="user_details"></span>
                 <label for="parlour">Select Parlour:</label><br>
                 <span id="shop_list"></span>
