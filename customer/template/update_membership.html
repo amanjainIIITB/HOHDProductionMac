@@ -26,10 +26,6 @@
                 document.getElementById('membership_details').innerHTML="This Membership ID has already been assigned to another Client, try another ID";
                 document.getElementById("submit_button").disabled = true;
             }    
-            else if(user_entered_membership_id == ""){
-                document.getElementById('membership_details').innerHTML="Membership ID can't be empty";
-                document.getElementById("submit_button").disabled = true;
-            }
             else{
                 document.getElementById('membership_details').innerHTML= "";
                 document.getElementById("submit_button").disabled = false;
@@ -108,7 +104,7 @@
                         <label for="custID">Client ID</label>
                     </td>
                     <td>
-                        <input onmouseleave="validate_membership_id()" type="text" id="custID" name="custID" value="{{custID}}" required>
+                        <input oninput="validate_membership_id()" type="text" id="custID" name="custID" value="{{custID}}" required>
                     </td>
                 </tr>
                 <tr>
@@ -119,7 +115,7 @@
                         <label for="Contact_Number">Contact_Number</label>
                     </td>
                     <td>
-                        <input type="text" onmouseleave="validate_contact_number()" id="Contact_Number" name="Contact_Number" value="{{Contact_Number}}" required>
+                        <input type="text" oninput="validate_contact_number()" id="Contact_Number" name="Contact_Number" value="{{Contact_Number}}" required>
                     </td>
                 </tr>
                 <tr>

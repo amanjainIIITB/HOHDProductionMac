@@ -57,6 +57,9 @@ def download_employee_govt_id(request, employee_id):
         response['Content-Disposition'] = 'attachment; filename="' + str(employee_govt_id_name) +'"'
         response.write(data)
         return response
+    else:
+        messages.success(request, 'Employee data not found', extra_tags='alert')
+        return redirect('/staff/employee/')
 
 
 def get_current_shop_employees(shop_id):

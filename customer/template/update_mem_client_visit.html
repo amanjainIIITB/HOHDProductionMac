@@ -135,9 +135,9 @@
             {% csrf_token %}
             <div id = "leftrightbox">
                 <label for="date">Date</label>
-                <input type="date" id="date" name="date" value="{{client_data.date}}"><br>
+                <input type="date" id="date" name="date" value="{{client_data.date}}" required><br>
                 <label for="custID">Membership ID</label>
-                <input oninput="validate_client()" type="text" id="custID" name="custID" value="{{client_data.custID}}">
+                <input oninput="validate_client()" type="text" id="custID" name="custID" value="{{client_data.custID}}" required>
                 <span id="client_details"></span><br>
                 <label for="payment_mode">Payment Mode</label>
                 <select id="payment_mode" name="payment_mode">
@@ -161,7 +161,7 @@
                     {% endfor %}
                 </select>
                 <label for="amount">Amount</label>
-                <input type="text" id="amount" name="amount" placeholder="Enter Amount.." value="{{client_data.amount}}">
+                <input type="text" id="amount" name="amount" placeholder="Enter Amount.." value="{{client_data.amount}}" required>
                 <input type="submit" id="submit_button" value="Submit">
             </div>
         </div>
