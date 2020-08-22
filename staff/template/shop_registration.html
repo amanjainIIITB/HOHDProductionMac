@@ -1,10 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
         <title>Welcome</title>
     </head>
-    {% load static %}
+    <script src="{% static 'common/common.js' %}"></script>
     <style>
 
     input[type=text], select, textarea {
@@ -101,7 +102,8 @@
                 <label for="Shop_Name">Shop Name</label>
                 <input type="text" id="Shop_Name" name="Shop_Name" required><br>
                 <label for="Desk_Contact_Number">Desk Contact Number</label>
-                <input type="text" id="Desk_Contact_Number" name="Desk_Contact_Number" required><br>
+                <input type="text" id="Desk_Contact_Number" name="Desk_Contact_Number" oninput="valid_number_status('Desk_Contact_Number', 'span_contact_number')" required><br>
+                <span id="span_contact_number"></span><br>
                 <label for="Shop_Address">Shop Address</label>
                 <textarea id="Shop_Address" name="Shop_Address" required></textarea><br>
                 <label for="email">Email</label>
