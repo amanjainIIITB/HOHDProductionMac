@@ -1,11 +1,13 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
         <title>Title</title>
     </head>
+    <script src="{% static 'common/common.js' %}"></script>
     {% load custom_filter_tags %}
-    {% load static %}
     <style>
         th, td {
             width:120px;
@@ -129,7 +131,6 @@
             var chart = new google.visualization.PieChart(document.getElementById('numberofcustomerofthemonthdiv'));
             chart.draw(data, options);
         }
-
         </script>
         <br>
         <br>
@@ -166,9 +167,9 @@
                     <td>{{customer_obj.amount}}</td>
                     <td>{{customer_obj.numberofclient}}</td>
                     {% if customer_obj.isMember == True %}
-                        <td><a href="/client/update_mem_client_visit/{{customer_obj.visitID}}/">Edit</a> / <a href="/client/delete_client_visit/{{customer_obj.visitID}}">Delete</a></td>
+                        <td><a href="/client/update_mem_client_visit/{{customer_obj.visitID}}/">Edit</a> / <button onclick="popup_confirmation('Do you want to Delete Client Visit Entry?', '/client/delete_client_visit/{{customer_obj.visitID}}/')">Delete</button></td>
                     {% else %}
-                        <td><a href="/client/update_non_mem_client_visit/{{customer_obj.visitID}}/">Edit</a> / <a href="/client/delete_client_visit/{{customer_obj.visitID}}/">Delete</a></td>
+                        <td><a href="/client/update_non_mem_client_visit/{{customer_obj.visitID}}/">Edit</a> / <button onclick="popup_confirmation('Do you want to Delete Client Visit Entry?', '/client/delete_client_visit/{{customer_obj.visitID}}/')">Delete</button></td>
                     {% endif %}
                 </tr>
             {% endfor %}

@@ -1,9 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
         <title>Welcome</title>
     </head>
+    <script src="{% static 'common/common.js' %}"></script>
     <script>
         function validate_membership_id(){
             var memberships = {{memberships|safe}};
@@ -34,33 +36,38 @@
         }
 
         function validate_contact_number(){
-            var memberships = {{memberships|safe}};
             var user_entered_contact_number = document.getElementById('contact_number').value;
-            console.log(user_entered_contact_number)
-            var is_membership_exist = false;
-            for(i=0; i<memberships.length; i++)
-            {
-                console.log(memberships[i].Contact_Number);
-                console.log(user_entered_contact_number);
-                if(user_entered_contact_number == memberships[i].Contact_Number)
-                {
-                    is_membership_exist = true;
-                    break;
-                }
+            if(is_number_valid(user_entered_contact_number)==false){
+                document.getElementById('membership_contact').innerHTML= "Special characters not allowed";
             }
-            if(is_membership_exist == true)
-            {
-                document.getElementById('membership_contact').innerHTML="This contact number has already been assigned to another Client, try another Number";
-                document.getElementById("submit_button").disabled = true;
-            }    
-            else
-            {
-                document.getElementById('membership_contact').innerHTML= "";
-                document.getElementById("submit_button").disabled = false;
-            }    
+            else{
+                var memberships = {{memberships|safe}};
+                console.log(user_entered_contact_number)
+                var is_membership_exist = false;
+                for(i=0; i<memberships.length; i++)
+                {
+                    console.log(memberships[i].Contact_Number);
+                    console.log(user_entered_contact_number);
+                    if(user_entered_contact_number == memberships[i].Contact_Number)
+                    {
+                        is_membership_exist = true;
+                        break;
+                    }
+                }
+                if(is_membership_exist == true)
+                {
+                    document.getElementById('membership_contact').innerHTML="This contact number has already been assigned to another Client, try another Number";
+                    document.getElementById("submit_button").disabled = true;
+                }    
+                else
+                {
+                    document.getElementById('membership_contact').innerHTML= "";
+                    document.getElementById("submit_button").disabled = false;
+                }   
+            } 
         }
     </script>
-    {% load static %}
+    
     <style>
         .transaction{
             width:180px;
@@ -71,7 +78,7 @@
             height:40px;
         }
     </style>
-    <body onload="onload_behaviour()">
+    <body>
 
         {% if messages %}
             <script>
@@ -157,7 +164,7 @@
                     <td class="transaction">{{membership.DOB}}</td>
                     <td class="transaction">{{membership.last_visit}}</td>
                     <td class="transaction">{{membership.avg}}</td>
-                    <td class="transaction"><a href="/client/update_membership/{{membership.custID}}">Edit</a> / <a href="/client/delete_membership/{{membership.custID}}">Delete</a></td>
+                    <td class="transaction"><a href="/client/update_membership/{{membership.custID}}">Edit</a> / <button onclick="popup_confirmation('Do you want to Delete Client Membership?', '/client/delete_membership/{{membership.custID}}/')">Delete</button></td>
                 </tr>
             {% endfor %}
         </table>

@@ -1,10 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
         <title>Welcome</title>
     </head>
-    {% load static %}
+    <script src="{% static 'common/common.js' %}"></script>
     <style>
         .transaction{
             width:180px;
@@ -69,7 +70,12 @@
                         <label for="contact_number">Contact Number</label>
                     </td>
                     <td>
-                        <input type="text" id="contact_number" name="contact_number" required>
+                        <input type="text" id="contact_number" name="contact_number" oninput="valid_number_status('contact_number', 'span_contact_number')" required>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span id="span_contact_number"></span>
                     </td>
                 </tr>
                 <tr>
@@ -156,7 +162,7 @@
                     </br>
                     <b>Permanent Address</b>:{{employee.permanent_address}}</br>
                     </br>
-                    <a href="/staff/update_employee/{{employee.EmployeeID}}">Edit</a> / <a href="/staff/delete_employee/{{employee.EmployeeID}}">Delete</a></br>
+                    <a href="/staff/update_employee/{{employee.EmployeeID}}">Edit</a> / <button onclick="popup_confirmation('Do you want to Delete Employee Data?', '/staff/delete_employee/{{employee.EmployeeID}}/')">Delete</button></br>
                     </br>
                     <a href="/staff/download_appointment_letter/{{employee.EmployeeID}}">Download Appointment Letter</a></br>
                     </br>

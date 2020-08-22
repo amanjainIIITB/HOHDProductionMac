@@ -159,4 +159,5 @@ def delete_all_visit_of_client(client_id, shop_id):
 def delete_membership(request, cust_id):
     Membership.objects.filter(custID=cust_id, shopID=request.session['shop_id']).delete()
     delete_all_visit_of_client(cust_id, request.session['shop_id'])
+    messages.success(request, 'Deleted successfully', extra_tags='alert')
     return redirect('/client/membership/')

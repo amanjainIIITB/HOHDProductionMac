@@ -1,10 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
         <title>Welcome</title>
     </head>
-    {% load static %}
+    <script src="{% static 'common/common.js' %}"></script>
     <style>
         .transaction{
             width:180px;
@@ -16,7 +17,6 @@
         }
     </style>
     <body>
-
         {% if messages %}
             <script>
                 {% for message in messages %}
@@ -64,7 +64,12 @@
                         <label for="amount">Amount</label>
                     </td>
                     <td>
-                        <input type="text" id="amount" name="amount" placeholder="Enter Amount.." required>
+                        <input type="text" id="amount" name="amount" placeholder="Enter Amount.." oninput="valid_number_status('amount', 'amount_span')" required>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span id="amount_span"></span>
                     </td>
                 </tr>
                 <tr>
@@ -76,7 +81,7 @@
                     </td>
                 </tr>
             </table>
-            <input type="submit" value="Submit">
+            <input type="submit" id="submit" value="Submit">
         </form>
         <h1>Transaction Record of the Month</h1>
         <table border="2">
@@ -117,7 +122,7 @@
                 <td class="transaction">{{transobj.comment}}</td>
                 <td class="transaction">{{transobj.paymentmode}}</td>
                 <td class="transaction">{{transobj.amount}}</td>
-                <td class="transaction"><a href="/staff/update_expense/{{transobj.ExpenseID}}">Edit</a> / <a href="/staff/delete_expense/{{transobj.ExpenseID}}">Delete</a></td>
+                <td class="transaction"><a href="/staff/update_expense/{{transobj.ExpenseID}}">Edit</a> / <button onclick="popup_confirmation('Do you want to Delete Expense Data?', '/staff/delete_expense/{{transobj.ExpenseID}}/')">Delete</button></td>
             </tr>
             {% endfor %}
             {% for transobj in remaining_balance%}
