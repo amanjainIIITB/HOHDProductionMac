@@ -30,8 +30,6 @@ class Membership(models.Model):
     Name = models.CharField(max_length=50, null=True)
     DOB = models.CharField(max_length=10, null=True)
     last_visit = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
-    total_amount = models.IntegerField(default=0)
-    number_of_visit = models.IntegerField(default=0)
 
     def __str__(self):
         return str(self.shopID)+" "+str(self.custID)

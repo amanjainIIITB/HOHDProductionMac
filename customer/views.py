@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import *
 from staff.models import Employee
+from staff.views import analysis
 from HOHDProductionMac.common_function import get_month_year_month_name_for_download, atleast_one_shop_registered, \
     get_login_user_shop_details, get_current_time, get_all_membership_based_on_shop_id
 import datetime
@@ -13,7 +14,7 @@ def update_non_mem_client_visit(request, visit_id):
     if request.method == "POST":
         ClientVisit.objects.filter(visitID=visit_id, ShopID=request.session['shop_id']).update(date=request.POST.get('date'), time=get_current_time(),
                        numberofclient=request.POST.get('numberofclient'), employee_id=request.POST.get('employee'), payment_mode=request.POST.get('payment_mode'), amount=request.POST.get('amount'))
-        # messages.success(request, 'Updated successfully', extra_tags='alert')
+        messages.success(request, 'Updated successfully', extra_tags='alert')
         return redirect('/staff/analysis/')
     else:
         client_data = ClientVisit.objects.values('visitID', 'date', 'employee_id', 'payment_mode', 'numberofclient', 'amount').filter(visitID=visit_id, ShopID=request.session['shop_id']).last()
@@ -23,29 +24,24 @@ def update_non_mem_client_visit(request, visit_id):
                                                                 "shop_details": get_login_user_shop_details(request)})
 
 
-def update_membership_after_update_mem_client_visit(request, custID):
-    client_visit = ClientVisit.objects.values('date').filter(custID=custID, ShopID=request.session['shop_id']).order_by('date').last()
-    Membership.objects.filter(custID=custID, shopID=request.session['shop_id']).update(last_visit=client_visit['date'])
-
-
 def update_mem_client_visit(request, visit_id):
     if request.method == "POST":
         ClientVisit.objects.filter(visitID=visit_id, ShopID=request.session['shop_id']).update(custID=request.POST.get('custID'), date=request.POST.get('date'),
                        time=get_current_time(), employee_id=request.POST.get('EmployeeID'), payment_mode=request.POST.get('payment_mode'), amount=request.POST.get('amount'))
-        update_membership_after_update_mem_client_visit(request, request.POST.get('custID'))
-        # messages.success(request, 'Updated successfully', extra_tags='alert')
+        messages.success(request, 'Updated successfully', extra_tags='alert')
         return redirect('/staff/analysis/')
     else:
         client_data = ClientVisit.objects.values('visitID', 'custID', 'date', 'employee_id', 'payment_mode', 'amount').filter(visitID=visit_id, ShopID=request.session['shop_id']).last()
     return render(request, 'update_mem_client_visit.html', {"month_year_month_name": get_month_year_month_name_for_download(),
                                                             'client_data': client_data,
                                                             "employees": Employee.objects.values('EmployeeID', 'name').filter(ShopID=request.session['shop_id']),
-                                                            "membership_based_on_shop_id": list(get_all_membership_based_on_shop_id(request)),
+                                                            "membership_based_on_shop_id": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),
                                                             "shop_details": get_login_user_shop_details(request)})
 
 
 def delete_client_visit(request, visit_id):
     ClientVisit.objects.filter(visitID=visit_id, ShopID=request.session['shop_id']).delete()
+    messages.success(request, 'Deleted successfully', extra_tags='alert')
     return redirect('/staff/analysis/')
 
 
@@ -59,42 +55,52 @@ def get_new_visit_id(request):
 
 
 @login_required(login_url="/")
+def save_mem_visit(request):
+    if not atleast_one_shop_registered(request):
+        return redirect('/staff/shopreg/')
+    else:
+        membership = Membership.objects.values('custID').filter(shopID=request.session['shop_id'], Contact_Number=request.POST.get('Contact_Number')).first()
+        paymentmode = request.POST.get('mem_paymentmode')
+        datesplit = request.POST.get('mem_date').split('-')
+        y = int(datesplit[0])
+        m = int(datesplit[1])
+        if (paymentmode == 'cash'):
+            print('cash payment for membership customer')
+            ClientVisit(isMember=True, custID=membership['custID'] ,visitID=get_new_visit_id(request), date=request.POST.get('mem_date'), payment_mode='cash', employee_id=request.POST.get('mem_EmployeeID'), ShopID=request.session['shop_id'], bardate=datetime.date(day=1, month=m, year=y).strftime("%Y-%m-%d"), time=get_current_time(), numberofclient=1, amount=request.POST.get('mem_amount')).save()
+        else:
+            print('online payment for membership customer')
+            ClientVisit(isMember=True, custID=membership['custID'] ,visitID=get_new_visit_id(request), date=request.POST.get('mem_date'), payment_mode='online', employee_id=request.POST.get('mem_EmployeeID'), ShopID=request.session['shop_id'], bardate=datetime.date(day=1, month=m, year=y).strftime("%Y-%m-%d"), time=get_current_time(), numberofclient=1, amount=request.POST.get('mem_amount')).save()
+        messages.success(request, 'Added successfully', extra_tags='alert')
+    return redirect('/client/details/')
+
+
+@login_required(login_url="/")
+def save_non_mem_visit(request):
+    if not atleast_one_shop_registered(request):
+        return redirect('/staff/shopreg/')
+    else:
+        paymentmode = request.POST.get('paymentmode')
+        datesplit = request.POST.get('date').split('-')
+        y = int(datesplit[0])
+        m = int(datesplit[1])
+        if (paymentmode == 'cash'):
+            print('cash payment for non-membership customer')
+            ClientVisit(isMember=False, custID='None' ,visitID=get_new_visit_id(request), date=request.POST.get('date'), payment_mode='cash', employee_id=request.POST.get('EmployeeID'), ShopID=request.session['shop_id'], bardate=datetime.date(day=1, month=m, year=y).strftime("%Y-%m-%d"), time=get_current_time(), numberofclient=request.POST.get('numberofclient'), amount=request.POST.get('amount')).save()
+        else:
+            print('online payment for non-membership customer')
+            ClientVisit(isMember=False, custID='None' ,visitID=get_new_visit_id(request), date=request.POST.get('date'), payment_mode='online', employee_id=request.POST.get('EmployeeID'), ShopID=request.session['shop_id'], bardate=datetime.date(day=1, month=m, year=y).strftime("%Y-%m-%d"), time=get_current_time(), numberofclient=request.POST.get('numberofclient'), amount=request.POST.get('amount')).save()
+        messages.success(request, 'Added successfully', extra_tags='alert')
+    return redirect('/client/details/')
+
+
+@login_required(login_url="/")
 def details(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
-    if request.method == "POST":
-        now = datetime.datetime.now()
-        Contact_Number=request.POST.get('Contact_Number')
-        if Contact_Number=='':
-            paymentmode = request.POST.get('paymentmode')
-            datesplit = request.POST.get('date').split('-')
-            y = int(datesplit[0])
-            m = int(datesplit[1])
-            if (paymentmode == 'cash'):
-                print('cash payment for non-membership customer')
-                ClientVisit(isMember=False, custID='None' ,visitID=get_new_visit_id(request), date=request.POST.get('date'), payment_mode='cash', employee_id=request.POST.get('EmployeeID'), ShopID=request.session['shop_id'], bardate=datetime.date(day=1, month=m, year=y).strftime("%Y-%m-%d"), time=get_current_time(), numberofclient=request.POST.get('numberofclient'), amount=request.POST.get('amount')).save()
-            else:
-                print('online payment for non-membership customer')
-                ClientVisit(isMember=False, custID='None' ,visitID=get_new_visit_id(request), date=request.POST.get('date'), payment_mode='online', employee_id=request.POST.get('EmployeeID'), ShopID=request.session['shop_id'], bardate=datetime.date(day=1, month=m, year=y).strftime("%Y-%m-%d"), time=get_current_time(), numberofclient=request.POST.get('numberofclient'), amount=request.POST.get('amount')).save()
-            messages.success(request, 'Added successfully', extra_tags='alert')
-        else:
-            membership = Membership.objects.values('custID').filter(shopID=request.session['shop_id'], Contact_Number=Contact_Number).first()
-            paymentmode = request.POST.get('mem_paymentmode')
-            datesplit = request.POST.get('mem_date').split('-')
-            y = int(datesplit[0])
-            m = int(datesplit[1])
-            update_membership_after_service(request, request.POST.get('Contact_Number'), request.POST.get('mem_amount'), request.POST.get('mem_date'))
-            if (paymentmode == 'cash'):
-                print('cash payment for membership customer')
-                ClientVisit(isMember=True, custID=membership['custID'] ,visitID=get_new_visit_id(request), date=request.POST.get('mem_date'), payment_mode='cash', employee_id=request.POST.get('mem_EmployeeID'), ShopID=request.session['shop_id'], bardate=datetime.date(day=1, month=m, year=y).strftime("%Y-%m-%d"), time=get_current_time(), numberofclient=1, amount=request.POST.get('mem_amount')).save()
-            else:
-                print('online payment for membership customer')
-                ClientVisit(isMember=True, custID=membership['custID'] ,visitID=get_new_visit_id(request), date=request.POST.get('mem_date'), payment_mode='online', employee_id=request.POST.get('mem_EmployeeID'), ShopID=request.session['shop_id'], bardate=datetime.date(day=1, month=m, year=y).strftime("%Y-%m-%d"), time=get_current_time(), numberofclient=1, amount=request.POST.get('mem_amount')).save()
-            messages.success(request, 'Added successfully', extra_tags='alert')
     employees = Employee.objects.values('EmployeeID', 'name').filter(ShopID=request.session['shop_id'])
     return render(request, 'details.html', {"month_year_month_name": get_month_year_month_name_for_download(), 
                                             "shop_details": get_login_user_shop_details(request),
-                                            "membership_based_on_shop_id": list(get_all_membership_based_on_shop_id(request)),
+                                            "membership_based_on_shop_id": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),
                                             "employees": employees})
 
 
@@ -117,7 +123,7 @@ def membership(request):
         messages.success(request, 'Added successfully', extra_tags='alert')
     return render(request, 'membership.html', {"month_year_month_name": get_month_year_month_name_for_download(), 
                                                 "shop_details": get_login_user_shop_details(request),
-                                                "memberships": list(get_all_membership_based_on_shop_id(request))})
+                                                "memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id']))})
 
 
 def update_client_visit_after_update_membership(current_client_id, changed_client_id, shop_id):
@@ -143,7 +149,7 @@ def update_membership(request, cust_id):
                                                            'Sex': membership['Sex'],
                                                            'Name': membership['Name'],
                                                            'DOB': membership['DOB'],
-                                                           'memberships': list(get_all_membership_based_on_shop_id(request)),
+                                                           'memberships': list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),
                                                            "shop_details": get_login_user_shop_details(request)})
 
 def delete_all_visit_of_client(client_id, shop_id):
@@ -154,14 +160,3 @@ def delete_membership(request, cust_id):
     Membership.objects.filter(custID=cust_id, shopID=request.session['shop_id']).delete()
     delete_all_visit_of_client(cust_id, request.session['shop_id'])
     return redirect('/client/membership/')
-
-
-def update_membership_after_service(request, Contact_Number, amount, date):
-    membership = Membership.objects.values('custID', 'Contact_Number', 'Sex', 'Name', 'DOB', 'last_visit', 'total_amount', 'number_of_visit').filter(shopID=request.session['shop_id'], Contact_Number=Contact_Number)
-    print(membership)
-    print(date)
-    print(membership[0])
-    print(amount)
-    print(membership[0]['total_amount'])
-    print(membership[0]['number_of_visit'])
-    membership.update(last_visit=date, total_amount=membership[0]['total_amount']+int(amount), number_of_visit=membership[0]['number_of_visit']+1)

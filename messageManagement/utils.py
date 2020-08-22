@@ -16,12 +16,12 @@ def get_all_shop_owner_details():
 
 
 def get_client_details_based_on_shop_id_client_id(shop_id, client_id):
-    return Membership.objects.values('custID', 'shopID', 'Contact_Number', 'Sex', 'Name', 'DOB', 'last_visit', 'total_amount', 'number_of_visit').filter(shopID=shop_id, custID=client_id).first()
+    return Membership.objects.values('custID', 'shopID', 'Contact_Number', 'Sex', 'Name', 'DOB', 'last_visit').filter(shopID=shop_id, custID=client_id).first()
 
 
 def get_clients_details_based_on_shop_id(shop_id):
-    return Membership.objects.values('custID', 'shopID', 'Contact_Number', 'Sex', 'Name', 'DOB', 'last_visit', 'total_amount', 'number_of_visit').filter(shopID=shop_id)
+    return Membership.objects.values('custID', 'shopID', 'Contact_Number', 'Sex', 'Name', 'DOB', 'last_visit').filter(shopID=shop_id)
 
 
 def get_all_clients_details():
-    return Membership.objects.values('custID', 'shopID', 'Contact_Number', 'Sex', 'Name', 'DOB', 'last_visit', 'total_amount', 'number_of_visit')
+    return Membership.objects.values('custID', 'shopID', 'Contact_Number', 'Sex', 'Name', 'DOB', 'last_visit')

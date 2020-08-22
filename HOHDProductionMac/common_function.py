@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from customer.models import Membership
 from useraccount.models import OwnerRegistration
 from staff.models import ShopRegistration
+from customer.models import ClientVisit
+from django.db.models import Sum, Count, Max
 
 
 def get_current_time():
@@ -32,6 +34,12 @@ def is_date_less(date1, date2):
     date1split = str(date1).split("-")
     date2split = date2.split("-")
     return datetime(int(date1split[0]), int(date1split[1]), int(date1split[2])) < datetime(int(date2split[0]), int(date2split[1]), int(date2split[2]))
+
+
+def is_date_and_month_equal(date1, date2):
+    date1split = str(date1).split("-")
+    date2split = date2.split("-")
+    return date1split[2]==date2split[2] and date1split[1]==date2split[1]
 
 
 def get_month_year_month_name_for_download():
@@ -86,15 +94,22 @@ def set_session(request, shop_id):
     request.session['shop_id'] = shop_id
 
 
-def get_all_membership_based_on_shop_id(request):
-    memberships = Membership.objects.values('custID', 'Contact_Number', 'Sex', 'Name', 'DOB', 'last_visit', 'total_amount', 'number_of_visit').filter(shopID=request.session['shop_id'])
+def get_all_membership_based_on_shop_id(request, ShopID):
+    client_visit_group_by_client_id = ClientVisit.objects.values('custID', 'date').filter(ShopID=ShopID).annotate(sum_amount=Sum('amount'), count_number_of_visit=Count('custID'), last_date=Max('date'))
+    client_visit_group_by_client_id_dict_key_clientID = {}
+    for client_visit_obj in client_visit_group_by_client_id:
+        client_visit_group_by_client_id_dict_key_clientID.update({client_visit_obj['custID'] : client_visit_obj})
+    memberships = Membership.objects.values('custID', 'Contact_Number', 'Sex', 'Name', 'DOB', 'last_visit').filter(shopID=ShopID)
     for membership in memberships:
         membership['DOB'] = membership['DOB']
-        membership['last_visit'] = membership['last_visit'].strftime("%Y-%m-%d")
-        if membership['total_amount'] == 0 or membership['number_of_visit'] == 0:
+        if membership['custID'] not in client_visit_group_by_client_id_dict_key_clientID.keys():
+            membership['last_visit'] = membership['last_visit'].strftime("%Y-%m-%d")
+        else:
+            membership['last_visit'] = client_visit_group_by_client_id_dict_key_clientID[membership['custID']]['date'].strftime("%Y-%m-%d")
+        if membership['custID'] not in client_visit_group_by_client_id_dict_key_clientID.keys() or client_visit_group_by_client_id_dict_key_clientID[membership['custID']]['sum_amount'] == 0 or client_visit_group_by_client_id_dict_key_clientID[membership['custID']]['count_number_of_visit'] == 0:
             membership['avg'] = 0
         else:
-            membership['avg'] = round(membership['total_amount']/membership['number_of_visit'], 2)
+            membership['avg'] = round(client_visit_group_by_client_id_dict_key_clientID[membership['custID']]['sum_amount']/client_visit_group_by_client_id_dict_key_clientID[membership['custID']]['count_number_of_visit'], 2)
         custID_number = 0
         custID_character = ''
         for c in membership['custID']:
@@ -106,5 +121,4 @@ def get_all_membership_based_on_shop_id(request):
         membership['custID_character'] = custID_character
     memberships = list(memberships)
     memberships = sorted(memberships, key=lambda d:(d['custID_character'], d['custID_number']))
-    print(memberships)
     return memberships

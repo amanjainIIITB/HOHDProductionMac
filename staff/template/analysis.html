@@ -14,6 +14,13 @@
         }
     </style>
     <body>
+        {% if messages %}
+            <script>
+                {% for message in messages %}
+                    alert("{{ message }}");
+                {% endfor %}
+            </script>
+        {% endif %}
         {% include 'menubar.html' with active_menubar_item="Analytics" %}
         <div id="piechart"></div>
 
@@ -159,7 +166,7 @@
                     <td>{{customer_obj.amount}}</td>
                     <td>{{customer_obj.numberofclient}}</td>
                     {% if customer_obj.isMember == True %}
-                        <td><a href="/client/update_mem_client_visit/{{customer_obj.visitID}}/">Edit</a> / <a href="/client/delete_client_visit/{{customer_obj.visitID}}/">Delete</a></td>
+                        <td><a href="/client/update_mem_client_visit/{{customer_obj.visitID}}/">Edit</a> / <a href="/client/delete_client_visit/{{customer_obj.visitID}}">Delete</a></td>
                     {% else %}
                         <td><a href="/client/update_non_mem_client_visit/{{customer_obj.visitID}}/">Edit</a> / <a href="/client/delete_client_visit/{{customer_obj.visitID}}/">Delete</a></td>
                     {% endif %}

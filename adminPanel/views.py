@@ -6,7 +6,8 @@ from customer.views import get_all_membership
 from messageManagement.views import send_message_to_all_shop_all_owner, send_message_to_all_shop_all_client, send_message_to_particular_shop_all_owner, send_message_to_particular_shop_all_client, send_message_to_particular_shop_specific_client
 from .data_export import get_complete_database
 from .models import Event
-from HOHDProductionMac.common_function import get_month_year_month_name_for_download, get_login_user_shop_details, get_current_date, add_date, is_date_less
+from HOHDProductionMac.common_function import get_all_membership_based_on_shop_id, get_month_year_month_name_for_download, get_login_user_shop_details, get_current_date, add_date, is_date_less, is_date_and_month_equal
+import datetime
 
 
 # Import smtplib for the actual sending function
@@ -139,15 +140,16 @@ def email(request):
     return redirect('/message/send/')
 
 
-def time_interval_message(greeting, shop_detail, greeting_choice):
+def time_interval_message(request, greeting, shop_detail, greeting_choice):
     days_intervals = [10, 15, 20, 30, 45, 60]
     message_body = ''
     for days_interval in days_intervals:
         count = 0
         event = Event.objects.values('EventID', 'name', 'message', 'date').filter(name=days_interval).order_by('date').first()
-        clients = Membership.objects.values('custID', 'last_visit', 'Name', 'Contact_Number').filter(shopID=shop_detail['ShopID'])
+        clients = get_all_membership_based_on_shop_id(request, shop_detail['ShopID'])
         for client in clients:
-            if str(add_date(client['last_visit'], days_interval)) == str(get_current_date()):
+            date = datetime.datetime.strptime(client['last_visit'], "%Y-%m-%d")
+            if str(add_date(date, int(days_interval))).split()[0] == str(get_current_date()):
                 count = count + 1
                 # If Client is has exceeded the number of days interval
                 if is_date_less(add_date(event['date'], days_interval), get_current_date()):
@@ -159,13 +161,13 @@ def time_interval_message(greeting, shop_detail, greeting_choice):
     return message_body
 
 
-def birthday(greeting, shop_detail, greeting_choice):
+def birthday(request, greeting, shop_detail, greeting_choice):
     event_name='Birthday'
     count = 0
     event = Event.objects.values('EventID', 'name', 'message', 'date').filter(name=event_name).first()
-    clients = Membership.objects.values('custID', 'DOB', 'Name', 'Contact_Number').filter(shopID=shop_detail['ShopID'])
+    clients = get_all_membership_based_on_shop_id(request, shop_detail['ShopID'])
     for client in clients:
-        if str(client['DOB']) == str(get_current_date()):
+        if str(client['DOB']) != '' and is_date_and_month_equal(client['DOB'], get_current_date()):
             count = count + 1
             send_message_to_particular_shop_specific_client(greeting, event['message'], shop_detail['ShopID'], client['custID'], greeting_choice)
     return create_message_body(event['name'], count, event['message'])
@@ -178,7 +180,7 @@ def daily_check(request):
     shop_details = ShopRegistration.objects.values('ShopID', 'Desk_Contact_Number', 'Shop_Name')
     for shop_detail in shop_details:
         message_body = message_body + str(shop_detail['ShopID']) +'-'+str(shop_detail['Shop_Name'])+'\n'
-        message_body = message_body + time_interval_message(greeting, shop_detail, greeting_choice)
-        message_body = message_body + birthday(greeting, shop_detail, greeting_choice)
+        message_body = message_body + time_interval_message(request, greeting, shop_detail, greeting_choice)
+        message_body = message_body + birthday(request, greeting, shop_detail, greeting_choice)
     send_email(message_body)
     return redirect('/message/send/')

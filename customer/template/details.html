@@ -103,7 +103,6 @@
         }
     </style>
     <body style="background-color: pink;">
-
         {% if messages %}
             <script>
                 {% for message in messages %}
@@ -116,7 +115,7 @@
         <div id = "boxes">
             
             <div id = "leftrightbox">
-                <form method="post" action="/client/details/">
+                <form method="post" action="/client/save_mem_visit/">
                     {% csrf_token %}
                     <label for="mem_date">Date</label>
                     <input type="date" id="mem_date" name="mem_date" required><br>
@@ -144,7 +143,7 @@
         <div id="middleleftbox"></div>
         <div id = "rightbox">
             <h1>Non-Membership Client/Bulk Data</h1>
-            <form method="post" action="/client/details/">
+            <form method="post" action="/client/save_non_mem_visit/">
                 {% csrf_token %}
                 <label for="date">Date</label>
                 <input type="date" id="date" name="date" required><br>

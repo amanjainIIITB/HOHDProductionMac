@@ -128,7 +128,6 @@ def update_employee(request, employee_id):
 def delete_employee(request, employee_id):
     delete_file(request.session['shop_id'], employee_id)
     Employee.objects.filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).delete()
-    # delete_file(request.session['shop_id'], employee_id)
     messages.success(request, 'Deleted successfully', extra_tags='alert')
     return redirect('/staff/employee/')
 
@@ -184,6 +183,7 @@ def update_expense(request, expense_id):
                                                         'comment': expense['comment'],
                                                         'amount': expense['amount'],
                                                         "shop_details": get_login_user_shop_details(request)})
+                                                        
 
 def delete_expense(request, expense_id):
     Expense.objects.filter(shopID=request.session['shop_id'], ExpenseID=expense_id).delete()
@@ -223,7 +223,7 @@ def expense(request):
     r_json['shop_details'] = get_login_user_shop_details(request)
     return render(request, 'expense.html', r_json)
 
-
+    
 @login_required(login_url="/")
 def analysis(request):
     if not atleast_one_shop_registered(request):
@@ -492,6 +492,6 @@ def appointment(request):
     return render(request, 'calendar.html', {"month_year_month_name": get_month_year_month_name_for_download(),
                                              "shop_details": get_login_user_shop_details(request),
                                              'events': list(events), 
-                                             "membership_based_on_shop_id": list(get_all_membership_based_on_shop_id(request)),   
+                                             "membership_based_on_shop_id": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),   
                                              "login_username": request.user.get_username(),
                                              'shop_name': shop_name})
