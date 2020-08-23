@@ -54,7 +54,7 @@
         {% endif %}
         {% include 'menubar.html' with active_menubar_item="Employee" %}
         <h1>Add Employee</h1>
-        <form method="post" enctype="multipart/form-data" action="/staff/employee/">
+        <form autocomplete="off" method="post" enctype="multipart/form-data" action="/staff/employee/">
             {% csrf_token %}
             <table>
                 <tr>
@@ -70,7 +70,7 @@
                         <label for="contact_number">Contact Number</label>
                     </td>
                     <td>
-                        <input type="text" id="contact_number" name="contact_number" oninput="valid_number_status('contact_number', 'span_contact_number')" required>
+                        <input type="text" id="contact_number" name="contact_number" oninput="print_number_status('contact_number', 'span_contact_number')" required>
                     </td>
                 </tr>
                 <tr>

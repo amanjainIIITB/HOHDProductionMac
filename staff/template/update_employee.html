@@ -1,27 +1,18 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
         <title>Welcome</title>
     </head>
+    <script src="{% static 'common/common.js' %}"></script>
     <script>
-        function setDate(date, id){
-            var d = new Date(date);
-            var day = d.getDate();
-            if(day<=9)
-                day = '0'+day;
-            var month = d.getMonth()+1;
-            if(month<=9)
-                month = '0'+month;
-            document.getElementById(id).value = d.getFullYear()+"-"+month+"-"+day;
-        }
         function onload_behaviour(){
-            setDate("{{employee.DOB}}", "DOB");
-            setDate("{{employee.date_of_joining}}", "date_of_joining");
-            setDate("{{employee.date_of_appointment}}", "date_of_appointment")
+            setDate("DOB", "{{employee.DOB}}");
+            setDate("date_of_joining", "{{employee.date_of_joining}}");
+            setDate("date_of_appointment", "{{employee.date_of_appointment}}")
         }
     </script>
-    {% load static %}
     <style>
         .transaction{
             width:180px;
@@ -59,7 +50,12 @@
                         <label for="contact_number">Contact Number</label>
                     </td>
                     <td>
-                        <input type="text" id="contact_number" name="contact_number" value="{{employee.contact_number}}" required>
+                        <input type="text" id="contact_number" name="contact_number" value="{{employee.contact_number}}" oninput="print_number_status('contact_number', 'span_contact_number')" required>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span id="span_contact_number"></span>
                     </td>
                 </tr>
                 <tr>

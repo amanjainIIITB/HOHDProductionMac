@@ -35,7 +35,7 @@ def update_mem_client_visit(request, visit_id):
     return render(request, 'update_mem_client_visit.html', {"month_year_month_name": get_month_year_month_name_for_download(),
                                                             'client_data': client_data,
                                                             "employees": Employee.objects.values('EmployeeID', 'name').filter(ShopID=request.session['shop_id']),
-                                                            "membership_based_on_shop_id": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),
+                                                            "memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),
                                                             "shop_details": get_login_user_shop_details(request)})
 
 
@@ -74,6 +74,7 @@ def save_mem_visit(request):
     return redirect('/client/details/')
 
 
+
 @login_required(login_url="/")
 def save_non_mem_visit(request):
     if not atleast_one_shop_registered(request):
@@ -100,7 +101,7 @@ def details(request):
     employees = Employee.objects.values('EmployeeID', 'name').filter(ShopID=request.session['shop_id'])
     return render(request, 'details.html', {"month_year_month_name": get_month_year_month_name_for_download(), 
                                             "shop_details": get_login_user_shop_details(request),
-                                            "membership_based_on_shop_id": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),
+                                            "memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),
                                             "employees": employees})
 
 

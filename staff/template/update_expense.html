@@ -1,27 +1,16 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
         <title>Welcome</title>
     </head>
+    <script src="{% static 'common/common.js' %}"></script>
     <script>
         function onload_behaviour(){
-            setDate();
-        }
-        function setDate(){
-            console.log("Hello");
-            var d = new Date("{{date}}");
-            var day = d.getDate();
-            if(day<=9)
-                day = '0'+day;
-            var month = d.getMonth()+1;
-            if(month<=9)
-                month = '0'+month;
-            console.log();
-            document.getElementById("date").value = d.getFullYear()+"-"+month+"-"+day;
+            setDate("date", "{{date}}");
         }
     </script>
-    {% load static %}
     <style>
         .transaction{
             width:180px;
@@ -81,7 +70,12 @@
                         <label for="amount">Amount</label>
                     </td>
                     <td>
-                        <input type="text" id="amount" name="amount" placeholder="Enter Amount.." value="{{amount}}">
+                        <input type="text" oninput="print_number_status('amount', 'amount_span')"  id="amount" name="amount" placeholder="Enter Amount.." value="{{amount}}">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span id="amount_span"></span>
                     </td>
                 </tr>
                 <tr>

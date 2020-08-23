@@ -492,6 +492,6 @@ def appointment(request):
     return render(request, 'calendar.html', {"month_year_month_name": get_month_year_month_name_for_download(),
                                              "shop_details": get_login_user_shop_details(request),
                                              'events': list(events), 
-                                             "membership_based_on_shop_id": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),   
+                                             "memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),   
                                              "login_username": request.user.get_username(),
                                              'shop_name': shop_name})

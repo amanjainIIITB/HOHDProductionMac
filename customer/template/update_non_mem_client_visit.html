@@ -1,26 +1,14 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
         <title>Welcome</title>
     </head>
-    {% load static %}
+    <script src="{% static 'common/common.js' %}"></script>
     <script>
         function onload_behaviour(){
-            setDate();
-        }
-        function setDate(){
-            console.log("Hello");
-            var d = new Date("{{client_data.date}}");
-            console.log(d);
-            var day = d.getDate();
-            if(day<=9)
-                day = '0'+day;
-            var month = d.getMonth()+1;
-            if(month<=9)
-                month = '0'+month;
-            console.log();
-            document.getElementById("date").value = d.getFullYear()+"-"+month+"-"+day;
+            setDate("date", "{{client_data.date}}");
         }
     </script>
     <style>
@@ -118,7 +106,7 @@
                     <div id = "boxes">
                         {% csrf_token %}
                         <label for="date">Date</label>
-                        <input type="date" id="date" name="date" value="{{client_data.date}}"><br>
+                        <input type="date" id="date" name="date" value="{{client_data.date}}" required><br>
                         <label for="payment_mode">Payment Mode</label>
                         <select id="payment_mode" name="payment_mode">
                             {% if client_data.payment_mode == "online" %}
@@ -141,9 +129,11 @@
                             {% endfor %}
                         </select>
                         <label for="numberofclient">Number of Client</label>
-                        <input type="text" id="numberofclient" name="numberofclient" placeholder="Client count" value="{{client_data.numberofclient}}">
+                        <input type="text" id="numberofclient" name="numberofclient" placeholder="Client count" value="{{client_data.numberofclient}}" oninput="print_number_status('numberofclient', 'number_of_client_span')" required>
+                        <span id="number_of_client_span"></span><br>
                         <label for="amount">Amount</label>
-                        <input type="text" id="amount" name="amount" placeholder="Enter Amount.." value="{{client_data.amount}}">
+                        <input type="text" id="amount" name="amount" placeholder="Enter Amount.." value="{{client_data.amount}}" oninput="print_number_status('amount', 'amount_span')" required>
+                        <span id="amount_span"></span>
                         <input type="submit" value="Submit">
                     </div>
                     </form>

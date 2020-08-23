@@ -1,77 +1,44 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
         <title>Welcome</title>
     </head>
+    <script src="{% static 'common/common.js' %}"></script>
     <script>
         function onload_behaviour(){
-            setDate();
-        }
-        function validate_membership_id(){
-            var memberships = {{memberships|safe}};
-            var user_entered_membership_id = (document.getElementById('custID').value).toUpperCase();;
-            console.log(user_entered_membership_id)
-            var is_membership_exist = false;
-            for(i=0; i<memberships.length; i++)
-            {
-                console.log(memberships[i]);
-                if(user_entered_membership_id != "{{custID}}" && user_entered_membership_id == memberships[i].custID)
-                {
-                    is_membership_exist = true;
-                    break;
-                }
-            }
-            if(is_membership_exist == true){
-                document.getElementById('membership_details').innerHTML="This Membership ID has already been assigned to another Client, try another ID";
-                document.getElementById("submit_button").disabled = true;
-            }    
-            else{
-                document.getElementById('membership_details').innerHTML= "";
-                document.getElementById("submit_button").disabled = false;
-            }    
+            setDate("DOB", "{{DOB}}");
         }
 
-        function validate_contact_number(){
-            var memberships = {{memberships|safe}};
-            var user_entered_contact_number = document.getElementById('Contact_Number').value;
-            console.log(user_entered_contact_number)
-            var is_membership_exist = false;
-            for(i=0; i<memberships.length; i++)
+        function oninput_contact_number(){
+            user_entered_contact_number = document.getElementById('Contact_Number').value;
+            autocomplete('Contact_Number', {{memberships|safe}});
+            client_details = get_client_details_based_on_contact_number('Contact_Number', {{memberships|safe}});
+            if(client_details != '' && {{Contact_Number}} != user_entered_contact_number)
             {
-                console.log(memberships[i].Contact_Number);
-                console.log(user_entered_contact_number);
-                if(user_entered_contact_number != "{{Contact_Number}}" && user_entered_contact_number == memberships[i].Contact_Number)
-                {
-                    is_membership_exist = true;
-                    break;
-                }
-            }
-            if(is_membership_exist == true)
-            {
-                document.getElementById('membership_contact').innerHTML="This contact number has already been assigned to another Client, try another Number";
+                document.getElementById('membership_contact').innerHTML="This contact number has already been assigned <b>"+client_details.Name+"</b>, try another Number";
                 document.getElementById("submit_button").disabled = true;
             }    
             else
             {
                 document.getElementById('membership_contact').innerHTML= "";
                 document.getElementById("submit_button").disabled = false;
-            }    
+            }   
         }
 
-
-        function setDate(){
-            console.log("Hello");
-            var d = new Date("{{DOB}}");
-            console.log(d);
-            var day = d.getDate();
-            if(day<=9)
-                day = '0'+day;
-            var month = d.getMonth()+1;
-            if(month<=9)
-                month = '0'+month;
-            console.log();
-            document.getElementById("DOB").value = d.getFullYear()+"-"+month+"-"+day;
+        function oninput_custid(){
+            entered_custid = document.getElementById('custID').value;
+            client_details = get_client_details_based_on_clientID('custID', {{memberships|safe}});
+            console.log(client_details);
+            if(client_details != '' && entered_custid != "{{custID}}"){
+                document.getElementById('custid_span').innerHTML="This Client ID has already been assigned <b>"+client_details.Name+"</b>, try another ID";
+                document.getElementById("submit_button").disabled = true;
+            }
+            else{
+                document.getElementById('custid_span').innerHTML= "";
+                document.getElementById("submit_button").disabled = false;
+            }
         }
     </script>
     {% load static %}
@@ -96,7 +63,7 @@
         {% endif %}
         {% include 'menubar.html' with active_menubar_item="NA" %}
         <h1>Update Membership</h1>
-        <form method="post" action="/client/update_membership/{{custID}}/">
+        <form autocomplete="off" method="post" action="/client/update_membership/{{custID}}/">
             {% csrf_token %}
             <table>
                 <tr>
@@ -104,22 +71,22 @@
                         <label for="custID">Client ID</label>
                     </td>
                     <td>
-                        <input oninput="validate_membership_id()" type="text" id="custID" name="custID" value="{{custID}}" required>
+                        <input oninput="oninput_custid()" type="text" id="custID" name="custID" value="{{custID}}" required>
                     </td>
                 </tr>
                 <tr>
-                    <td><span id="membership_details"></span></td>
+                    <td><span id="custid_span"></span></td>
                 </tr>
                 <tr>
                     <td>
                         <label for="Contact_Number">Contact_Number</label>
                     </td>
                     <td>
-                        <input type="text" oninput="validate_contact_number()" id="Contact_Number" name="Contact_Number" value="{{Contact_Number}}" required>
+                        <input oninput="oninput_custid()" type="text" id="Contact_Number" name="Contact_Number" value="{{Contact_Number}}" required>
+                        <div id="suggestions">
+                        </div>
+                        <span id="custid_span"></span>
                     </td>
-                </tr>
-                <tr>
-                    <td><span id="membership_contact"></span></td>
                 </tr>
                 <tr>
                     <td>

@@ -7,64 +7,29 @@
     </head>
     <script src="{% static 'common/common.js' %}"></script>
     <script>
-        function validate_membership_id(){
-            var memberships = {{memberships|safe}};
-            var user_entered_membership_id = (document.getElementById('custid').value).toUpperCase();
-            console.log(user_entered_membership_id)
-            var is_membership_exist = false;
-            for(i=0; i<memberships.length; i++)
-            {
-                console.log(memberships[i]);
-                if(user_entered_membership_id == memberships[i].custID)
-                {
-                    is_membership_exist = true;
-                    break;
-                }
-            }
-            if(is_membership_exist == true)
-            {
-                document.getElementById('membership_details').innerHTML="This Membership ID has already been assigned to another Client, try another ID";
+        function oninput_contact_number(){
+            autocomplete('contact_number', {{memberships|safe}});
+            client_details = get_client_details_based_on_contact_number('contact_number', {{memberships|safe}});
+            if(client_details != ''){
+                document.getElementById('membership_contact').innerHTML="This contact number has already been assigned <b>"+client_details.Name+"</b>, try another Number";
                 document.getElementById("submit_button").disabled = true;
-                return true;
             }    
-            else
-            {
-                document.getElementById('membership_details').innerHTML= "";
+            else{
+                document.getElementById('membership_contact').innerHTML= "";
                 document.getElementById("submit_button").disabled = false;
-                return false;
-            }    
+            }   
         }
-
-        function validate_contact_number(){
-            var user_entered_contact_number = document.getElementById('contact_number').value;
-            if(is_number_valid(user_entered_contact_number)==false){
-                document.getElementById('membership_contact').innerHTML= "Special characters not allowed";
+        
+        function oninput_custid(){
+            client_details = get_client_details_based_on_clientID('custid', {{memberships|safe}});
+            if(client_details != ''){
+                document.getElementById('custid_span').innerHTML="This Client ID has already been assigned <b>"+client_details.Name+"</b>, try another ID";
+                document.getElementById("submit_button").disabled = true;
             }
             else{
-                var memberships = {{memberships|safe}};
-                console.log(user_entered_contact_number)
-                var is_membership_exist = false;
-                for(i=0; i<memberships.length; i++)
-                {
-                    console.log(memberships[i].Contact_Number);
-                    console.log(user_entered_contact_number);
-                    if(user_entered_contact_number == memberships[i].Contact_Number)
-                    {
-                        is_membership_exist = true;
-                        break;
-                    }
-                }
-                if(is_membership_exist == true)
-                {
-                    document.getElementById('membership_contact').innerHTML="This contact number has already been assigned to another Client, try another Number";
-                    document.getElementById("submit_button").disabled = true;
-                }    
-                else
-                {
-                    document.getElementById('membership_contact').innerHTML= "";
-                    document.getElementById("submit_button").disabled = false;
-                }   
-            } 
+                document.getElementById('custid_span').innerHTML= "";
+                document.getElementById("submit_button").disabled = false;
+            }
         }
     </script>
     
@@ -89,7 +54,7 @@
         {% endif %}
         {% include 'menubar.html' with active_menubar_item="Membership" %}
         <h1>Client Membership</h1>
-        <form method="post" action="/client/membership/">
+        <form autocomplete="off" method="post" action="/client/membership/">
             {% csrf_token %}
             <table>
                 <tr>
@@ -97,11 +62,11 @@
                         <label for="custid">Client ID</label>
                     </td>
                     <td>
-                        <input oninput="validate_membership_id()" type="text" id="custid" name="custid" required>
+                        <input oninput="oninput_custid()" type="text" id="custid" name="custid" required>
                     </td>
                 </tr>
                 <tr>
-                    <td><span id="membership_details"></span></td>
+                    <td><span id="custid_span"></span></td>
                 </tr>
                 <tr>
                     <td>
@@ -135,11 +100,11 @@
                         <label for="contact_number">Contact Number</label>
                     </td>
                     <td>
-                        <input oninput="validate_contact_number()" type="text" id="contact_number" name="contact_number" required>
+                        <input oninput="oninput_contact_number()" type="text" id="contact_number" name="contact_number" required>
+                        <div id="suggestions">
+                        </div>
+                        <span id="membership_contact"></span>
                     </td>
-                </tr>
-                <tr>
-                    <td><span id="membership_contact"></span></td>
                 </tr>
             </table>
             <input type="submit" id="submit_button" value="Submit">

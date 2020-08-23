@@ -26,7 +26,7 @@
         {% endif %}
         {% include 'menubar.html' with active_menubar_item="Expense" %}
         <h1>ADD Expense</h1>
-        <form method="post" action="/staff/add_expense/">
+        <form autocomplete="off" method="post" action="/staff/add_expense/">
             {% csrf_token %}
             <table>
                 <tr>
@@ -64,7 +64,7 @@
                         <label for="amount">Amount</label>
                     </td>
                     <td>
-                        <input type="text" id="amount" name="amount" placeholder="Enter Amount.." oninput="valid_number_status('amount', 'amount_span')" required>
+                        <input type="text" id="amount" name="amount" placeholder="Enter Amount.." oninput="print_number_status('amount', 'amount_span')" required>
                     </td>
                 </tr>
                 <tr>

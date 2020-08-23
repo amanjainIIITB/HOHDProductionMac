@@ -1,30 +1,16 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
         <title>Welcome</title>
     </head>
-    {% load static %}
+    <script src="{% static 'common/common.js' %}"></script>
     <script>
-        function validate_client(){
-            var client_id_or_contact_number = (document.getElementById('Contact_Number').value);
-            var all_membership_based_on_shop_id = {{membership_based_on_shop_id|safe}};
-            for(i=0; i < all_membership_based_on_shop_id.length; i++)
-            {
-                var membership_found = false;
-                if(client_id_or_contact_number == all_membership_based_on_shop_id[i].Contact_Number)
-                {
-                    document.getElementById('client_details').innerHTML = "<table ><tr><td>ID</td><td>"+all_membership_based_on_shop_id[i].custID+"</td</tr><tr><td>Name</td><td>"+all_membership_based_on_shop_id[i].Name+"</td></tr><tr><td>Date of Birth</td><td>"+all_membership_based_on_shop_id[i].DOB+"</td></tr><tr><td>Contact Number</td><td>"+all_membership_based_on_shop_id[i].Contact_Number+"</td></tr></table><br><br>";
-                    membership_found = true;
-                    break;
-                }
-            }
-            if(membership_found == false){
-                if(client_id_or_contact_number == "")
-                    document.getElementById('client_details').innerHTML = "Please Enter Client Contact Number";
-                else
-                    document.getElementById('client_details').innerHTML = "Entered Number doesn't exist";
-            }
+        function oninput_contact_number(){
+            autocomplete('Contact_Number', {{memberships|safe}});
+            client_details = get_client_details_based_on_contact_number('Contact_Number', {{memberships|safe}});
+            print_client_details(client_details);
         }
     </script>
     <style>
@@ -115,12 +101,14 @@
         <div id = "boxes">
             
             <div id = "leftrightbox">
-                <form method="post" action="/client/save_mem_visit/">
+                <form autocomplete="off" method="post" action="/client/save_mem_visit/">
                     {% csrf_token %}
                     <label for="mem_date">Date</label>
                     <input type="date" id="mem_date" name="mem_date" required><br>
-                    <label for="client_id">Client Contact Number</label>
-                    <input oninput="validate_client()" type="text" id="Contact_Number" name="Contact_Number" required>
+                    <label for="Contact_Number">Client Contact Number</label>
+                    <input oninput="oninput_contact_number()" type="text" id="Contact_Number" name="Contact_Number" required>
+                    <div id="suggestions">
+                    </div>
                     <span id="client_details"></span><br>
                     <label for="mem_paymentmode">Payment Mode</label>
                     <select id="mem_paymentmode" name="mem_paymentmode">
@@ -135,15 +123,17 @@
                         {% endfor %}
                     </select>
                     <label for="mem_amount">Amount</label>
-                    <input type="text" id="mem_amount" name="mem_amount" placeholder="Enter Amount.." required>
+                    <input type="text" id="mem_amount" name="mem_amount" placeholder="Enter Amount.." oninput="print_number_status('mem_amount', 'mem_amount_span')" required>
+                    <span id="mem_amount_span"></span>
                     <input type="submit" id="mem_submit_button" value="Submit">
             </form>
+
             </div>
         </div>
         <div id="middleleftbox"></div>
         <div id = "rightbox">
             <h1>Non-Membership Client/Bulk Data</h1>
-            <form method="post" action="/client/save_non_mem_visit/">
+            <form autocomplete="off" method="post" action="/client/save_non_mem_visit/">
                 {% csrf_token %}
                 <label for="date">Date</label>
                 <input type="date" id="date" name="date" required><br>
@@ -160,9 +150,11 @@
                     {% endfor %}
                 </select>
                 <label for="numberofclient">Number of Client</label>
-                <input type="text" id="numberofclient" name="numberofclient" placeholder="Client count" required>
+                <input type="text" id="numberofclient" name="numberofclient" placeholder="Client count" oninput="print_number_status('numberofclient', 'number_of_client_span')" required>
+                <span id="number_of_client_span"></span><br>
                 <label for="amount">Amount</label>
-                <input type="text" id="amount" name="amount" placeholder="Enter Amount.." required>
+                <input type="text" id="amount" name="amount" placeholder="Enter Amount.." oninput="print_number_status('amount', 'amount_span')" required>
+                <span id="amount_span"></span>
                 <input type="submit" value="Submit">
             </form>
         </div>
