@@ -25,7 +25,12 @@ SECRET_KEY = 'lv#6ee+*tfh2kv&jscy9pr7%kh5opa(u(3qhfdz89k)mf6_lzs'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_IP = '192.168.0.107'
+ALLOWED_HOSTS = [ALLOWED_IP]
+
+DATE_INPUT_FORMATS = [
+    ("%d-%m-%Y"),
+]
 
 CRONJOBS = [
     ('* * * * *', 'customer.cron.my_scheduled_job')

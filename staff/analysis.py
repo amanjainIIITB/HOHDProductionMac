@@ -5,8 +5,8 @@ import datetime
 from staff.models import Employee
 from customer.models import ClientVisit
 from .views import get_month_year_month_name_for_download
-from .common_functions import get_total_online_amount_of_the_month, get_total_cash_amount_of_the_month
-
+from .common_functions import get_total_online_amount_of_the_month, get_total_cash_amount_of_the_month, get_bardate
+from HOHDProductionMac.common_function import convert_date_dd_mm_yyyy_to_yyyy_mm_dd, convert_date_yyyy_mm_dd_to_dd_mm_yyyy
 
 def get_last_6_month_data_for_bar_graph(shop_id, year, month):
     now = datetime.datetime.now()
@@ -14,37 +14,25 @@ def get_last_6_month_data_for_bar_graph(shop_id, year, month):
     revenueBarGraphData = []
     month_list = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-    online_obj = ClientVisit.objects.filter(payment_mode='online', ShopID=shop_id).values('bardate').annotate(Amount=Sum('amount'),
-                                                                                      numberOfCustomer=Sum(
-                                                                                          'numberofclient')).order_by(
-        '-bardate')
-    online_map = {}
-    for obj in online_obj:
-        online_map[str(obj['bardate'])] = [obj['Amount'], obj['numberOfCustomer']]
-
-    cash_obj = ClientVisit.objects.filter(payment_mode='cash', ShopID=shop_id).values('bardate').annotate(Amount=Sum('amount'),
-                                                                                numberOfCustomer=Sum(
-                                                                                    'numberofclient')).order_by(
-        '-bardate')
-    cash_map = {}
-    for obj in cash_obj:
-        cash_map[str(obj['bardate'])] = [obj['Amount'], obj['numberOfCustomer']]
-
     for index in range(barGraphNumberOfMonth):
-        month = month - 1
-        if month == -1:
-            month = 11
+        if month == 0:
+            month = 12
             year = year - 1
-        date = str(datetime.datetime(year, month + 1, 1).strftime('%Y-%m-%d'))
+        online = ClientVisit.objects.filter(payment_mode='online', ShopID=shop_id, date__contains=get_bardate(month, year)).aggregate(Amount=Sum('amount'),
+                                                                                      numberOfCustomer=Sum('numberofclient'))
+        cash = ClientVisit.objects.filter(payment_mode='cash', ShopID=shop_id, date__contains=get_bardate(month, year)).aggregate(Amount=Sum('amount'),
+                                                                                      numberOfCustomer=Sum('numberofclient'))
         amount = 0
         numberofcustomer = 0
-        if date in online_map.keys():
-            amount = amount + online_map[date][0]
-            numberofcustomer = numberofcustomer + online_map[date][1]
-        if date in cash_map.keys():
-            amount = amount + cash_map[date][0]
-            numberofcustomer = numberofcustomer + cash_map[date][1]
-
+        if online['Amount'] is not None:
+            amount = amount + online['Amount']
+        if cash['Amount'] is not None:
+            amount = amount + cash['Amount']
+        if online['numberOfCustomer'] is not None:
+            numberofcustomer = numberofcustomer + online['numberOfCustomer']
+        if cash['numberOfCustomer'] is not None:
+            numberofcustomer = numberofcustomer + cash['numberOfCustomer']
+        month = month - 1
         revenueBarGraphData.append([month_list[month], amount, numberofcustomer])
     return revenueBarGraphData
 
@@ -68,18 +56,16 @@ def prepare_list_of_dates(year, month):
 
 
 def get_total_online_customer_of_the_month(shop_id, month, year):
-    bardate = datetime.date(day=1, month=month, year=year).strftime('%Y-%m-%d')
     number_of_online_customer_Of_The_Month = ClientVisit.objects.filter(payment_mode='online', ShopID=shop_id,
-                                                                 bardate=bardate).aggregate(Sum('numberofclient'))
+                                                                 date__contains=get_bardate(month, year)).aggregate(Sum('numberofclient'))
     if number_of_online_customer_Of_The_Month['numberofclient__sum'] is None:
         return 0
     return number_of_online_customer_Of_The_Month['numberofclient__sum']
 
 
 def get_total_cash_customer_of_the_month(shop_id, month, year):
-    bardate = datetime.date(day=1, month=month, year=year).strftime('%Y-%m-%d')
     number_of_cash_customer_Of_The_Month = ClientVisit.objects.filter(payment_mode='cash', ShopID=shop_id,
-                                                                 bardate=bardate).aggregate(Sum('numberofclient'))
+                                                                 date__contains=get_bardate(month, year)).aggregate(Sum('numberofclient'))
     if number_of_cash_customer_Of_The_Month['numberofclient__sum'] == None:
         return 0
     else:
@@ -87,20 +73,19 @@ def get_total_cash_customer_of_the_month(shop_id, month, year):
 
 
 def get_day_wise_online_of_the_month(shop_id, month, year):
-    bardate = datetime.date(day=1, month=month, year=year).strftime('%Y-%m-%d')
-    return ClientVisit.objects.all().filter(payment_mode='online', ShopID=shop_id, bardate=bardate).values('date').annotate(
+    return ClientVisit.objects.all().filter(payment_mode='online', ShopID=shop_id, date__contains=get_bardate(month, year)).values('date').annotate(
         Amount=Sum('amount'), numberOfCustomer=Sum('numberofclient')).order_by('date')
 
 
 def get_day_wise_cash_of_the_month(shop_id, month, year):
-    bardate = datetime.date(day=1, month=month, year=year).strftime('%Y-%m-%d')
-    return ClientVisit.objects.all().filter(payment_mode='cash', ShopID=shop_id, bardate=bardate).values('date').annotate(
+    return ClientVisit.objects.all().filter(payment_mode='cash', ShopID=shop_id, date__contains=get_bardate(month, year)).values('date').annotate(
         Amount=Sum('amount'), numberOfCustomer=Sum('numberofclient')).order_by('date')
 
 
 def get_all_client_data_of_the_month(shop_id):
     client_visit_objects =  ClientVisit.objects.values('custID', 'isMember', 'visitID', 'date', 'payment_mode', 'time', 'employee_id', 'amount', 'numberofclient').filter(ShopID=shop_id).order_by('date')
     for client_visit_object in client_visit_objects:
+        client_visit_object['date'] = convert_date_yyyy_mm_dd_to_dd_mm_yyyy(str(client_visit_object['date']))
         emp_queryset = Employee.objects.values('name').filter(ShopID=shop_id, EmployeeID=client_visit_object['employee_id'])
         if len(emp_queryset) != 0:
             client_visit_object['employee'] = emp_queryset.first()['name']

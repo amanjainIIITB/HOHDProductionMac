@@ -7,6 +7,12 @@ from customer.models import ClientVisit
 from django.db.models import Sum, Count, Max
 
 
+def convert_date_yyyy_mm_dd_to_dd_mm_yyyy(date):
+    return datetime.strptime(date, "%Y-%m-%d").strftime("%d-%b-%Y")
+
+def convert_date_dd_mm_yyyy_to_yyyy_mm_dd(date):
+    return datetime.strptime(date, "%d-%b-%Y").strftime("%Y-%m-%d")
+
 def get_current_time():
     # current date and time
     return (datetime.now() + timedelta(hours=5, minutes=30)).strftime("%H:%M:%S")
@@ -101,11 +107,13 @@ def get_all_membership_based_on_shop_id(request, ShopID):
         client_visit_group_by_client_id_dict_key_clientID.update({client_visit_obj['custID'] : client_visit_obj})
     memberships = Membership.objects.values('custID', 'Contact_Number', 'Sex', 'Name', 'DOB', 'last_visit').filter(shopID=ShopID)
     for membership in memberships:
-        membership['DOB'] = membership['DOB']
+        if membership['DOB'] != '':
+            print(membership['DOB'])
+            membership['DOB'] = convert_date_yyyy_mm_dd_to_dd_mm_yyyy(membership['DOB'])
         if membership['custID'] not in client_visit_group_by_client_id_dict_key_clientID.keys():
-            membership['last_visit'] = membership['last_visit'].strftime("%Y-%m-%d")
+            membership['last_visit'] = convert_date_yyyy_mm_dd_to_dd_mm_yyyy(membership['last_visit'].strftime("%Y-%m-%d"))
         else:
-            membership['last_visit'] = client_visit_group_by_client_id_dict_key_clientID[membership['custID']]['date'].strftime("%Y-%m-%d")
+            membership['last_visit'] = convert_date_yyyy_mm_dd_to_dd_mm_yyyy(client_visit_group_by_client_id_dict_key_clientID[membership['custID']]['date'].strftime("%Y-%m-%d"))
         if membership['custID'] not in client_visit_group_by_client_id_dict_key_clientID.keys() or client_visit_group_by_client_id_dict_key_clientID[membership['custID']]['sum_amount'] == 0 or client_visit_group_by_client_id_dict_key_clientID[membership['custID']]['count_number_of_visit'] == 0:
             membership['avg'] = 0
         else:

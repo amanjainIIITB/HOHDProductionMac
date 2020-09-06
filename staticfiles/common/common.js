@@ -19,41 +19,87 @@ function print_number_status(value_id, span_id){
         document.getElementById(span_id).innerHTML="";
     }
     else{
-        document.getElementById(span_id).innerHTML="Special characters not allowed";
+        document.getElementById(span_id).innerHTML="Note: Special characters not allowed";
     }
 }
 
-function autocomplete(value_id, data){
-    const suggestionsPanel = document.getElementById('suggestions')
+function print_contact_number_validations_and_errors(is_suggestions_available, contact_number_id, members, client_details_id){
+    // we have few suggestion
+    if(is_suggestions_available){
+        client_details = get_client_details_based_on_contact_number(contact_number_id, members);
+        console.log(client_details);
+        // enetered correct number
+        if(client_details != ""){
+            print_client_details(document.getElementById(contact_number_id).value, client_details, client_details_id);
+        }
+        // entered half correct number
+        else{
+            document.getElementById(client_details_id).innerHTML="";
+        }
+    }
+    // Either Not exist number or invalid number
+    else{
+        print_client_details(document.getElementById(contact_number_id).value, "", client_details_id);
+    }
+}
+
+function autocomplete(value_id, data, suggestions_id){
+    // https://www.youtube.com/watch?v=MBJuTkILZYo&t=1059s
+    const suggestionsPanel = document.getElementById(suggestions_id)
     suggestionsPanel.innerHTML='';
     suggested_contact_numbers = [];
     var user_entered_contact_number = document.getElementById(value_id).value;
+    var suggestions_available = false;
     for(i=0; i<data.length; i++){
-        if((data[i].Contact_Number).toString().startsWith(user_entered_contact_number))
+        if((data[i].Contact_Number).toString().startsWith(user_entered_contact_number)){
             suggested_contact_numbers.push(data[i].Contact_Number);
+            suggestions_available = true;
+        }
     }
     if (user_entered_contact_number!=''){
-        suggested_contact_numbers.forEach(element => {
-            const div = document.createElement('div');
-            div.innerHTML=element;
-            suggestionsPanel.appendChild(div);
-        });
+        var html = ''
+        for(i=0; i<suggested_contact_numbers.length; i++){
+            html = html + '<div onclick="set_contact_number(' + suggested_contact_numbers[i] + ')">'+suggested_contact_numbers[i]+'</div>';
+        }
+        console.log(html);
+        suggestionsPanel.innerHTML = html;
     }
+    return suggestions_available;
 }
 
+function create_textarea_with_data(data){
+    html = "<div class=\"col-sm-6\">";
+    html = html + "<div class=\"form-group\">";
+    html = html + "<label>Client Details</label>";
+    html = html + "<textarea class=\"form-control\" rows=\"4\"  id=\"user_details\" disabled>";
+    html = html + data;
+    html = html + "</textarea>";
+    html = html + "</div>";
+    html = html + "</div>";          
+    return html;              
+}
 
-function print_client_details(client_details){
+function print_client_details(value, client_details, client_details_id){
+    console.log(client_details);
     if(client_details != ''){
-        document.getElementById('client_details').innerHTML = "<table ><tr><td>ID</td><td>"+client_details.custID+"</td</tr><tr><td>Name</td><td>"+client_details.Name+"</td></tr><tr><td>Date of Birth</td><td>"+client_details.DOB+"</td></tr><tr><td>Contact Number</td><td>"+client_details.Contact_Number+"</td></tr></table><br><br>";
+        html = create_textarea_with_data("ID: "+client_details.custID+"\nName: "+client_details.Name+"\nContact Number: "+client_details.Contact_Number+"\nDOB: "+client_details.DOB);
+        document.getElementById(client_details_id).innerHTML = html;
     }
     else{
-        document.getElementById('client_details').innerHTML = "Number doesn't exist";
+        if(value == ""){
+            document.getElementById(client_details_id).innerHTML = "";
+        }
+        else if(is_number_valid(value) == false){
+            document.getElementById(client_details_id).innerHTML = "NOTE: Invalid Number";
+        }
+        else{
+            document.getElementById(client_details_id).innerHTML = "NOTE: Number doesn't exist";
+        }
     }
 }
 
-function get_client_details_based_on_contact_number(value_id, data){
+function get_client_details_based_on_contact_number(value_id, all_membership_based_on_shop_id){
     var client_id_or_contact_number = document.getElementById(value_id).value;
-    var all_membership_based_on_shop_id = data;
     var client_details = '';
     for(i=0; i < all_membership_based_on_shop_id.length; i++)
     {
@@ -66,10 +112,8 @@ function get_client_details_based_on_contact_number(value_id, data){
     return client_details
 }
 
-function get_client_details_based_on_clientID(value_id, data){
+function get_client_details_based_on_clientID(value_id, all_membership_based_on_shop_id){
     var client_id_or_contact_number = (document.getElementById(value_id).value).toUpperCase();
-    console.log();
-    var all_membership_based_on_shop_id = data;
     var client_details = '';
     for(i=0; i < all_membership_based_on_shop_id.length; i++)
     {
@@ -93,4 +137,23 @@ function setDate(id, date){
     if(month<=9)
         month = '0'+month;
     document.getElementById(id).value = d.getFullYear()+"-"+month+"-"+day;
+}
+
+function set_card_body(panelIndex){
+    console.log(tabs);
+    console.log(panels);
+    tabs[0].style.color="white";
+    tabs[1].style.color="white";
+    if(panelIndex=="0"){
+        tabs[1].style.backgroundColor="grey";
+        tabs[0].style.backgroundColor="#007bff";
+        panels[0].style.display="block";
+        panels[1].style.display="none";
+    }
+    else{
+        tabs[0].style.backgroundColor="grey";
+        tabs[1].style.backgroundColor="#007bff";
+        panels[1].style.display="block";
+        panels[0].style.display="none";
+    }
 }

@@ -1,162 +1,187 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Welcome</title>
-    </head>
-    <script src="{% static 'common/common.js' %}"></script>
-    <script>
-        function oninput_contact_number(){
-            autocomplete('Contact_Number', {{memberships|safe}});
-            client_details = get_client_details_based_on_contact_number('Contact_Number', {{memberships|safe}});
-            print_client_details(client_details);
-        }
-    </script>
-    <style>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HOHD | Client Visit</title>
+  <link rel="stylesheet" href="{% static 'css/common.css' %}">
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{% static 'appointment/plugins/fontawesome-free/css/all.min.css' %}">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{% static 'appointment/dist/css/adminlte.min.css' %}">
+  <link rel="stylesheet" href="{% static 'data/jquery-ui.css' %}">
+  <!-- daterange picker -->
+  <!-- <link rel="stylesheet" href="{% static 'appointment/plugins/daterangepicker/daterangepicker.css' %}"> -->
+</head>
+<body class="hold-transition sidebar-mini" onload="set_card_body(0)">
+    {% include 'status_popup.html' %}
+<div class="wrapper">
+  {% include 'top_bar.html' %}
+  {% include 'side_bar.html' %}
 
-        input[type=text], select, textarea {
-            width: 100%;
-            padding: 12px 20px;
-            margin: 8px 0;
-            display: inline-block;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper" style="padding-top: 15px;">
+ 
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <!-- left column -->
+          <div class="col-md-6">
+            <!-- general form elements -->
+            <div class="card card-primary">
+              <div>
+                <div class="card-header" style="float: left; width: 50%;" onclick="set_card_body(0)">
+                    <h3 class="card-title">Membership</h3>
+                </div>
+                <div class="card-header" style="float: right; width: 50%; cursor: pointer;" onclick="set_card_body(1)">
+                    <h3 class="card-title">Non-Membership</h3>
+                </div>
+              </div>  
+              <!-- /.card-header -->
+              <!-- form start -->
+                <div class="card_body_footer">
+                    <form autocomplete="off" method="post" action="/client/save_mem_visit/">
+                        {% csrf_token %}
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="mem_date">Date:</label>
+                                <div class="input-group date">
+                                    <input type="date" class="form-control datetimepicker-input" id="mem_date" name="mem_date" required/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="Contact_Number">Contact Number</label>
+                                <input type="text" class="form-control" id="Contact_Number" name="Contact_Number" oninput="oninput_contact_number()" placeholder="Enter Contact Number" required>
+                            </div>
+                            <div id="suggestions"></div>
+                            <span id="client_details" style="color: red;"></span>
+                            <div class="form-group">
+                                <label for="mem_paymentmode">Payment Mode</label>
+                                <select class="form-control" id="mem_paymentmode" name="mem_paymentmode">
+                                    <option value="cash">Cash</option>
+                                    <option value="online">Online</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="mem_selectemployee">Select Employee</label>
+                                <select class="form-control" id="mem_EmployeeID" name="mem_EmployeeID">
+                                    <option value="None">None</option>
+                                    {% for employee in employees %}
+                                        <option value="{{employee.EmployeeID}}">{{employee.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="mem_amount">Service Charge</label>
+                                <input type="text" class="form-control" id="mem_amount" name="mem_amount" placeholder="Enter amount..." oninput="print_number_status('mem_amount', 'mem_amount_span')" required>
+                            </div>
+                            <span id="mem_amount_span" style="color: red;"></span>
+                        </div>
+                        <!-- /.card-body -->
 
-        input[type=submit] {
-            width: 80%;
-            background-color: #4CAF50;
-            color: white;
-            padding: 14px 20px;
-            margin: 8px 0;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+                        <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card_body_footer">
+                    <form autocomplete="off" method="post" action="/client/save_non_mem_visit/">
+                        {% csrf_token %}
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="date">Date:</label>
+                                <div class="input-group date">
+                                    <input type="date" class="form-control datetimepicker-input" id="date" name="date" required/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="paymentmode">Payment Mode</label>
+                                <select class="form-control" id="paymentmode" name="paymentmode">
+                                    <option value="cash">Cash</option>
+                                    <option value="online">Online</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="mem_selectemployee">Select Employee</label>
+                                <select class="form-control" id="EmployeeID" name="EmployeeID">
+                                    <option value="None">None</option>
+                                    {% for employee in employees %}
+                                        <option value="{{employee.EmployeeID}}">{{employee.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="numberofclient">Number of client</label>
+                                <input type="text" class="form-control" id="numberofclient" name="numberofclient" oninput="print_number_status('numberofclient', 'number_of_client_span')" placeholder="Enter number of client" required>
+                            </div>
+                            <span id="number_of_client_span" style="color: red;"></span>
+                            <div class="form-group">
+                                <label for="amount">Service Charge</label>
+                                <input type="text" class="form-control" id="amount" name="amount" placeholder="Enter amount..." oninput="print_number_status('amount', 'amount_span')" required>
+                            </div>
+                            <span id="amount_span" style="color: red;"></span>
+                        </div>
+                        <!-- /.card-body -->
 
-        input[type=submit]:hover {
-            background-color: #45a049;
-        }
-
-        input.largerCheckbox
-        {
-            width:18px;
-            height:18px;
-        }
-
-        /* Box styles */
-        .myBox {
-            border: none;
-            padding: 5px;
-            width:100px;
-            height: 200px;
-            overflow: scroll;
-        }
-
-        #leftleftbox {
-            float:left;
-            width:4%;
-            height:360px;
-        }
-        #leftrightbox {
-            float:left;
-            width:20%;
-            height:360px;
-            background:#ffcccb;
-        }
-        #middleleftbox{
-            float:left;
-            background:#ffcccb;
-            width:20%;
-            height:360px;
-        }
-        #middlerightbox{
-            float:left;
-            background:grey;
-            width:20%;
-            height:350px;
-        }
-        #rightbox{
-            float:right;
-            width:30%;
-            height:430px;
-        }
-
-        #submit{
-            text-align:center;
-        }
-    </style>
-    <body style="background-color: pink;">
-        {% if messages %}
-            <script>
-                {% for message in messages %}
-                    alert("{{ message }}");
-                {% endfor %}
-            </script>
-        {% endif %}
-        {% include 'menubar.html' with active_menubar_item="Client Form" %}
-        <h1>Membership Client</h1>
-        <div id = "boxes">
-            
-            <div id = "leftrightbox">
-                <form autocomplete="off" method="post" action="/client/save_mem_visit/">
-                    {% csrf_token %}
-                    <label for="mem_date">Date</label>
-                    <input type="date" id="mem_date" name="mem_date" required><br>
-                    <label for="Contact_Number">Client Contact Number</label>
-                    <input oninput="oninput_contact_number()" type="text" id="Contact_Number" name="Contact_Number" required>
-                    <div id="suggestions">
-                    </div>
-                    <span id="client_details"></span><br>
-                    <label for="mem_paymentmode">Payment Mode</label>
-                    <select id="mem_paymentmode" name="mem_paymentmode">
-                        <option value="online">Online</option>
-                        <option value="cash">cash</option>
-                    </select>
-                    <label for="mem_selectemployee">Employee</label>
-                    <select id="mem_EmployeeID" name="mem_EmployeeID">
-                        <option value="None">None</option>
-                        {% for employee in employees %}
-                            <option value="{{employee.EmployeeID}}">{{employee.name}}</option>
-                        {% endfor %}
-                    </select>
-                    <label for="mem_amount">Amount</label>
-                    <input type="text" id="mem_amount" name="mem_amount" placeholder="Enter Amount.." oninput="print_number_status('mem_amount', 'mem_amount_span')" required>
-                    <span id="mem_amount_span"></span>
-                    <input type="submit" id="mem_submit_button" value="Submit">
-            </form>
-
+                        <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                </div>
             </div>
+          </div>
         </div>
-        <div id="middleleftbox"></div>
-        <div id = "rightbox">
-            <h1>Non-Membership Client/Bulk Data</h1>
-            <form autocomplete="off" method="post" action="/client/save_non_mem_visit/">
-                {% csrf_token %}
-                <label for="date">Date</label>
-                <input type="date" id="date" name="date" required><br>
-                <label for="paymentmode">Payment Mode</label>
-                <select id="paymentmode" name="paymentmode">
-                    <option value="online">Online</option>
-                    <option value="cash">cash</option>
-                </select>
-                <label for="selectemployee">Employee</label>
-                <select id="EmployeeID" name="EmployeeID">
-                    <option value="None">None</option>
-                    {% for employee in employees %}
-                        <option value="{{employee.EmployeeID}}">{{employee.name}}</option>
-                    {% endfor %}
-                </select>
-                <label for="numberofclient">Number of Client</label>
-                <input type="text" id="numberofclient" name="numberofclient" placeholder="Client count" oninput="print_number_status('numberofclient', 'number_of_client_span')" required>
-                <span id="number_of_client_span"></span><br>
-                <label for="amount">Amount</label>
-                <input type="text" id="amount" name="amount" placeholder="Enter Amount.." oninput="print_number_status('amount', 'amount_span')" required>
-                <span id="amount_span"></span>
-                <input type="submit" value="Submit">
-            </form>
-        </div>
-    </body>
+        <!-- /.row -->
+      </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+  {% include 'footer.html' %}
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="{% static 'appointment/plugins/jquery/jquery.min.js' %}"></script>
+<!-- Bootstrap 4 -->
+<script src="{% static 'appointment/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<!-- bs-custom-file-input -->
+<script src="{% static 'appointment/plugins/bs-custom-file-input/bs-custom-file-input.min.js' %}"></script>
+<!-- AdminLTE App -->
+<script src="{% static 'appointment/dist/js/adminlte.min.js' %}"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="{% static 'appointment/dist/js/demo.js' %}"></script>
+<!-- Page specific script -->
+<script src="{% static 'common/common.js' %}"></script>
+<script>
+    var tabs = document.querySelectorAll(".card-header");
+    var panels = document.querySelectorAll(".card_body_footer");
+    var contact_number_id = 'Contact_Number';
+    var client_details_id = 'client_details';
+    var suggestions_id = 'suggestions';
+
+    function oninput_contact_number(){
+        var is_suggestions_available = autocomplete(contact_number_id, {{memberships|safe}}, suggestions_id);
+        print_contact_number_validations_and_errors(is_suggestions_available, contact_number_id, {{memberships|safe}}, client_details_id)
+    }
+
+    function set_contact_number(contact_number){
+        document.getElementById(contact_number_id).value = contact_number;
+        document.getElementById(suggestions_id).innerHTML = "";
+        client_details = get_client_details_based_on_contact_number(contact_number_id, {{memberships|safe}});
+        print_client_details(contact_number, client_details, client_details_id)
+    }
+</script>
+</body>
 </html>
+

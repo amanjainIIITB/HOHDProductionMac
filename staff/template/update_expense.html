@@ -1,93 +1,133 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Welcome</title>
-    </head>
-    <script src="{% static 'common/common.js' %}"></script>
-    <script>
-        function onload_behaviour(){
-            setDate("date", "{{date}}");
-        }
-    </script>
-    <style>
-        .transaction{
-            width:180px;
-            text-align:center;
-        }
-        th, td {
-            width:150px;
-            height:40px;
-        }
-    </style>
-    <body onload="onload_behaviour()">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HOHD | Expense Update</title>
 
-        {% if messages %}
-            <script>
-                {% for message in messages %}
-                    alert("{{ message }}");
-                {% endfor %}
-            </script>
-        {% endif %}
-        {% include 'menubar.html' with active_menubar_item="NA" %}
-        <h1>Update Expense</h1>
-        <form method="post" action="/staff/update_expense/{{ExpenseID}}/">
-            {% csrf_token %}
-            <table>
-                <tr>
-                    <td>
-                        <label for="purpose">Transaction Purpose</label>
-                    </td>
-                    <td>
-                        <select id="purpose" name="purpose" value="{{purpose}}">
-                            <option value="Amount Received">Amount Received</option>
-                            <option value="Amount Given">Amount Given</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="purpose">Transaction Date</label>
-                    </td>
-                    <td>
-                        <input type="date" id="date" name="date"">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="paymentmode">Payment Mode</label>
-                    </td>
-                    <td>
-                        <select id="paymentmode" name="paymentmode" value="{{paymentmode}}">
-                            <option value="Online">Online</option>
-                            <option value="Cash">Cash</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="amount">Amount</label>
-                    </td>
-                    <td>
-                        <input type="text" oninput="print_number_status('amount', 'amount_span')"  id="amount" name="amount" placeholder="Enter Amount.." value="{{amount}}">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <span id="amount_span"></span>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="comment">Comment</label>
-                    </td>
-                    <td>
-                        <input type="text" id="comment" name="comment" value="{{comment}}">
-                    </td>
-                </tr>
-            </table>
-            <input type="submit" value="Submit">
-        </form>
-    </body>
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{% static 'appointment/plugins/fontawesome-free/css/all.min.css' %}">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{% static 'appointment/dist/css/adminlte.min.css' %}">
+  <!-- daterange picker -->
+  <!-- <link rel="stylesheet" href="{% static 'appointment/plugins/daterangepicker/daterangepicker.css' %}"> -->
+  <!-- DataTables -->
+  <link rel="stylesheet" href="{% static 'appointment/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css' %}">
+  <link rel="stylesheet" href="{% static 'appointment/plugins/datatables-responsive/css/responsive.bootstrap4.min.css' %}">
+</head>
+<body class="hold-transition sidebar-mini" onload="onload_behaviour()">
+  {% include 'status_popup.html' %}
+  <div class="wrapper">
+    {% include 'top_bar.html' %}
+    {% include 'side_bar.html' %}
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper" style="padding-top: 15px;">
+
+      <!-- Main content -->
+      <section class="content">
+        <div class="container-fluid">
+          <div class="row">
+            <!-- left column -->
+            <div class="col-md-6">
+              <!-- general form elements -->
+              <div class="card card-primary">
+                <div class="card-header">
+                  <h3 class="card-title">Update Expense</h3>
+                </div>
+                <!-- /.card-header -->
+                <!-- form start -->
+                <form autocomplete="off" method="post" action="/staff/update_expense/{{ExpenseID}}/">
+                  {% csrf_token %}
+                  <div class="card-body">
+                      <div class="form-group">
+                          <label for="date">Transaction Date</label>
+                          <div class="input-group date">
+                              <input type="date" id="date" name="date" value="{{date}}" class="form-control datetimepicker-input" required/>
+                          </div>
+                      </div>
+                      <div class="form-group">
+                          <label for="purpose">Transaction Purpose</label>
+                          <select class="form-control" id="purpose" name="purpose" value="{{purpose}}">
+                              <option value="Amount Received">Amount Received</option>
+                              <option value="Amount Given">Amount Given</option>
+                          </select>
+                      </div>
+                      <div class="form-group">
+                          <label for="paymentmode">Payment Mode</label>
+                          <select class="form-control" id="paymentmode" name="paymentmode"/>
+                              {% if paymentmode == "Cash" %}
+                                  <option value="Cash" selected>Cash</option>
+                                  <option value="Online">Online</option>
+                              {% else %}
+                                  <option value="Cash">Cash</option>
+                                  <option value="Online" selected>Online</option>
+                              {% endif %}
+                          </select>
+                      </div>
+                      <div class="form-group">
+                          <label for="amount">Amount</label>
+                          <input type="text" class="form-control" id="amount" name="amount" value="{{amount}}" placeholder="Enter amount..." oninput="print_number_status('amount', 'amount_span')" required>
+                      </div>
+                      <span id="amount_span" style="color: red;"></span>
+                      <div class="form-group">
+                          <label for="comment">Comment</label>
+                          <input type="text" class="form-control" id="comment" name="comment" value="{{comment}}" placeholder="Enter amount...">
+                      </div>
+                  </div>
+                  <!-- /.card-body -->
+
+                  <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          <!-- /.row -->
+        
+          </div>
+        </div>
+        <!-- /.container-fluid -->
+      </section>
+      <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+    {% include 'footer.html' %}
+
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+      <!-- Control sidebar content goes here -->
+    </aside>
+    <!-- /.control-sidebar -->
+  </div>
+  <!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="{% static 'appointment/plugins/jquery/jquery.min.js' %}"></script>
+<!-- Bootstrap 4 -->
+<script src="{% static 'appointment/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<!-- bs-custom-file-input -->
+<script src="{% static 'appointment/plugins/bs-custom-file-input/bs-custom-file-input.min.js' %}"></script>
+<!-- AdminLTE App -->
+<script src="{% static 'appointment/dist/js/adminlte.min.js' %}"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="{% static 'appointment/dist/js/demo.js' %}"></script>
+<!-- Page specific script -->
+<script src="{% static 'common/common.js' %}"></script>
+<!-- DataTables -->
+<script src="{% static 'appointment/plugins/datatables/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'appointment/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+<script src="{% static 'appointment/plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'appointment/plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
+<script>
+  function onload_behaviour(){
+    setDate("date", "{{date}}");
+  }
+</script>
+</body>
 </html>
+

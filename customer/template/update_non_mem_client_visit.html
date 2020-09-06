@@ -1,145 +1,136 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Welcome</title>
-    </head>
-    <script src="{% static 'common/common.js' %}"></script>
-    <script>
-        function onload_behaviour(){
-            setDate("date", "{{client_data.date}}");
-        }
-    </script>
-    <style>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HOHD | Client Visit Update</title>
 
-    input[type=text], select, textarea {
-        width: 100%;
-        padding: 12px 20px;
-        margin: 8px 0;
-        display: inline-block;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        box-sizing: border-box;
-    }
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{% static 'appointment/plugins/fontawesome-free/css/all.min.css' %}">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{% static 'appointment/dist/css/adminlte.min.css' %}">
+  <!-- daterange picker -->
+  <!-- <link rel="stylesheet" href="{% static 'appointment/plugins/daterangepicker/daterangepicker.css' %}"> -->
+</head>
+<body class="hold-transition sidebar-mini" onload="onload_behaviour()">
+    {% include 'status_popup.html' %}
+<div class="wrapper">
+  {% include 'top_bar.html' %}
+  {% include 'side_bar.html' %}
 
-    input[type=submit] {
-        width: 80%;
-        background-color: #4CAF50;
-        color: white;
-        padding: 14px 20px;
-        margin: 8px 0;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-    }
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper" style="padding-top: 15px;">
 
-    input[type=submit]:hover {
-        background-color: #45a049;
-    }
-
-    input.largerCheckbox
-    {
-        width:18px;
-        height:18px;
-    }
-
-    /* Box styles */
-    .myBox {
-        border: none;
-        padding: 5px;
-        width:100px;
-        height: 200px;
-        overflow: scroll;
-    }
-
-    #leftleftbox {
-        float:left;
-        width:4%;
-        height:360px;
-    }
-    #leftrightbox {
-        float:left;
-        width:20%;
-        height:360px;
-        background:#ffcccb;
-    }
-    #middleleftbox{
-        float:left;
-        background:#ffcccb;
-        width:20%;
-        height:360px;
-    }
-    #middlerightbox{
-        float:left;
-        background:grey;
-        width:20%;
-        height:350px;
-    }
-    #rightbox{
-        float:right;
-        width:30%;
-        height:430px;
-    }
-
-    #submit{
-        text-align:center;
-    }
-
-    </style>
-    <body style="background-color: pink;" onload="onload_behaviour()">
-
-        {% if messages %}
-            <script>
-                {% for message in messages %}
-                    alert("{{ message }}");
-                {% endfor %}
-            </script>
-        {% endif %}
-        {% include 'menubar.html' with active_menubar_item="NA" %}
-        <form method="post" action="/client/update_non_mem_client_visit/{{client_data.visitID}}/">
-        <div id = "boxes">
-            <div id = "leftrightbox">
-                <form method="post" action="/client/details/">
-                    <h1>Non-Membership Client/Bulk Data</h1>
-                    {{client_data.employee}}
-                    <div id = "boxes">
-                        {% csrf_token %}
-                        <label for="date">Date</label>
-                        <input type="date" id="date" name="date" value="{{client_data.date}}" required><br>
-                        <label for="payment_mode">Payment Mode</label>
-                        <select id="payment_mode" name="payment_mode">
-                            {% if client_data.payment_mode == "online" %}
-                                <option value="online" selected>Online</option>
-                                <option value="cash">cash</option>
-                            {% elif client_data.payment_mode == "cash" %}
-                                <option value="online">Online</option>
-                                <option value="cash" selected>cash</option>
-                            {% endif %}
-                        </select>
-                        <label for="selectemployee">Employee</label>
-                        <select id="EmployeeID" name="EmployeeID" value="{{client_data.employee}}">
-                            <option value="None">None</option>
-                            {% for employee in employees %}
-                                {% if client_data.employee == employee.EmployeeID %}
-                                    <option value="{{employee.EmployeeID}}" selected>{{employee.name}}</option>
-                                {% else %}
-                                    <option value="{{employee.EmployeeID}}">{{employee.name}}</option>
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <!-- left column -->
+          <div class="col-md-6">
+            <!-- general form elements -->
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Update Non-Membership client</h3>
+                </div>
+                <!-- /.card-header -->
+                <!-- form start -->
+                <form autocomplete="off" method="post" action="/client/update_non_mem_client_visit/{{client_data.visitID}}/">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="date">Date:</label>
+                            <div class="input-group date">
+                                <input type="date" class="form-control datetimepicker-input" id="date" name="date" value="{{client_data.date}}" required/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="paymentmode">Payment Mode</label>
+                            <select class="form-control" id="paymentmode" name="paymentmode">
+                                {% if client_data.payment_mode == "online" %}
+                                    <option value="online" selected>Online</option>
+                                    <option value="cash">cash</option>
+                                {% elif client_data.payment_mode == "cash" %}
+                                    <option value="online">Online</option>
+                                    <option value="cash" selected>cash</option>
                                 {% endif %}
-                            {% endfor %}
-                        </select>
-                        <label for="numberofclient">Number of Client</label>
-                        <input type="text" id="numberofclient" name="numberofclient" placeholder="Client count" value="{{client_data.numberofclient}}" oninput="print_number_status('numberofclient', 'number_of_client_span')" required>
-                        <span id="number_of_client_span"></span><br>
-                        <label for="amount">Amount</label>
-                        <input type="text" id="amount" name="amount" placeholder="Enter Amount.." value="{{client_data.amount}}" oninput="print_number_status('amount', 'amount_span')" required>
-                        <span id="amount_span"></span>
-                        <input type="submit" value="Submit">
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="selectemployee">Select Employee</label>
+                            <select class="form-control" id="EmployeeID" name="EmployeeID">
+                                <option value="None">None</option>
+                                {% for employee in employees %}
+                                    {% if client_data.employee == employee.EmployeeID %}
+                                        <option value="{{employee.EmployeeID}}" selected>{{employee.name}}</option>
+                                    {% else %}
+                                        <option value="{{employee.EmployeeID}}">{{employee.name}}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="numberofclient">Number of client</label>
+                            <input type="text" class="form-control" id="numberofclient" name="numberofclient" value="{{client_data.numberofclient}}" oninput="print_number_status('numberofclient', 'number_of_client_span')" placeholder="Enter number of client" required>
+                        </div>
+                        <span id="number_of_client_span" style="color: red;"></span>
+                        <div class="form-group">
+                            <label for="amount">Service Charge</label>
+                            <input type="text" class="form-control" id="amount" name="amount" value="{{client_data.amount}}" placeholder="Enter amount..." oninput="print_number_status('amount', 'amount_span')" required>
+                        </div>
+                        <span id="amount_span" style="color: red;"></span>
                     </div>
-                    </form>
+                    <!-- /.card-body -->
+
+                    <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
             </div>
+          </div>
         </div>
-        <div id = "rightbox">
-        </div>
-    </body>
+        <!-- /.row -->
+      </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+  {% include 'footer.html' %}
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="{% static 'appointment/plugins/jquery/jquery.min.js' %}"></script>
+<!-- Bootstrap 4 -->
+<script src="{% static 'appointment/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<!-- bs-custom-file-input -->
+<script src="{% static 'appointment/plugins/bs-custom-file-input/bs-custom-file-input.min.js' %}"></script>
+<!-- AdminLTE App -->
+<script src="{% static 'appointment/dist/js/adminlte.min.js' %}"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="{% static 'appointment/dist/js/demo.js' %}"></script>
+<!-- Page specific script -->
+<script src="{% static 'common/common.js' %}"></script>
+<script>
+
+    function onload_behaviour(){
+        setDate("date", "{{client_data.date}}");
+    }
+
+    function oninput_contact_number(){
+        // autocomplete('Contact_Number', {{memberships|safe}});
+        client_details = get_client_details_based_on_contact_number('Contact_Number', {{memberships|safe}});
+        print_client_details(document.getElementById("Contact_Number").value, client_details);
+    }
+</script>
+</body>
 </html>
+

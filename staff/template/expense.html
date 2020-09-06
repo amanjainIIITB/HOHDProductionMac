@@ -1,140 +1,214 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Welcome</title>
-    </head>
-    <script src="{% static 'common/common.js' %}"></script>
-    <style>
-        .transaction{
-            width:180px;
-            text-align:center;
-        }
-        th, td {
-            width:150px;
-            height:40px;
-        }
-    </style>
-    <body>
-        {% if messages %}
-            <script>
-                {% for message in messages %}
-                    alert("{{ message }}");
-                {% endfor %}
-            </script>
-        {% endif %}
-        {% include 'menubar.html' with active_menubar_item="Expense" %}
-        <h1>ADD Expense</h1>
-        <form autocomplete="off" method="post" action="/staff/add_expense/">
-            {% csrf_token %}
-            <table>
-                <tr>
-                    <td>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HOHD | Expense</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{% static 'appointment/plugins/fontawesome-free/css/all.min.css' %}">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{% static 'appointment/dist/css/adminlte.min.css' %}">
+  <!-- daterange picker -->
+  <!-- <link rel="stylesheet" href="{% static 'appointment/plugins/daterangepicker/daterangepicker.css' %}"> -->
+  <!-- DataTables -->
+  <link rel="stylesheet" href="{% static 'appointment/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css' %}">
+  <link rel="stylesheet" href="{% static 'appointment/plugins/datatables-responsive/css/responsive.bootstrap4.min.css' %}">
+</head>
+<body class="hold-transition sidebar-mini">
+  {% include 'status_popup.html' %}
+<div class="wrapper">
+  {% include 'top_bar.html' %}
+  {% include 'side_bar.html' %}
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper" style="padding-top: 15px;">
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <!-- left column -->
+          <div class="col-md-6">
+            <!-- general form elements -->
+            <div class="card card-primary">
+              <div class="card-header">
+                <h3 class="card-title">ADD Expense</h3>
+              </div>
+              <!-- /.card-header -->
+              <!-- form start -->
+              <form autocomplete="off" method="post" action="/staff/add_expense/">
+                {% csrf_token %}
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="date">Transaction Date</label>
+                        <div class="input-group date">
+                            <input type="date" id="date" name="date" class="form-control datetimepicker-input" required/>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label for="purpose">Transaction Purpose</label>
-                    </td>
-                    <td>
-                        <select id="purpose" name="purpose">
+                        <select class="form-control" id="purpose" name="purpose">
                             <option value="Amount Received">Amount Received</option>
                             <option value="Amount Given">Amount Given</option>
                         </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="purpose">Transaction Date</label>
-                    </td>
-                    <td>
-                        <input type="date" id="date" name="date" required>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
+                    </div>
+                    <div class="form-group">
                         <label for="paymentmode">Payment Mode</label>
-                    </td>
-                    <td>
-                        <select id="paymentmode" name="paymentmode">
-                            <option value="Online">Online</option>
+                        <select class="form-control" id="paymentmode" name="paymentmode">
                             <option value="Cash">Cash</option>
+                            <option value="Online">Online</option>
                         </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
+                    </div>
+                    <div class="form-group">
                         <label for="amount">Amount</label>
-                    </td>
-                    <td>
-                        <input type="text" id="amount" name="amount" placeholder="Enter Amount.." oninput="print_number_status('amount', 'amount_span')" required>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <span id="amount_span"></span>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
+                        <input type="text" class="form-control" id="amount" name="amount" placeholder="Enter amount..." oninput="print_number_status('amount', 'amount_span')" required>
+                    </div>
+                    <span id="amount_span" style="color: red;"></span>
+                    <div class="form-group">
                         <label for="comment">Comment</label>
-                    </td>
-                    <td>
-                        <input type="text" id="comment" name="comment" >
-                    </td>
-                </tr>
-            </table>
-            <input type="submit" id="submit" value="Submit">
-        </form>
-        <h1>Transaction Record of the Month</h1>
-        <table border="2">
-            <th>Date</th>
-            <th>Purpose</th>
-            <th>Comment</th>
-            <th>Payment Mode</th>
-            <th>Amount</th>
-            <th>Action</th>
-            <tr>
-                <td class="transaction"></td>
-                <td class="transaction">Total Online</td>
-                <td class="transaction">Amount Till current Date</td>
-                <td class="transaction">Online</td>
-                <td class="transaction">{{total_online_amount_of_the_Month}}</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td class="transaction"></td>
-                <td class="transaction">Total Cash</td>
-                <td class="transaction">Amount Till current Date</td>
-                <td class="transaction">Cash</td>
-                <td class="transaction">{{total_cash_amount_of_the_month}}</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td class="transaction"></td>
-                <td class="transaction">Revenue</td>
-                <td class="transaction">Amount Till current Date</td>
-                <td class="transaction">NA</td>
-                <td class="transaction">{{revenue}}</td>
-                <td></td>
-            </tr>
-            {% for transobj in expense%}
-            <tr>
-                <td class="transaction">{{transobj.date}}</td>
-                <td class="transaction">{{transobj.purpose}}</td>
-                <td class="transaction">{{transobj.comment}}</td>
-                <td class="transaction">{{transobj.paymentmode}}</td>
-                <td class="transaction">{{transobj.amount}}</td>
-                <td class="transaction"><a href="/staff/update_expense/{{transobj.ExpenseID}}">Edit</a> / <button onclick="popup_confirmation('Do you want to Delete Expense Data?', '/staff/delete_expense/{{transobj.ExpenseID}}/')">Delete</button></td>
-            </tr>
-            {% endfor %}
-            {% for transobj in remaining_balance%}
-            <tr>
-                <td class="transaction">{{transobj.0}}</td>
-                <td class="transaction">{{transobj.1}}</td>
-                <td class="transaction">{{transobj.2}}</td>
-                <td class="transaction">{{transobj.3}}</td>
-                <td class="transaction">{{transobj.4}}</td>
-                <td></td>
-            </tr>
-            {% endfor %}
-        </table>
-    </body>
+                        <input type="text" class="form-control" id="comment" name="comment" placeholder="Enter amount...">
+                    </div>
+                </div>
+                <!-- /.card-body -->
+
+                <div class="card-footer">
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+              </form>
+            </div>
+        </div>
+        <!-- /.row -->
+      </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+
+    <section class="content">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">Transaction Record of current Month</h3>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body">
+                  <table id="example2" class="table table-bordered table-hover">
+                    <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Purpose</th>
+                      <th>Comment</th>
+                      <th>Payment Mode</th>
+                      <th>Amount</th>
+                      <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                      <td></td>
+                      <td>Total Online</td>
+                      <td>Amount Till current Date</td>
+                      <td>Online</td>
+                      <td>{{total_online_amount_of_the_Month}}</td>
+                      <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Total Cash</td>
+                        <td>Amount Till current Date</td>
+                        <td>Cash</td>
+                        <td>{{total_cash_amount_of_the_month}}</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Revenue</td>
+                        <td>Amount Till current Date</td>
+                        <td>NA</td>
+                        <td>{{revenue}}</td>
+                        <td></td>
+                    </tr>
+                    {% for transobj in expense%}
+                        <tr>
+                            <td>{{transobj.date}}</td>
+                            <td>{{transobj.purpose}}</td>
+                            <td>{{transobj.comment}}</td>
+                            <td>{{transobj.paymentmode}}</td>
+                            <td>{{transobj.amount}}</td>
+                            <td><a href="/staff/update_expense/{{transobj.ExpenseID}}">Edit</a> / <button onclick="popup_confirmation('Do you want to Delete Expense Data?', '/staff/delete_expense/{{transobj.ExpenseID}}/')">Delete</button></td>
+                        </tr>
+                    {% endfor %}
+                    {% for transobj in remaining_balance%}
+                        <tr>
+                            <td>{{transobj.0}}</td>
+                            <td>{{transobj.1}}</td>
+                            <td>{{transobj.2}}</td>
+                            <td>{{transobj.3}}</td>
+                            <td>{{transobj.4}}</td>
+                            <td></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>Date</th>
+                            <th>Purpose</th>
+                            <th>Comment</th>
+                            <th>Payment Mode</th>
+                            <th>Amount</th>
+                            <th>Action</th>
+                          </tr>
+                    </tfoot>
+                  </table>
+                </div>
+                <!-- /.card-body -->
+              </div>
+              <!-- /.card -->
+            </div>
+            <!-- /.col -->
+          </div>
+          <!-- /.row -->
+        </div>
+        <!-- /.container-fluid -->
+      </section>
+  </div>
+  <!-- /.content-wrapper -->
+  {% include 'footer.html' %}
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="{% static 'appointment/plugins/jquery/jquery.min.js' %}"></script>
+<!-- Bootstrap 4 -->
+<script src="{% static 'appointment/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<!-- bs-custom-file-input -->
+<script src="{% static 'appointment/plugins/bs-custom-file-input/bs-custom-file-input.min.js' %}"></script>
+<!-- AdminLTE App -->
+<script src="{% static 'appointment/dist/js/adminlte.min.js' %}"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="{% static 'appointment/dist/js/demo.js' %}"></script>
+<!-- Page specific script -->
+<script src="{% static 'common/common.js' %}"></script>
+<!-- DataTables -->
+<script src="{% static 'appointment/plugins/datatables/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'appointment/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+<script src="{% static 'appointment/plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'appointment/plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
+<script>
+$(function () {
+  bsCustomFileInput.init();
+});
+</script>
+</body>
 </html>
+

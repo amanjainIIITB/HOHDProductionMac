@@ -17,28 +17,26 @@ def set_table_header(wb, sheet_name, table_header, font_style):
 
 
 def get_online_data(wb, row_num, date_format, font_style):
-    ws = set_table_header(wb, "online_data", ['date', 'ShopID', 'bardate', 'time', 'numberofclient', 'amount'], font_style)
-    onlines = ClientVisit.objects.values('date', 'ShopID', 'bardate', 'time', 'numberofclient', 'amount').filter(payment_mode='online')
+    ws = set_table_header(wb, "online_data", ['date', 'ShopID', 'time', 'numberofclient', 'amount'], font_style)
+    onlines = ClientVisit.objects.values('date', 'ShopID', 'time', 'numberofclient', 'amount').filter(payment_mode='online')
     
     for online in onlines:
         row_num = row_num + 1
         ws.write(row_num, 0, online['date'], date_format)
         ws.write(row_num, 1, online['ShopID'], font_style)
-        ws.write(row_num, 2, online['bardate'], date_format)
         ws.write(row_num, 3, online['time'], font_style)
         ws.write(row_num, 4, online['numberofclient'], font_style)
         ws.write(row_num, 5, online['amount'], font_style)
 
 
 def get_cash_data(wb, row_num, date_format, font_style):
-    ws = set_table_header(wb, "cash_data", ['date', 'ShopID', 'bardate', 'time', 'numberofclient', 'amount'], font_style)
-    cashs = ClientVisit.objects.values('date', 'ShopID', 'bardate', 'time', 'numberofclient', 'amount').filter(payment_mode='cash')
+    ws = set_table_header(wb, "cash_data", ['date', 'ShopID', 'time', 'numberofclient', 'amount'], font_style)
+    cashs = ClientVisit.objects.values('date', 'ShopID', 'time', 'numberofclient', 'amount').filter(payment_mode='cash')
     
     for cash in cashs:
         row_num = row_num + 1
         ws.write(row_num, 0, cash['date'], date_format)
         ws.write(row_num, 1, cash['ShopID'], font_style)
-        ws.write(row_num, 2, cash['bardate'], date_format)
         ws.write(row_num, 3, cash['time'], font_style)
         ws.write(row_num, 4, cash['numberofclient'], font_style)
         ws.write(row_num, 5, cash['amount'], font_style)

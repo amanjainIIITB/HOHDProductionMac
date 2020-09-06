@@ -1,11 +1,122 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Welcome</title>
-    </head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HOHD | Membership Update</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{% static 'appointment/plugins/fontawesome-free/css/all.min.css' %}">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{% static 'appointment/dist/css/adminlte.min.css' %}">
+  <!-- daterange picker -->
+  <!-- <link rel="stylesheet" href="{% static 'appointment/plugins/daterangepicker/daterangepicker.css' %}"> -->
+  <!-- DataTables -->
+  <link rel="stylesheet" href="{% static 'appointment/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css' %}">
+  <link rel="stylesheet" href="{% static 'appointment/plugins/datatables-responsive/css/responsive.bootstrap4.min.css' %}">
+</head>
+<body class="hold-transition sidebar-mini" onload="onload_behaviour()">
+    {% include 'status_popup.html' %}
+    <div class="wrapper">
+        {% include 'top_bar.html' %}
+        {% include 'side_bar.html' %}
+
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper" style="padding-top: 15px;">
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <div class="row">
+                    <!-- left column -->
+                        <div class="col-md-6">
+                            <!-- general form elements -->
+                            <div class="card card-primary">
+                                <div class="card-header">
+                                    <h3 class="card-title">Update Membership</h3>
+                                </div>
+                                <!-- /.card-header -->
+                                <!-- form start -->
+                                <form autocomplete="off" method="post" action="/client/update_membership/{{custID}}/">
+                                    {% csrf_token %}
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label for="custID">Client ID</label>
+                                            <input type="text" class="form-control" id="custID" name="custID" value="{{custID}}" oninput="oninput_custid()" placeholder="Enter Client ID" required/>
+                                        </div>
+                                        <span id="custid_span" style="color: red;"></span>
+                                        <div class="form-group">
+                                            <label for="DOB">Date of Birth</label>
+                                            <div class="input-group date">
+                                                <input id="DOB" name="DOB" type="date" class="form-control datetimepicker-input"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="Name">Client Name</label>
+                                            <input type="text" class="form-control" id="Name" name="Name" value="{{Name}}" placeholder="Enter Client Name"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="Contact_Number">Contact Number</label>
+                                            <input type="text" class="form-control" id="Contact_Number" name="Contact_Number" value="{{Contact_Number}}" oninput="oninput_contact_number()" placeholder="Enter Contact Number" required>
+                                        </div>
+                                        <span id="membership_contact" style="color: red;"></span>
+                                        <div class="form-group">
+                                            <label for="Sex">Sex</label>
+                                            <select class="form-control" id="Sex" name="Sex">
+                                                {% if Sex == "male" %}
+                                                    <option value="male" selected>Male</option>
+                                                    <option value="female">Female</option>
+                                                {% else %}
+                                                    <option value="male">Male</option>
+                                                    <option value="female" selected>Female</option>
+                                                {% endif %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- /.card-body -->
+
+                                    <div class="card-footer">
+                                        <button type="submit" class="btn btn-primary">Submit</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.row -->
+                </div>
+                <!-- /.container-fluid -->
+            </section>
+            <!-- /.content -->
+        </div>
+        <!-- /.content-wrapper -->
+    {% include 'footer.html' %}
+    </div>
+    <!-- ./wrapper -->
+
+    <!-- jQuery -->
+    <script src="{% static 'appointment/plugins/jquery/jquery.min.js' %}"></script>
+    <!-- Bootstrap 4 -->
+    <script src="{% static 'appointment/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <!-- bs-custom-file-input -->
+    <script src="{% static 'appointment/plugins/bs-custom-file-input/bs-custom-file-input.min.js' %}"></script>
+    <!-- AdminLTE App -->
+    <script src="{% static 'appointment/dist/js/adminlte.min.js' %}"></script>
+    <!-- AdminLTE for demo purposes -->
+    <script src="{% static 'appointment/dist/js/demo.js' %}"></script>
+    <!-- Page specific script -->
+    <!-- DataTables -->
+    <script src="{% static 'appointment/plugins/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'appointment/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+    <script src="{% static 'appointment/plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'appointment/plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
     <script src="{% static 'common/common.js' %}"></script>
+    <script>
+    $(function () {
+    bsCustomFileInput.init();
+    });
+    </script>
     <script>
         function onload_behaviour(){
             setDate("DOB", "{{DOB}}");
@@ -13,110 +124,33 @@
 
         function oninput_contact_number(){
             user_entered_contact_number = document.getElementById('Contact_Number').value;
-            autocomplete('Contact_Number', {{memberships|safe}});
+            // autocomplete('Contact_Number', {{memberships|safe}});
             client_details = get_client_details_based_on_contact_number('Contact_Number', {{memberships|safe}});
             if(client_details != '' && {{Contact_Number}} != user_entered_contact_number)
             {
                 document.getElementById('membership_contact').innerHTML="This contact number has already been assigned <b>"+client_details.Name+"</b>, try another Number";
-                document.getElementById("submit_button").disabled = true;
             }    
-            else
-            {
-                document.getElementById('membership_contact').innerHTML= "";
-                document.getElementById("submit_button").disabled = false;
-            }   
+            else{
+                if(is_number_valid(user_entered_contact_number) == false){
+                    document.getElementById('membership_contact').innerHTML = "NOTE: Invalid Number";
+                }
+                else{
+                    document.getElementById('membership_contact').innerHTML = "";
+                }
+            }
         }
 
         function oninput_custid(){
-            entered_custid = document.getElementById('custID').value;
+            entered_custid = (document.getElementById('custID').value).toUpperCase();
             client_details = get_client_details_based_on_clientID('custID', {{memberships|safe}});
             console.log(client_details);
             if(client_details != '' && entered_custid != "{{custID}}"){
                 document.getElementById('custid_span').innerHTML="This Client ID has already been assigned <b>"+client_details.Name+"</b>, try another ID";
-                document.getElementById("submit_button").disabled = true;
             }
             else{
                 document.getElementById('custid_span').innerHTML= "";
-                document.getElementById("submit_button").disabled = false;
             }
         }
     </script>
-    {% load static %}
-    <style>
-        .transaction{
-            width:180px;
-            text-align:center;
-        }
-        th, td {
-            width:150px;
-            height:40px;
-        }
-    </style>
-    <body onload="onload_behaviour()">
-
-        {% if messages %}
-            <script>
-                {% for message in messages %}
-                    alert("{{ message }}");
-                {% endfor %}
-            </script>
-        {% endif %}
-        {% include 'menubar.html' with active_menubar_item="NA" %}
-        <h1>Update Membership</h1>
-        <form autocomplete="off" method="post" action="/client/update_membership/{{custID}}/">
-            {% csrf_token %}
-            <table>
-                <tr>
-                    <td>
-                        <label for="custID">Client ID</label>
-                    </td>
-                    <td>
-                        <input oninput="oninput_custid()" type="text" id="custID" name="custID" value="{{custID}}" required>
-                    </td>
-                </tr>
-                <tr>
-                    <td><span id="custid_span"></span></td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="Contact_Number">Contact_Number</label>
-                    </td>
-                    <td>
-                        <input oninput="oninput_custid()" type="text" id="Contact_Number" name="Contact_Number" value="{{Contact_Number}}" required>
-                        <div id="suggestions">
-                        </div>
-                        <span id="custid_span"></span>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="Sex">Sex</label>
-                    </td>
-                    <td>
-                        <select id="Sex" name="Sex" value="{{Sex}}">
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="Name">Name</label>
-                    </td>
-                    <td>
-                        <input type="text" id="Name" name="Name" value="{{Name}}">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="DOB">Date of Birth</label>
-                    </td>
-                    <td>
-                        <input type="date" id="DOB" name="DOB"">
-                    </td>
-                </tr>
-            </table>
-            <input type="submit" id="submit_button" value="Submit">
-        </form>
-    </body>
+</body>
 </html>

@@ -1,176 +1,238 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Welcome</title>
-    </head>
-    <script src="{% static 'common/common.js' %}"></script>
-    <style>
-        .transaction{
-            width:180px;
-            text-align:center;
-        }
-        th, td {
-            width:150px;
-            height:40px;
-        }
-        #myBox {
-            border: dotted;
-            padding: 20px;
-            width:100px;
-            height: 480px;
-            overflow: scroll;
-        }
-        #leftleftbox {
-            float:left;
-            width:20%;
-            height:480px;
-        }
-        #leftrightbox {
-            float:left;
-            width:30%;
-            height:480px;
-            background:#ffcccb;
-        }
-        #rightleftbox{
-            float:left;
-            width:30%;
-            height:480px;
-        }
-        #rightrightbox{
-            float:right;
-            width:20%;
-            height:480px;
-        }
-    </style>
-    <body>
-        {% if messages %}
-            <script>
-                {% for message in messages %}
-                    alert("{{ message }}");
-                {% endfor %}
-            </script>
-        {% endif %}
-        {% include 'menubar.html' with active_menubar_item="Employee" %}
-        <h1>Add Employee</h1>
-        <form autocomplete="off" method="post" enctype="multipart/form-data" action="/staff/employee/">
-            {% csrf_token %}
-            <table>
-                <tr>
-                    <td>
-                        <label for="name">Employee Name</label>
-                    </td>
-                    <td>
-                        <input type="text" id="name" name="name" required>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="contact_number">Contact Number</label>
-                    </td>
-                    <td>
-                        <input type="text" id="contact_number" name="contact_number" oninput="print_number_status('contact_number', 'span_contact_number')" required>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <span id="span_contact_number"></span>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="sex">Sex</label>
-                    </td>
-                    <td>
-                        <select id="sex" name="sex">
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="date">Date of Joining</label>
-                    </td>
-                    <td>
-                        <input type="date" id="date_of_joining" name="date_of_joining" required><br>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="position">Position</label>
-                    </td>
-                    <td>
-                        <input type="text" id="position" name="position" required><br>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="date">Date of Birth</label>
-                    </td>
-                    <td>
-                        <input type="date" id="DOB" name="DOB" ><br>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="temporary_address">Temporary Address</label>
-                    </td>
-                    <td>
-                        <input type="textarea" id="temporary_address" name="temporary_address">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="permanent_address">Permanent Address</label>
-                    </td>
-                    <td>
-                        <input type="textarea" id="permanent_address" name="permanent_address">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="employee_gov_id">Upload Govt ID</label>
-                    </td>
-                    <td>
-                        <input type="file" id="employee_gov_id" name="employee_gov_id">
-                    </td>
-                </tr>
-            </table>
-            <input type="submit" value="Submit">
-        </form>
-        
-        <h1>Employee Records</h1>
-        {% for employee in employees %}
-            <div id="mybox">
-                <div id="leftleftbox"></div>
-                <div id="leftrightbox">
-                    <b>Name</b>:{{employee.name}}</br>
-                    </br>
-                    <b>Contact Number</b>:{{employee.contact_number}}</br>
-                    </br>
-                    <b>Sex</b>:{{employee.sex}}</br>
-                    </br>
-                    <b>Date of Joining</b>:{{employee.date_of_joining}}</br>
-                    </br>
-                    <b>Position</b>:{{employee.position}}</br>
-                    </br>
-                    <b>Date of Birth</b>:{{employee.DOB}}</br>
-                    </br>
-                    <b>Temporary Address</b>:{{employee.temporary_address}}</br>
-                    </br>
-                    <b>Permanent Address</b>:{{employee.permanent_address}}</br>
-                    </br>
-                    <a href="/staff/update_employee/{{employee.EmployeeID}}">Edit</a> / <button onclick="popup_confirmation('Do you want to Delete Employee Data?', '/staff/delete_employee/{{employee.EmployeeID}}/')">Delete</button></br>
-                    </br>
-                    <a href="/staff/download_appointment_letter/{{employee.EmployeeID}}">Download Appointment Letter</a></br>
-                    </br>
-                    <a href="/staff/download_employee_govt_id/{{employee.EmployeeID}}">Download Employee Govt ID</a>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HOHD | Employee</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{% static 'appointment/plugins/fontawesome-free/css/all.min.css' %}">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{% static 'appointment/dist/css/adminlte.min.css' %}">
+  <!-- daterange picker -->
+  <!-- <link rel="stylesheet" href="{% static 'appointment/plugins/daterangepicker/daterangepicker.css' %}"> -->
+  <!-- DataTables -->
+  <link rel="stylesheet" href="{% static 'appointment/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css' %}">
+  <link rel="stylesheet" href="{% static 'appointment/plugins/datatables-responsive/css/responsive.bootstrap4.min.css' %}">
+</head>
+<body class="hold-transition sidebar-mini">
+    {% include 'status_popup.html' %}
+<div class="wrapper">
+  {% include 'top_bar.html' %}
+  {% include 'side_bar.html' %}
+
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper" style="padding-top: 15px;">
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <!-- left column -->
+                <div class="col-md-6">
+                    <!-- general form elements -->
+                    <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Add Employee</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <!-- form start -->
+                    <form autocomplete="off" method="post" enctype="multipart/form-data" action="/staff/employee/">
+                        {% csrf_token %}
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="name">Name</label>
+                                <input type="text" class="form-control" id="name" name="name" placeholder="Enter Contact Number" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="date_of_joining">Date of Joining</label>
+                                <div class="input-group date">
+                                    <input type="date" id="date_of_joining" name="date_of_joining" class="form-control datetimepicker-input" required/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="DOB">Date of Birth</label>
+                                <div class="input-group date">
+                                    <input type="date" id="DOB" name="DOB" class="form-control datetimepicker-input"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="contact_number">Contact Number</label>
+                                <input type="text" class="form-control" id="contact_number" name="contact_number" oninput="print_number_status('contact_number', 'span_contact_number')" placeholder="Enter Contact Number" required>
+                            </div>
+                            <span id="span_contact_number" style="color: red;"></span>
+                            <div class="form-group">
+                                <label for="position">Position</label>
+                                <input type="text" class="form-control" id="position" name="position" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="sex">Sex</label>
+                                <select class="form-control" id="sex" name="sex">
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="temporary_address">Permanent Address</label>
+                                <textarea class="form-control" rows="3" name="temporary_address" id="temporary_address"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="permanent_address">Temporary Address</label>
+                                <textarea class="form-control" rows="3" name="permanent_address" id="permanent_address"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="employee_gov_id">Govt ID</label>
+                                <div class="input-group">
+                                    <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="employee_gov_id" name="employee_gov_id">
+                                    <label class="custom-file-label" for="exampleInputFile">Choose file</label>
+                                    </div>
+                                    <div class="input-group-append">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+
+                        <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                    </div>
                 </div>
-                <img id="rightleftbox" src="{% static employee.govt_id %}">
-                <div id="rightrightbox"></div>
+            </div>
+            <!-- /.row -->
+        </div>
+        {% for employee in employees %}
+            <div class="container-fluid">
+                <div class="row">
+                    <!-- left column -->
+                    <div class="col-md-6">
+                        <div class="card card-info">
+                            <div class="card-header">
+                                <h3 class="card-title">Employee Details</h3>
+                            </div>
+                            <!-- /.card-header -->
+                            <!-- form start -->
+                            <form class="form-horizontal">
+                                <div class="card-body">
+                                    <div class="form-group row">
+                                        <label class="col-sm-2 col-form-label">Name</label>
+                                        <div class="col-sm-10">
+                                        <input type="text" class="form-control" value="{{employee.name}}" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-2 col-form-label">Date of Joining</label>
+                                        <div class="col-sm-10">
+                                        <input type="text" class="form-control" value="{{employee.date_of_joining}}" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-2 col-form-label">Date of Birth</label>
+                                        <div class="col-sm-10">
+                                        <input type="text" class="form-control" value="{{employee.DOB}}" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-2 col-form-label">Contact Number</label>
+                                        <div class="col-sm-10">
+                                        <input type="text" class="form-control" value="{{employee.contact_number}}" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-2 col-form-label">Position</label>
+                                        <div class="col-sm-10">
+                                        <input type="text" class="form-control" value="{{employee.position}}" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-2 col-form-label">Sex</label>
+                                        <div class="col-sm-10">
+                                            <select class="form-control" value="{{employee.sex}}" disabled>
+                                                <option value="None">Male</option>
+                                                <option value="None">Female</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-2 col-form-label">Permanent Address</label>
+                                        <div class="col-sm-10">
+                                            <textarea class="form-control" rows="3" disabled>{{employee.permanent_address}}</textarea>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-2 col-form-label">Temporary Address</label>
+                                        <div class="col-sm-10">
+                                            <textarea class="form-control" rows="3" disabled>{{employee.temporary_address}}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- /.card-body -->
+                                <div class="card-footer">
+                                    <button type="submit" class="btn btn-info"><a href="/staff/update_employee/{{employee.EmployeeID}}" style="color: white;">Edit</a></button>
+                                    <button type="submit" class="btn btn-info"><a href="/staff/delete_employee/{{employee.EmployeeID}}" style="color: white;">Delete</a></button>
+                                    <button type="submit" class="btn btn-info"><a href="/staff/download_appointment_letter/{{employee.EmployeeID}}" style="color: white;">Download Letter</a></button>
+                                    <button type="submit" class="btn btn-info"><a href="/staff/download_employee_govt_id/{{employee.EmployeeID}}" style="color: white;">Download ID</a></button>
+                                </div>
+                                <!-- /.card-footer -->
+                            </form>
+                        </div>
+                    </div>
+                    <!-- left column -->
+                    <div class="col-md-6">
+                        <!-- general form elements -->
+                        <div class="card card-primary">
+                            <div class="card-header">
+                            <h3 class="card-title">Govt ID</h3>
+                            </div>
+                            <!-- /.card-header -->
+                            <!-- form start -->
+                            <form>
+                                <img class="col-md-12" style="height: 700px;" src="{% static employee.govt_id %}">
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         {% endfor %}
-    </body>
+      <!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+  {% include 'footer.html' %}
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="{% static 'appointment/plugins/jquery/jquery.min.js' %}"></script>
+<!-- Bootstrap 4 -->
+<script src="{% static 'appointment/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<!-- bs-custom-file-input -->
+<script src="{% static 'appointment/plugins/bs-custom-file-input/bs-custom-file-input.min.js' %}"></script>
+<!-- AdminLTE App -->
+<script src="{% static 'appointment/dist/js/adminlte.min.js' %}"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="{% static 'appointment/dist/js/demo.js' %}"></script>
+<!-- Page specific script -->
+<script src="{% static 'common/common.js' %}"></script>
+<!-- DataTables -->
+<script src="{% static 'appointment/plugins/datatables/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'appointment/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+<script src="{% static 'appointment/plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'appointment/plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
+</body>
 </html>
+
+

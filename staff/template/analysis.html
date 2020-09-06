@@ -16,13 +16,7 @@
         }
     </style>
     <body>
-        {% if messages %}
-            <script>
-                {% for message in messages %}
-                    alert("{{ message }}");
-                {% endfor %}
-            </script>
-        {% endif %}
+        {% include 'status_popup.html' %}
         {% include 'menubar.html' with active_menubar_item="Analytics" %}
         <div id="piechart"></div>
 
@@ -188,7 +182,7 @@
             </tr>
             {% for dateobj in listOfDates %}
                 <tr>
-                    <td>{{dateobj}}</td>
+                    <td>{{ dateobj|tag_convert_date_yyyy_mm_dd_to_dd_mm_yyyy}}</td>
                     <td>{{ dateobj|total_amount_of_the_day:dayWiseOnlineOfTheMonth}}</td>
                     <td>{{ dateobj|total_numberofcustomer_of_the_day:dayWiseOnlineOfTheMonth}}</td>
                     <td>{{ dateobj|total_amount_of_the_day:dayWiseCashOfTheMonth}}</td>

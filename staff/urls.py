@@ -24,6 +24,8 @@ urlpatterns = [
     url(r'^add_partner/$', views.add_partner, name='add_partner'),
     url(r'^select_parlour/(?P<shop_id>[\w\-]+)/$', views.select_parlour, name='select_parlour'),
     url(r'^edit_parlour/(?P<shop_id>[\w\-]+)/$', views.edit_parlour, name='edit_parlour'),
+    url(r'^save_mem_client_appointment/$', views.save_mem_client_appointment, name='save_mem_client_appointment'),
+    url(r'^save_non_mem_client_appointment/$', views.save_non_mem_client_appointment, name='save_non_mem_client_appointment'),
     url(r'^appointment/$', views.appointment, name='appointment'),
 ]
 

@@ -1,7 +1,7 @@
 import datetime
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-
+from HOHDProductionMac.settings import DATE_INPUT_FORMATS
 
 # Create your models here.
 class ClientVisit(models.Model):
@@ -12,7 +12,6 @@ class ClientVisit(models.Model):
     employee_id = models.CharField(max_length=50, null=True)
     payment_mode = models.CharField(max_length=50, null=True)
     ShopID = models.CharField(max_length=10, default='S1')
-    bardate = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
     time = models.TimeField(default=datetime.datetime.now().strftime('%H:%M:%S'))
     numberofclient = models.IntegerField(default=0)
     amount = models.IntegerField(default=0)

@@ -1,13 +1,13 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>AdminLTE 3 | Calendar</title>
+  <title>HOHD | Appointment</title>
   <!-- Tell the browser to be responsive to screen width -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{% static 'css/common.css' %}">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="{% static 'appointment/plugins/fontawesome-free/css/all.min.css' %}">
   <!-- Ionicons -->
@@ -24,71 +24,99 @@
 </head>
 <script src="{% static 'common/common.js' %}"></script>
 <body class="hold-transition sidebar-mini" onload="onload_behaviour()">
+  {% include 'status_popup.html' %}
 <div class="wrapper">
   {% include 'top_bar.html' %}
   {% include 'side_bar.html' %}
 
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper" style="padding-top: 15px;">
-    
-
     <!-- Main content -->
     <section class="content">
       <div class="container-fluid">
         <div class="row">
-          <div class="col-md-3">
-            <div class="sticky-top mb-3">
-              <div class="card">
-                <div class="card-header" onclick="display_mem_form()">
-                  <h4 id="mem_header" class="card-title">Membership &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#9664;</h4>
+          <div class="col-md-6">
+            <div class="card">
+              <div>
+                <div class="card-header" style="float: left; width: 50%;" onclick="set_card_body(0)">
+                    <h3 class="card-title">Membership</h3>
                 </div>
-                <div class="card-body" id="mem_form">
-                  <div id="external-events">
-                    <form autocomplete="off" method="post" action="/staff/appointment/">
-                      {% csrf_token %}
-                      Customer Contact Number<br>
-                      <input oninput="oninput_contact_number()" type="text" id="mem_contact_number" name="mem_contact_number" required><br>
-                      <div id="suggestions">
+                <div class="card-header" style="float: right; width: 50%; cursor: pointer;" onclick="set_card_body(1)">
+                    <h3 class="card-title">Non-Membership</h3>
+                </div>
+              </div> 
+              <div class="card_body_footer">
+                <form autocomplete="off" method="post" action="/staff/save_mem_client_appointment/">
+                  {% csrf_token %}
+                  <div class="card-body">
+                      <div class="form-group">
+                          <label for="mem_date">Date:</label>
+                          <div class="input-group date">
+                              <input type="date" id="mem_date" name="mem_date" class="form-control datetimepicker-input" required/>
+                          </div>
                       </div>
-                      <span id="client_details"></span><br>
-                      Date <br>
-                      <input type="date" id="mem_date" name="mem_date" required> <br>
-                      Start Time <br>
-                      <input type="time" id="mem_start_time" name="mem_start_time" required> <br>
-                      End Time <br>
-                      <input type="time" id="mem_end_time" name="mem_end_time" required> <br>
-                      <input type="submit" id="mem_submit_button" value="Submit">
-                    </form>
+                      <div class="form-group">
+                          <label for="mem_contact_number">Contact Number</label>
+                          <input type="text" oninput="oninput_contact_number()" class="form-control" id="mem_contact_number" name="mem_contact_number" placeholder="Enter Contact Number" required>
+                      </div>
+                      <div id="suggestions"></div>
+                      <span id="client_details" style="color: red;"></span>
+                      <div class="form-group">
+                          <label for="mem_start_time">Entry Time</label>
+                          <input type="time" class="form-control" id="mem_start_time" name="mem_start_time" placeholder="Enter amount..." required>
+                      </div>
+                      <div class="form-group">
+                        <label for="mem_end_time">Exit Time</label>
+                        <input type="time" class="form-control" id="mem_end_time" name="mem_end_time" placeholder="Enter amount..." required>
+                    </div>
                   </div>
-                </div>
-                <!-- /.card-body -->
+                  <!-- /.card-body -->
+
+                  <div class="card-footer">
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                  </div>
+                </form>
               </div>
-              <!-- /.card -->
-              <div class="card">
-                <div class="card-header" onclick="display_non_mem_form()">
-                  <h4 id="non_mem_header" class="card-title">Non-Membership&nbsp;&nbsp;&nbsp;&nbsp;&#9664;</h4>
-                </div>
-                <div class="card-body" id="non_mem_form">
-                  <form method="post" action="/staff/appointment/">
-                    {% csrf_token %}
-                    name <br>
-                    <input type="text" id="cust_name" name="cust_name" required> <br>
-                    Contact Number <br>
-                    <input text="text" id="contact_number" name="contact_number" required> <br>
-                    Date <br>
-                    <input type="date" id="date" name="date" required> <br>
-                    Start Time <br>
-                    <input type="time" id="start_time" name="start_time" required> <br>
-                    End Time <br>
-                    <input type="time" id="end_time" name="end_time" required> <br>
-                    <input type="submit" id="submit_button" value="Submit">
-                  </form>
-                </div>
+              <div class="card_body_footer">
+                <form autocomplete="off" method="post" action="/staff/save_non_mem_client_appointment/">
+                  {% csrf_token %}
+                  <div class="card-body">
+                    <div class="form-group">
+                      <label for="date">Date:</label>
+                      <div class="input-group date">
+                          <input type="date" id="date" name="date" class="form-control datetimepicker-input" required/>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="cust_name">Name</label>
+                      <input type="text" class="form-control" id="cust_name" name="cust_name" placeholder="Enter Name">
+                    </div>
+                    <div class="form-group">
+                        <label for="contact_number">Contact Number</label>
+                        <input type="text" class="form-control" id="contact_number" name="contact_number" oninput="print_number_status('contact_number', 'contact_number_span')" placeholder="Enter Contact Number">
+                    </div>
+                    <span id="contact_number_span" style="color: red;"></span>
+                    <div class="form-group">
+                        <label for="start_time">Entry Time</label>
+                        <input type="time" class="form-control" id="start_time" name="start_time" placeholder="Enter amount...">
+                    </div>
+                    <div class="form-group">
+                      <label for="end_time">Exit Time</label>
+                      <input type="time" class="form-control" id="end_time" name="end_time" placeholder="Enter amount...">
+                    </div>
+                  </div>
+                  <!-- /.card-body -->
+
+                  <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                  </div>
+                </form>
               </div>
+              <!-- /.card-body -->
             </div>
           </div>
           <!-- /.col -->
-          <div class="col-md-9">
+          <div class="col-md-12">
             <div class="card card-primary">
               <div class="card-body p-0">
                 <!-- THE CALENDAR -->
@@ -106,7 +134,9 @@
     <!-- /.content -->
   </div>
   <!-- /.content-wrapper -->
-  <!-- {% include 'footer.html' %} -->
+  <div id="external-events">
+  </div>
+  {% include 'footer.html' %}
 </div>
 <!-- ./wrapper -->
 
@@ -129,42 +159,6 @@
 <script src="{% static 'appointment/plugins/fullcalendar-bootstrap/main.min.js' %}"></script>
 <!-- Page specific script -->
 <script>
-  function display_mem_form(){
-      console.log("display mem form");
-      if (document.getElementById("mem_form").style.display == "block"){
-        document.getElementById("mem_form").style.display = "none";
-        document.getElementById("mem_header").innerHTML="Membership &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#9664;";
-      }
-      else{
-        document.getElementById("mem_form").style.display = "block";
-        document.getElementById("mem_header").innerHTML="Membership &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#9660;";
-      }
-  }
-  function display_non_mem_form(){
-      if (document.getElementById("non_mem_form").style.display == "block"){
-        document.getElementById("non_mem_form").style.display = "none";
-        document.getElementById("non_mem_header").innerHTML="Non-Membership&nbsp;&nbsp;&nbsp;&nbsp;&#9664;";
-      }
-      else{
-        document.getElementById("non_mem_form").style.display = "block";
-        document.getElementById("non_mem_header").innerHTML="Non-Membership&nbsp;&nbsp;&nbsp;&nbsp;&#9660;";
-      }
-  }
-  function onload_behaviour()
-      {
-          // Hide Membership form
-          document.getElementById("mem_form").style.display = "none";
-
-          // Hide Non-Membership form
-          document.getElementById("non_mem_form").style.display = "none";
-      }
-
-      function oninput_contact_number(){
-            autocomplete('mem_contact_number', {{memberships|safe}});
-            client_details = get_client_details_based_on_contact_number('mem_contact_number', {{memberships|safe}});
-            print_client_details(client_details);
-      }
-
   $(function () {
 
     /* initialize the external events
@@ -306,6 +300,29 @@
       $('#new-event').val('')
     })
   })
+
+  var tabs = document.querySelectorAll(".card-header");
+  var panels = document.querySelectorAll(".card_body_footer");
+  var contact_number_id = 'mem_contact_number';
+  var client_details_id = 'client_details';
+  var suggestions_id = 'suggestions';
+ function onload_behaviour()
+  {
+    set_card_body(0);
+  }
+
+  function oninput_contact_number(){
+      var is_suggestions_available = autocomplete(contact_number_id, {{memberships|safe}}, suggestions_id);
+      print_contact_number_validations_and_errors(is_suggestions_available, contact_number_id, {{memberships|safe}}, client_details_id)
+  }
+
+  function set_contact_number(contact_number){
+      document.getElementById(contact_number_id).value = contact_number;
+      document.getElementById(suggestions_id).innerHTML = "";
+      client_details = get_client_details_based_on_contact_number(contact_number_id, {{memberships|safe}});
+      print_client_details(contact_number, client_details, client_details_id)
+  }
+
 </script>
 </body>
 </html>

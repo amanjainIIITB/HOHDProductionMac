@@ -1,4 +1,5 @@
 from django import template
+from HOHDProductionMac.common_function import convert_date_yyyy_mm_dd_to_dd_mm_yyyy
 
 register = template.Library()
 
@@ -44,4 +45,8 @@ def finalAmount(total_online, expense_list):
     for obj in expense_list:
         amount_to_employees = amount_to_employees + obj[4]
     return amount_to_employees
+
+@register.filter
+def tag_convert_date_yyyy_mm_dd_to_dd_mm_yyyy(date):
+    return convert_date_yyyy_mm_dd_to_dd_mm_yyyy(date)
 

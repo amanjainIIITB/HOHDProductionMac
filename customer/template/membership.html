@@ -1,137 +1,203 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Welcome</title>
-    </head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HOHD | Membership</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{% static 'appointment/plugins/fontawesome-free/css/all.min.css' %}">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{% static 'appointment/dist/css/adminlte.min.css' %}">
+  <!-- DataTables -->
+  <link rel="stylesheet" href="{% static 'appointment/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css' %}">
+  <link rel="stylesheet" href="{% static 'appointment/plugins/datatables-responsive/css/responsive.bootstrap4.min.css' %}">
+</head>
+<body class="hold-transition sidebar-mini">
+    {% include 'status_popup.html' %}
+    <div class="wrapper">
+    {% include 'top_bar.html' %}
+    {% include 'side_bar.html' %}
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper" style="padding-top: 15px;">
+
+        <!-- Main content -->
+        <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+            <!-- left column -->
+            <div class="col-md-6">
+                <!-- general form elements -->
+                <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Create Membership</h3>
+                </div>
+                <!-- /.card-header -->
+                <!-- form start -->
+                <form autocomplete="off" method="post" action="/client/membership/">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="custid">Client ID</label>
+                            <input type="text" class="form-control" id="custid" name="custid" oninput="oninput_custid()" placeholder="Enter Client ID" required>
+                        </div>
+                        <span id="custid_span" style="color: red;"></span>
+                        <div class="form-group">
+                            <label for="DOB">Date of Birth</label>
+                            <div class="input-group date" >
+                                <input type="date" id="DOB" name="DOB" class="form-control datetimepicker-input"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Client Name</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Enter Client Name">
+                        </div>
+                        <div class="form-group">
+                            <label for="contact_number">Contact Number</label>
+                            <input type="text" class="form-control" id="contact_number" name="contact_number" oninput="oninput_contact_number()" placeholder="Enter Contact Number" required>
+                        </div>
+                        <span id="membership_contact" style="color: red;"></span>
+                        <div class="form-group">
+                            <label for="sex">Sex</label>
+                            <select class="form-control" id="sex" name="sex" >
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- /.card-body -->
+
+                    <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+                </div>
+            </div>
+            <!-- /.row -->
+        </div><!-- /.container-fluid -->
+        </section>
+        <!-- /.content -->
+
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Membership Records</h3>
+                            </div>
+                            <!-- /.card-header -->
+                            <div class="card-body">
+                                <table id="example2" class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Cust ID</th>
+                                            <th>Name</th>
+                                            <th>Sex</th>
+                                            <th>Contact Number</th>
+                                            <th>Date of Birth</th>
+                                            <th>Last Visited</th>
+                                            <th>Avg/visit</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for membership in memberships %}
+                                            <tr>
+                                                <td>{{membership.custID}}</td>
+                                                <td>{{membership.Name}}</td>
+                                                <td>{{membership.Sex}}</td>
+                                                <td>{{membership.Contact_Number}}</td>
+                                                <td>{{membership.DOB}}</td>
+                                                <td>{{membership.last_visit}}</td>
+                                                <td>{{membership.avg}}</td>
+                                                <td><a href="/client/update_membership/{{membership.custID}}">Edit</a> / <button onclick="popup_confirmation('Do you want to Delete Client Membership?', '/client/delete_membership/{{membership.custID}}/')">Delete</button></td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Cust ID</th>
+                                            <th>Name</th>
+                                            <th>Sex</th>
+                                            <th>Contact Number</th>
+                                            <th>Date of Birth</th>
+                                            <th>Last Visited</th>
+                                            <th>Avg/visit</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                    <!-- /.card -->
+                    </div>
+                    <!-- /.col -->
+                </div>
+            <!-- /.row -->
+            </div>
+            <!-- /.container-fluid -->
+        </section>
+    </div>
+    <!-- /.content-wrapper -->
+    {% include 'footer.html' %}
+
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+        <!-- Control sidebar content goes here -->
+    </aside>
+    <!-- /.control-sidebar -->
+    </div>
+    <!-- ./wrapper -->
+
+    <!-- jQuery -->
+    <script src="{% static 'appointment/plugins/jquery/jquery.min.js' %}"></script>
+    <!-- Bootstrap 4 -->
+    <script src="{% static 'appointment/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <!-- bs-custom-file-input -->
+    <script src="{% static 'appointment/plugins/bs-custom-file-input/bs-custom-file-input.min.js' %}"></script>
+    <!-- AdminLTE App -->
+    <script src="{% static 'appointment/dist/js/adminlte.min.js' %}"></script>
+    <!-- AdminLTE for demo purposes -->
+    <script src="{% static 'appointment/dist/js/demo.js' %}"></script>
+    <!-- Page specific script -->
     <script src="{% static 'common/common.js' %}"></script>
+    <!-- DataTables -->
+    <script src="{% static 'appointment/plugins/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'appointment/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+    <script src="{% static 'appointment/plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'appointment/plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
     <script>
         function oninput_contact_number(){
-            autocomplete('contact_number', {{memberships|safe}});
+            // autocomplete('contact_number', {{memberships|safe}});
             client_details = get_client_details_based_on_contact_number('contact_number', {{memberships|safe}});
             if(client_details != ''){
-                document.getElementById('membership_contact').innerHTML="This contact number has already been assigned <b>"+client_details.Name+"</b>, try another Number";
-                document.getElementById("submit_button").disabled = true;
+                document.getElementById('membership_contact').innerHTML="NOTE: This contact number has already been assigned <b>"+client_details.Name+"</b>, try another Number";
             }    
             else{
-                document.getElementById('membership_contact').innerHTML= "";
-                document.getElementById("submit_button").disabled = false;
+                value = document.getElementById("contact_number").value;
+                if(is_number_valid(value) == false){
+                    document.getElementById('membership_contact').innerHTML = "NOTE: Invalid Number";
+                }
+                else{
+                    document.getElementById('membership_contact').innerHTML = "";
+                }
             }   
         }
-        
         function oninput_custid(){
             client_details = get_client_details_based_on_clientID('custid', {{memberships|safe}});
             if(client_details != ''){
-                document.getElementById('custid_span').innerHTML="This Client ID has already been assigned <b>"+client_details.Name+"</b>, try another ID";
-                document.getElementById("submit_button").disabled = true;
+                document.getElementById('custid_span').innerHTML="NOTE: This Client ID has already been assigned <b>"+client_details.Name+"</b>, try another ID";
             }
             else{
                 document.getElementById('custid_span').innerHTML= "";
-                document.getElementById("submit_button").disabled = false;
             }
         }
     </script>
-    
-    <style>
-        .transaction{
-            width:180px;
-            text-align:center;
-        }
-        th, td {
-            width:150px;
-            height:40px;
-        }
-    </style>
-    <body>
-
-        {% if messages %}
-            <script>
-                {% for message in messages %}
-                    alert("{{ message }}");
-                {% endfor %}
-            </script>
-        {% endif %}
-        {% include 'menubar.html' with active_menubar_item="Membership" %}
-        <h1>Client Membership</h1>
-        <form autocomplete="off" method="post" action="/client/membership/">
-            {% csrf_token %}
-            <table>
-                <tr>
-                    <td>
-                        <label for="custid">Client ID</label>
-                    </td>
-                    <td>
-                        <input oninput="oninput_custid()" type="text" id="custid" name="custid" required>
-                    </td>
-                </tr>
-                <tr>
-                    <td><span id="custid_span"></span></td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="date">Date of Birth</label>
-                    </td>
-                    <td>
-                        <input type="date" id="DOB" name="DOB" ><br>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="name">Client Name</label>
-                    </td>
-                    <td>
-                        <input type="text" id="name" name="name">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="sex">Sex</label>
-                    </td>
-                    <td>
-                        <select id="sex" name="sex">
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="contact_number">Contact Number</label>
-                    </td>
-                    <td>
-                        <input oninput="oninput_contact_number()" type="text" id="contact_number" name="contact_number" required>
-                        <div id="suggestions">
-                        </div>
-                        <span id="membership_contact"></span>
-                    </td>
-                </tr>
-            </table>
-            <input type="submit" id="submit_button" value="Submit">
-        </form>
-        
-        <h1>Membership Records</h1>
-        <table border="2">
-            <th>Cust ID</th>
-            <th>Name</th>
-            <th>Sex</th>
-            <th>Contact Number</th>
-            <th>Date of Birth</th>
-            <th>Last Visited</th>
-            <th>Avg/visit</th>
-            <th>Action</th>
-            {% for membership in memberships %}
-                <tr>
-                    <td class="transaction">{{membership.custID}}</td>
-                    <td class="transaction">{{membership.Name}}</td>
-                    <td class="transaction">{{membership.Sex}}</td>
-                    <td class="transaction">{{membership.Contact_Number}}</td>
-                    <td class="transaction">{{membership.DOB}}</td>
-                    <td class="transaction">{{membership.last_visit}}</td>
-                    <td class="transaction">{{membership.avg}}</td>
-                    <td class="transaction"><a href="/client/update_membership/{{membership.custID}}">Edit</a> / <button onclick="popup_confirmation('Do you want to Delete Client Membership?', '/client/delete_membership/{{membership.custID}}/')">Delete</button></td>
-                </tr>
-            {% endfor %}
-        </table>
-    </body>
+</body>
 </html>

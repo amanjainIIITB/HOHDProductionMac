@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.db.models.utils import *
+from HOHDProductionMac.settings import ALLOWED_IP
 import datetime
 import requests
 import json
@@ -15,7 +16,8 @@ from .models import Expense, ShopRegistration, Employee, Appointment
 from customer.models import Membership
 from useraccount.models import OwnerRegistration
 from HOHDProductionMac.common_function import get_month_year_month_name_for_download, atleast_one_shop_registered, \
-    get_login_user_shop_details, set_session, get_list_of_login_user_shops, get_current_date, get_all_membership_based_on_shop_id
+    get_login_user_shop_details, set_session, get_list_of_login_user_shops, get_current_date, get_all_membership_based_on_shop_id, \
+    convert_date_yyyy_mm_dd_to_dd_mm_yyyy
 from fpdf import FPDF
 from django.core.files.storage import FileSystemStorage
 import cv2
@@ -33,7 +35,7 @@ def get_new_employee_id(request):
 
 
 def delete_file(shop_id, employee_id):
-    if os.path.exists(str(employee_id_path)+str(shop_id)+'/'+str(employee_id)+'.png'):
+    if os.path.exists(str(employee_id_path)+str(shop_id)+'/'+str(employee_id)+'.xpng'):
         os.remove(str(employee_id_path)+str(shop_id)+'/'+str(employee_id)+'.png')
 
 
@@ -77,6 +79,8 @@ def get_current_shop_employees(shop_id):
 def employee(request):
     if request.method == "POST":
         employee_id=get_new_employee_id(request)
+        print('DOB of the employee')
+        print(request.POST.get('DOB'))
         Employee(EmployeeID=employee_id, ShopID=request.session['shop_id'], name=request.POST.get('name'), contact_number=request.POST.get('contact_number'), 
                 sex=request.POST.get('sex'), date_of_joining=request.POST.get('date_of_joining'), DOB=request.POST.get('DOB'), 
                 position=request.POST.get('position'), temporary_address=request.POST.get('temporary_address'), permanent_address=request.POST.get('permanent_address')).save()
@@ -91,13 +95,18 @@ def employee(request):
     employees = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'ShopID', 'sex', 'date_of_joining', 'position', 'DOB', 'temporary_address', 'permanent_address').filter(ShopID=request.session['shop_id'])
     images = get_current_shop_employees(request.session['shop_id'])
     for employee in employees:
+        employee['date_of_joining'] = convert_date_yyyy_mm_dd_to_dd_mm_yyyy(str(employee['date_of_joining']))
+        if employee['DOB'] != '':
+            employee['DOB'] = convert_date_yyyy_mm_dd_to_dd_mm_yyyy(str(employee['DOB']))
         if employee['EmployeeID'] in images: 
             employee['govt_id'] = 'images/employee_verification/'+str(request.session['shop_id'])+'/'+ str(employee['EmployeeID']) +'.png'
         else:
             employee['govt_id'] = 'images/not_found.png'
     return render(request, 'employee.html', {"month_year_month_name": get_month_year_month_name_for_download(),
                                             'employees': employees,
-                                            "shop_details": get_login_user_shop_details(request)})
+                                            "shop_details": get_login_user_shop_details(request),
+                                            "login_username": request.user.get_username(),
+                                             'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})
 
 
 def update_employee(request, employee_id):
@@ -122,7 +131,9 @@ def update_employee(request, employee_id):
             filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).last()
     return render(request, 'update_employee.html', {"month_year_month_name": get_month_year_month_name_for_download(),
                                                     'employee': employee,
-                                                    "shop_details": get_login_user_shop_details(request)})
+                                                    "shop_details": get_login_user_shop_details(request),
+                                                    "login_username": request.user.get_username(),
+                                                    'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})
 
 
 def delete_employee(request, employee_id):
@@ -182,7 +193,9 @@ def update_expense(request, expense_id):
                                                         'paymentmode': expense['paymentmode'],
                                                         'comment': expense['comment'],
                                                         'amount': expense['amount'],
-                                                        "shop_details": get_login_user_shop_details(request)})
+                                                        "shop_details": get_login_user_shop_details(request),
+                                                        "login_username": request.user.get_username(),
+                                                        'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})
                                                         
 
 def delete_expense(request, expense_id):
@@ -209,7 +222,7 @@ def expense(request):
         return redirect('/staff/shopreg/')
     now = datetime.datetime.now()
     # put the ip address or dns of your apic-em controller in this url
-    expense_url = 'http://localhost:8000/staff/getExpense/'
+    expense_url = 'http://'+ALLOWED_IP+':8000/staff/getExpense/'
     payload = {"month": now.month, "year": now.year, "shop_id": request.session['shop_id']}
 
     # Content type must be included in the header
@@ -221,6 +234,8 @@ def expense(request):
     r_json['month'] = now.month
     r_json['year'] = now.year
     r_json['shop_details'] = get_login_user_shop_details(request)
+    r_json['login_username'] = request.user.get_username()
+    r_json['shop_name'] = ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']
     return render(request, 'expense.html', r_json)
 
     
@@ -231,7 +246,7 @@ def analysis(request):
     now = datetime.datetime.now()
 
     # put the ip address or dns of your apic-em controller in this url
-    expense_url = 'http://localhost:8000/staff/getAnalysis/'
+    expense_url = 'http://'+ALLOWED_IP+':8000/staff/getAnalysis/'
     payload = {"month": now.month, "year": now.year, "shop_id": request.session['shop_id']}
 
     # Content type must be included in the header
@@ -274,7 +289,9 @@ def aboutus(request):
     month_year_month_name = get_month_year_month_name_for_download()
     return render(request, 'aboutus.html',
                   {"month_year_month_name": get_month_year_month_name_for_download(),
-                  "shop_details": get_login_user_shop_details(request)})
+                  "shop_details": get_login_user_shop_details(request),
+                  "login_username": request.user.get_username(),
+                  'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})
 
 
 def gererate_all_customer_data_for_a_month_in_excel(month, year, r_json):
@@ -332,9 +349,9 @@ def download(request, download_type, month, year):
     # put the ip address or dns of your apic-em controller in this url
     url = ''
     if download_type == 'analysis_render' or download_type == 'analysis_excel':
-        url = 'http://localhost:8000/staff/getAnalysis/'
+        url = 'http://'+ALLOWED_IP+':8000/staff/getAnalysis/'
     elif download_type == 'expense':
-        url = 'http://localhost:8000/staff/getExpense/'
+        url = 'http://'+ALLOWED_IP+':8000/staff/getExpense/'
     payload = {"month": int(month), "year": int(year), "shop_id": request.session['shop_id']}
     # Content type must be included in the header
     header = {"content-type": "application/json"}
@@ -407,7 +424,9 @@ def shopreg(request):
             set_session(request, 'S' + str(new_shop_id))
         messages.success(request, 'Added successfully', extra_tags='alert')
     return render(request, 'shop_registration.html', {"month_year_month_name": get_month_year_month_name_for_download(),
-                                                      "shop_details": get_login_user_shop_details(request)})
+                                                      "shop_details": get_login_user_shop_details(request),
+                                                      "login_username": request.user.get_username(),
+                                                      'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})
 
 
 def edit_parlour(request, shop_id):
@@ -418,7 +437,10 @@ def edit_parlour(request, shop_id):
     shop = ShopRegistration.objects.values('ShopID', 'Desk_Contact_Number', 'Shop_Name', 'Shop_Address', 'email').filter(ShopID=shop_id).first()
     set_session(request, shop_id)
     return render(request, 'update_shop.html', {"month_year_month_name": get_month_year_month_name_for_download(),
-                                                            "shop_details": get_login_user_shop_details(request),"shop": shop})
+                                                "shop_details": get_login_user_shop_details(request),
+                                                "shop": shop,
+                                                "login_username": request.user.get_username(),
+                                                'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})
 
 
 def get_all_owners(request):
@@ -465,19 +487,32 @@ def add_partner(request):
     return render(request, 'add_partner.html', {"month_year_month_name": get_month_year_month_name_for_download(),
                                                 "shop_details": list(get_login_user_shop_details(request)),
                                                 "list_users": list(get_all_owners(request)),
-                                                "login_username": request.user.get_username()})
+                                                "login_username": request.user.get_username(),
+                                                'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})
+
+
+def save_mem_client_appointment(request):
+    membership = Membership.objects.values('Name', 'Contact_Number').filter(shopID=request.session['shop_id'], Contact_Number=request.POST.get('mem_contact_number')).first()
+    Appointment(name=membership['Name'], contact_number=membership['Contact_Number'], date=request.POST.get('mem_date'), start_time=request.POST.get('mem_start_time'), end_time=request.POST.get('mem_end_time')).save()
+    messages.success(request, 'Appointment Scheduled successfully', extra_tags='alert')
+    return redirect('/staff/appointment/')
+
+
+def save_non_mem_client_appointment(request):
+    print(request.POST.get('cust_name'))
+    print(request.POST.get('contact_number'))
+    print(request.POST.get('date'))
+    print(request.POST.get('start_time'))
+    print(request.POST.get('end_time'))
+    Appointment(name=request.POST.get('cust_name'), contact_number=request.POST.get('contact_number'), date=request.POST.get('date'), start_time=request.POST.get('start_time'), end_time=request.POST.get('end_time')).save()
+    messages.success(request, 'Appointment Scheduled successfully', extra_tags='alert')
+    return redirect('/staff/appointment/')
 
 
 def appointment(request):
-    if request.method == 'POST':
-        if request.POST.get('mem_contact_number') != None:
-            membership = Membership.objects.values('Name', 'Contact_Number').filter(shopID=request.session['shop_id'], Contact_Number=request.POST.get('mem_contact_number')).first()
-            Appointment(name=membership['Name'], contact_number=membership['Contact_Number'],
-                                    date=request.POST.get('mem_date'), start_time=request.POST.get('mem_start_time'), end_time=request.POST.get('mem_end_time')).save()
-        else:
-            Appointment(name=request.POST.get('cust_name'), contact_number=request.POST.get('contact_number'), date=request.POST.get('date'), start_time=request.POST.get('start_time'), end_time=request.POST.get('end_time')).save()
+    if not atleast_one_shop_registered(request):
+        return redirect('/staff/shopreg/')
     events = Appointment.objects.values('name', 'contact_number', 'date', 'start_time', 'end_time')
-    shop_name = ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']
     for event in events:
         event['day'] = event['date'].day
         event['month'] = event['date'].month
@@ -494,4 +529,4 @@ def appointment(request):
                                              'events': list(events), 
                                              "memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),   
                                              "login_username": request.user.get_username(),
-                                             'shop_name': shop_name})
+                                             'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})

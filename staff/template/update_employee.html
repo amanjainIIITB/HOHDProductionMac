@@ -1,124 +1,157 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Welcome</title>
-    </head>
-    <script src="{% static 'common/common.js' %}"></script>
-    <script>
-        function onload_behaviour(){
-            setDate("DOB", "{{employee.DOB}}");
-            setDate("date_of_joining", "{{employee.date_of_joining}}");
-            setDate("date_of_appointment", "{{employee.date_of_appointment}}")
-        }
-    </script>
-    <style>
-        .transaction{
-            width:180px;
-            text-align:center;
-        }
-        th, td {
-            width:150px;
-            height:40px;
-        }
-    </style>
-    <body onload="onload_behaviour()">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HOHD | Employee Update</title>
 
-        {% if messages %}
-            <script>
-                {% for message in messages %}
-                    alert("{{ message }}");
-                {% endfor %}
-            </script>
-        {% endif %}
-        {% include 'menubar.html' with active_menubar_item="NA" %}
-        <h1>Update Employee Record</h1>
-        <form method="post" enctype="multipart/form-data" action="/staff/update_employee/{{employee.EmployeeID}}/">
-            {% csrf_token %}
-            <table>
-                <tr>
-                    <td>
-                        <label for="name">Name</label>
-                    </td>
-                    <td>
-                        <input type="text" id="name" name="name" value="{{employee.name}}" required>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="contact_number">Contact Number</label>
-                    </td>
-                    <td>
-                        <input type="text" id="contact_number" name="contact_number" value="{{employee.contact_number}}" oninput="print_number_status('contact_number', 'span_contact_number')" required>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <span id="span_contact_number"></span>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="sex">Sex</label>
-                    </td>
-                    <td>
-                        <select id="sex" name="sex" value="{{employee.sex}}">
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="date_of_joining">Date of Joining</label>
-                    </td>
-                    <td>
-                        <input type="date" id="date_of_joining" name="date_of_joining" required>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="position">Position</label>
-                    </td>
-                    <td>
-                        <input type="text" id="position" name="position" value="{{employee.position}}" required><br>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="DOB">Date of Birth</label>
-                    </td>
-                    <td>
-                        <input type="date" id="DOB" name="DOB">
-                    </td>
-                </tr> 
-                <tr>
-                    <td>
-                        <label for="temporary_address">Temporary Address</label>
-                    </td>
-                    <td>
-                        <input type="text" id="temporary_address" name="temporary_address" value="{{employee.temporary_address}}">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="permanent_address">Permanent Address</label>
-                    </td>
-                    <td>
-                        <input type="text" id="permanent_address" name="permanent_address" value="{{employee.permanent_address}}">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="employee_gov_id">Upload Govt ID</label>
-                    </td>
-                    <td>
-                        <input type="file" id="employee_gov_id" name="employee_gov_id">
-                    </td>
-                </tr>
-            </table>
-            <input type="submit" value="Submit">
-        </form>
-    </body>
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{% static 'appointment/plugins/fontawesome-free/css/all.min.css' %}">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{% static 'appointment/dist/css/adminlte.min.css' %}">
+  <!-- daterange picker -->
+  <!-- <link rel="stylesheet" href="{% static 'appointment/plugins/daterangepicker/daterangepicker.css' %}"> -->
+  <!-- DataTables -->
+  <link rel="stylesheet" href="{% static 'appointment/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css' %}">
+  <link rel="stylesheet" href="{% static 'appointment/plugins/datatables-responsive/css/responsive.bootstrap4.min.css' %}">
+</head>
+<body class="hold-transition sidebar-mini" onload="onload_behaviour()">
+    {% include 'status_popup.html' %}
+<div class="wrapper">
+  {% include 'top_bar.html' %}
+  {% include 'side_bar.html' %}
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper" style="padding-top: 15px;">
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <!-- left column -->
+                <div class="col-md-6">
+                    <!-- general form elements -->
+                    <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Update Employee Record</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <!-- form start -->
+                    <form method="post" enctype="multipart/form-data" action="/staff/update_employee/{{employee.EmployeeID}}/">
+                        {% csrf_token %}
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="name">Name</label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{employee.name}}" placeholder="Enter Contact Number" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="date_of_joining">Date of Joining</label>
+                                <div class="input-group date">
+                                    <input type="date" id="date_of_joining" name="date_of_joining" class="form-control datetimepicker-input" required/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="DOB">Date of Birth</label>
+                                <div class="input-group date">
+                                    <input type="date" id="DOB" name="DOB" class="form-control datetimepicker-input"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="contact_number">Contact Number</label>
+                                <input type="text" class="form-control" id="contact_number" name="contact_number" value="{{employee.contact_number}}" oninput="print_number_status('contact_number', 'span_contact_number')" placeholder="Enter Contact Number" required>
+                            </div>
+                            <span id="span_contact_number" style="color: red;"></span>
+                            <div class="form-group">
+                                <label for="position">Position</label>
+                                <input type="text" class="form-control" id="position" name="position" value="{{employee.position}}" placeholder="Enter Contact Number" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="sex">Sex</label>
+                                <select class="form-control" id="sex" name="sex">
+                                    {% if employee.sex == "male" %}
+                                        <option value="male" selected>Male</option>
+                                        <option value="female">Female</option>
+                                    {% else %}
+                                        <option value="male">Male</option>
+                                        <option value="female" selected>Female</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="temporary_address">Permanent Address</label>
+                                <textarea class="form-control" rows="3" name="temporary_address" id="temporary_address">{{employee.temporary_address}}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="permanent_address">Temporary Address</label>
+                                <textarea class="form-control" rows="3" name="permanent_address" id="permanent_address">{{employee.permanent_address}}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="employee_gov_id">Govt ID</label>
+                                <div class="input-group">
+                                    <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="employee_gov_id" name="employee_gov_id">
+                                    <label class="custom-file-label" for="exampleInputFile">Choose file</label>
+                                    </div>
+                                    <div class="input-group-append">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+
+                        <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                    </div>
+                </div>
+            </div>
+            <!-- /.row -->
+        </div>
+      <!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+  {% include 'footer.html' %}
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="{% static 'appointment/plugins/jquery/jquery.min.js' %}"></script>
+<!-- Bootstrap 4 -->
+<script src="{% static 'appointment/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<!-- bs-custom-file-input -->
+<script src="{% static 'appointment/plugins/bs-custom-file-input/bs-custom-file-input.min.js' %}"></script>
+<!-- AdminLTE App -->
+<script src="{% static 'appointment/dist/js/adminlte.min.js' %}"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="{% static 'appointment/dist/js/demo.js' %}"></script>
+<!-- Page specific script -->
+<script src="{% static 'common/common.js' %}"></script>
+<!-- DataTables -->
+<script src="{% static 'appointment/plugins/datatables/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'appointment/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+<script src="{% static 'appointment/plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'appointment/plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
+<script>
+    function onload_behaviour(){
+        setDate("DOB", "{{employee.DOB}}");
+        setDate("date_of_joining", "{{employee.date_of_joining}}");
+    }
+</script>
+</script>
+</body>
 </html>
+
+
+

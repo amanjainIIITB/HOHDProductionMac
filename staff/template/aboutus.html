@@ -1,40 +1,124 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Title</title>
-    </head>
-    <style>
-        th, td {
-            width:120px;
-            height:25px;
-            text-align:center;
-        }
-    </style>
-    <body>
-        {% include 'menubar.html' with active_menubar_item="About" %}
-        <h1>Background</h1>
-        In 2019, House of Handsomes & Divas (HOHD) established its first salon in Devarabisanahalli, Bellandur, Bangalore Karnataka 560103. HOHD opened with a promise – consistently deliver world class services to all customers. Our founders being post graduates from IIIT, are aiming to transform the salon Industry.
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HOHD | Home</title>
 
-        <h1>Objective</h1>
-        To help Salon Industry by providing them the User interface to manage the customer data, providing the analysis tool to predict the Customer data, expense tool to keep track of all the expense at one place and message System to directly connect to their clients.
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{% static 'appointment/plugins/fontawesome-free/css/all.min.css' %}">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{% static 'appointment/dist/css/adminlte.min.css' %}">
+  <!-- daterange picker -->
+  <!-- <link rel="stylesheet" href="{% static 'appointment/plugins/daterangepicker/daterangepicker.css' %}"> -->
+  <!-- DataTables -->
+  <link rel="stylesheet" href="{% static 'appointment/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css' %}">
+  <link rel="stylesheet" href="{% static 'appointment/plugins/datatables-responsive/css/responsive.bootstrap4.min.css' %}">
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+  {% include 'top_bar.html' %}
+  {% include 'side_bar.html' %}
+  <div class="content-wrapper" style="padding-top: 15px;">
+    <div class="row">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Home</h3>
+        </div>
+        <!-- /.card-header -->
+        <div class="card-body">
+          <!-- we are adding the accordion ID so Bootstrap's collapse plugin detects it -->
+          <div id="accordion">
+            <div class="card card-primary">
+              <div class="card-header">
+                <h4 class="card-title w-100">
+                    Background
+                </h4>
+              </div>
+              <div id="collapseOne" data-parent="#accordion">
+                <div class="card-body">
+                    In 2019, House of Handsomes & Divas (HOHD) established its first salon in Devarabisanahalli, 
+                    Bellandur, Bangalore Karnataka 560103. HOHD opened with a promise – consistently deliver 
+                    world class services to all customers. Our founders being post graduates from IIIT, are aiming 
+                    to transform the salon Industry.
+                </div>
+              </div>
+            </div>
+            <div class="card card-danger">
+              <div class="card-header">
+                <h4 class="card-title w-100">
+                    Objective
+                </h4>
+              </div>
+              <div id="collapseTwo" data-parent="#accordion">
+                <div class="card-body">
+                    To help Salon Industry by providing them the User interface to manage the customer data, 
+                    providing the analysis tool to predict the Customer data, expense tool to keep track of all 
+                    the expense at one place and message System to directly connect to their clients.
+                </div>
+              </div>
+            </div>
+            <div class="card card-success">
+              <div class="card-header">
+                <h4 class="card-title w-100">
+                    Benefits
+                </h4>
+              </div>
+              <div id="collapseThree" data-parent="#accordion">
+                <div class="card-body">
+                    <ul>
+                        <li>We will help you to reach out to your clients on special events like Holi, Diwali, Valentines, Eid, Birthday and many more using text message on your behalf</li>
+                        <li>Because of these events it will help you to increase the revenue</li>
+                        <li>In case if your client has forgot to reach to you for the services we will send them the notification periodically</li>
+                        <li>Based on the Data Prediction you can manage the inventory </li>
+                        <li>You can keep the number of salon members according to Previous Record which in turn will help you to save some cost </li>
+                        <li>It will help you to manage all the data at one place </li>
+                        <li>Take Better Decision using Analysis tool </li>
+                        <li>No one can see your Data except you and your partners added by you </li>
+                        <li>Not able to check the performance Because of multiple parlour? Don't worry we have the capability to help you to show you the performance for multiple parlour also</li>
+                        <li>Anytime you can see the records of last 4 month, if you need before 4 month record that also can be available based on the request</li>
+                        <li>Not able to visit the website due to internet connection or Server Down, no worries you will be receiving a report at the end of each and every month</li>
+                        <li>Not able to feed the customer data on regular basis? No Worries, share us the Photo at the end of the day we will feed data on your behalf</li>
+                        <li>Manage your employees data at one places including their voter id, joining date</li>
+                        <li>Being a Professional Salon, you will be able to Provide appointment letter to your employee</li>
+                    </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /.card-body -->
+      </div>
+      <!-- /.card -->
+    </div>
+  </div>
+  {% include 'footer.html' %}
+</div>
+<!-- ./wrapper -->
 
-        <h1>Benefits</h1>
-        <ul>
-            <li>We will help you to reach out to your clients on special events like Holi, Diwali, Valentines, Eid, Birthday and many more using text message on your behalf</li>
-            <li>Because of these events it will help you to increase the revenue</li>
-            <li>In case if your client has forgot to reach to you for the services we will send them the notification periodically</li>
-            <li>Based on the Data Prediction you can manage the inventory </li>
-            <li>You can keep the number of salon members according to Previous Record which in turn will help you to save some cost </li>
-            <li>It will help you to manage all the data at one place </li>
-            <li>Take Better Decision using Analysis tool </li>
-            <li>No one can see your Data except you and your partners added by you </li>
-            <li>Not able to check the performance Because of multiple parlour? Don't worry we have the capability to help you to show you the performance for multiple parlour also</li>
-            <li>Anytime you can see the records of last 4 month, if you need before 4 month record that also can be available based on the request</li>
-            <li>Not able to visit the website due to internet connection or Server Down, no worries you will be receiving a report at the end of each and every month</li>
-            <li>Not able to feed the customer data on regular basis? No Worries, share us the Photo at the end of the day we will feed data on your behalf</li>
-            <li>Manage your employees data at one places including their voter id, joining date</li>
-            <li>Being a Professional Salon, you will be able to Provide appointment letter to your employee</li>
-        </ul>
-    </body>
+<!-- jQuery -->
+<script src="{% static 'appointment/plugins/jquery/jquery.min.js' %}"></script>
+<!-- Bootstrap 4 -->
+<script src="{% static 'appointment/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<!-- bs-custom-file-input -->
+<script src="{% static 'appointment/plugins/bs-custom-file-input/bs-custom-file-input.min.js' %}"></script>
+<!-- AdminLTE App -->
+<script src="{% static 'appointment/dist/js/adminlte.min.js' %}"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="{% static 'appointment/dist/js/demo.js' %}"></script>
+<!-- Page specific script -->
+<!-- DataTables -->
+<script src="{% static 'appointment/plugins/datatables/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'appointment/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+<script src="{% static 'appointment/plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'appointment/plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
+<script>
+$(function () {
+  bsCustomFileInput.init();
+});
+</script>
+</body>
 </html>
