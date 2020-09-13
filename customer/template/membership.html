@@ -92,15 +92,15 @@
                             </div>
                             <!-- /.card-header -->
                             <div class="card-body">
-                                <table id="example2" class="table table-bordered table-hover">
+                                <table id="example1" class="table table-bordered table-hover">
                                     <thead>
                                         <tr>
                                             <th>Cust ID</th>
+                                            <th>Contact Number</th>
+                                            <th>Last Visited</th>
                                             <th>Name</th>
                                             <th>Sex</th>
-                                            <th>Contact Number</th>
                                             <th>Date of Birth</th>
-                                            <th>Last Visited</th>
                                             <th>Avg/visit</th>
                                             <th>Action</th>
                                         </tr>
@@ -109,11 +109,11 @@
                                         {% for membership in memberships %}
                                             <tr>
                                                 <td>{{membership.custID}}</td>
+                                                <td>{{membership.Contact_Number}}</td>
+                                                <td>{{membership.last_visit}}</td>
                                                 <td>{{membership.Name}}</td>
                                                 <td>{{membership.Sex}}</td>
-                                                <td>{{membership.Contact_Number}}</td>
                                                 <td>{{membership.DOB}}</td>
-                                                <td>{{membership.last_visit}}</td>
                                                 <td>{{membership.avg}}</td>
                                                 <td><a href="/client/update_membership/{{membership.custID}}">Edit</a> / <button onclick="popup_confirmation('Do you want to Delete Client Membership?', '/client/delete_membership/{{membership.custID}}/')">Delete</button></td>
                                             </tr>
@@ -122,11 +122,11 @@
                                     <tfoot>
                                         <tr>
                                             <th>Cust ID</th>
+                                            <th>Contact Number</th>
+                                            <th>Last Visited</th>
                                             <th>Name</th>
                                             <th>Sex</th>
-                                            <th>Contact Number</th>
                                             <th>Date of Birth</th>
-                                            <th>Last Visited</th>
                                             <th>Avg/visit</th>
                                             <th>Action</th>
                                         </tr>

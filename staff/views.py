@@ -21,8 +21,11 @@ from HOHDProductionMac.common_function import get_month_year_month_name_for_down
 from fpdf import FPDF
 from django.core.files.storage import FileSystemStorage
 import cv2
+import pdb
 
 employee_id_path = 'staticfiles/images/employee_verification/'
+logo_path = 'staticfiles/images/shop_logo/'
+image_not_found = 'images/not_found.png'
 
 
 def get_new_employee_id(request):
@@ -34,18 +37,22 @@ def get_new_employee_id(request):
         return new_emplyee_id
 
 
-def delete_file(shop_id, employee_id):
-    if os.path.exists(str(employee_id_path)+str(shop_id)+'/'+str(employee_id)+'.xpng'):
-        os.remove(str(employee_id_path)+str(shop_id)+'/'+str(employee_id)+'.png')
+def delete_file(base_url, shop_id, employee_id):
+    if os.path.exists(str(base_url)+str(shop_id)+'/'+str(employee_id)+'.png'):
+        os.remove(str(base_url)+str(shop_id)+'/'+str(employee_id)+'.png')
 
 
-def handle_uploaded_file(file, shop_id, employee_id):  
-    delete_file(shop_id, employee_id)
-    if os.path.exists(str(employee_id_path)+str(shop_id)) == False:
-        os.mkdir(os.path.join(employee_id_path,shop_id))
-    filename, file_extension = os.path.splitext(file.name)
-    fs = FileSystemStorage(location=os.path.join(employee_id_path,shop_id)) #defaults to   MEDIA_ROOT  
-    filename = fs.save(employee_id+'.png', file)
+def handle_uploaded_file(request, file, base_url, shop_id, file_name):  
+    filename, file_extension = os.path.splitext(str(file))
+    if file_extension not in ('.jpg', '.jpeg', '.png'):
+        messages.success(request, 'Please provide the govt id in jpg, jpeg or png format only', extra_tags='alert')
+    else:
+        delete_file(base_url, shop_id, file_name)
+        if os.path.exists(str(base_url)+str(shop_id)) == False:
+            os.mkdir(os.path.join(base_url,shop_id))
+        filename, file_extension = os.path.splitext(file.name)
+        fs = FileSystemStorage(location=os.path.join(base_url,shop_id)) #defaults to   MEDIA_ROOT  
+        filename = fs.save(file_name+'.png', file)
 
 
 def download_employee_govt_id(request, employee_id):
@@ -87,10 +94,7 @@ def employee(request):
         print(request)
         print(request.FILES.get('employee_gov_id'))
         if request.FILES.get('employee_gov_id') != None:
-            handle_uploaded_file(request.FILES.get('employee_gov_id'), request.session['shop_id'], employee_id)  
-            filename, file_extension = os.path.splitext(request.FILES.get('employee_gov_id').name)
-            if file_extension not in ('jpg', 'jpeg', 'png'):
-                messages.success(request, 'Please provide the govt id in jpg, jpeg or png format only', extra_tags='alert')
+            handle_uploaded_file(request, request.FILES.get('employee_gov_id'), employee_id_path, request.session['shop_id'], employee_id)  
         messages.success(request, 'Added successfully', extra_tags='alert')
     employees = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'ShopID', 'sex', 'date_of_joining', 'position', 'DOB', 'temporary_address', 'permanent_address').filter(ShopID=request.session['shop_id'])
     images = get_current_shop_employees(request.session['shop_id'])
@@ -118,12 +122,8 @@ def update_employee(request, employee_id):
                        DOB=request.POST.get('DOB'), temporary_address=request.POST.get('temporary_address'), 
                        permanent_address=request.POST.get('permanent_address'))
         if request.FILES.get('employee_gov_id')!=None:
-            filename, file_extension = os.path.splitext(request.FILES.get('employee_gov_id').name)
-            if file_extension not in ('.jpg', '.jpeg', '.png'):
-                messages.success(request, 'Please provide the govt id in jpg, jpeg or png format only', extra_tags='alert')
-            else:
-                handle_uploaded_file(request.FILES.get('employee_gov_id'), request.session['shop_id'], employee_id)  
-                messages.success(request, 'Updated successfully', extra_tags='alert')
+            handle_uploaded_file(request, request.FILES.get('employee_gov_id'), employee_id_path, request.session['shop_id'], employee_id)  
+            messages.success(request, 'Updated successfully', extra_tags='alert')
         messages.success(request, 'Updated successfully', extra_tags='alert')
         return redirect('/staff/employee/')
     else:
@@ -137,7 +137,7 @@ def update_employee(request, employee_id):
 
 
 def delete_employee(request, employee_id):
-    delete_file(request.session['shop_id'], employee_id)
+    delete_file(employee_id_path, request.session['shop_id'], employee_id)
     Employee.objects.filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).delete()
     messages.success(request, 'Deleted successfully', extra_tags='alert')
     return redirect('/staff/employee/')
@@ -153,7 +153,7 @@ def download_appointment_letter(request, employee_id):
             filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).last()
     current_shop_details = ShopRegistration.objects.values('Shop_Name', 'Shop_Address', 'Desk_Contact_Number', 'email').filter(ShopID=request.session['shop_id']).first()
     
-    html_template = render_to_string('appointment_letter.html', {'employee': employee, 'current_shop_details': current_shop_details})
+    html_template = render_to_string('appointment_letter.html', {'employee': employee, 'current_shop_details': current_shop_details, 'logo_url': get_logo_image_url(request),})
     pdf_file = HTML(string=html_template, base_url=request.build_absolute_uri()).write_pdf()
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = 'filename="appointment_letter.pdf"'
@@ -260,6 +260,8 @@ def analysis(request):
     r_json['month'] = now.month
     r_json['year'] = now.year
     r_json['shop_details'] = get_login_user_shop_details(request)
+    r_json['login_username'] = request.user.get_username()
+    r_json['shop_name'] = ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']
     return render(request, 'analysis.html', r_json)
 
 
@@ -407,6 +409,14 @@ def get_new_shop_id(request):
         return new_shop_id
 
 
+def get_logo_image_url(request):
+    shop_id = request.session['shop_id']
+    if os.path.exists(str(logo_path)+str(shop_id)+'/'+str(shop_id)+'.png'):
+        return 'images/shop_logo/'+str(shop_id)+'/'+str(shop_id)+'.png'
+    else:
+        return image_not_found
+
+
 @login_required(login_url="/")
 def shopreg(request):
     if request.method == "POST":
@@ -419,10 +429,14 @@ def shopreg(request):
         shopRegistration.owner_list = OwnerRegistration.objects.values('ownerID').filter(user=str(request.user.id)).first()['ownerID']
         add_shop_id_in_login_user(request, shopRegistration.ShopID)
         shopRegistration.save()
+        print(request.FILES.get('logo'))
+        if request.FILES.get('logo') != None:
+            handle_uploaded_file(request, request.FILES.get('logo'), logo_path, shopRegistration.ShopID, shopRegistration.ShopID) 
         if len(get_list_of_login_user_shops(request)) == 1:
             # check if it is first parlour to be registered then set it as the default parlour
             set_session(request, 'S' + str(new_shop_id))
         messages.success(request, 'Added successfully', extra_tags='alert')
+    print(get_logo_image_url(request))
     return render(request, 'shop_registration.html', {"month_year_month_name": get_month_year_month_name_for_download(),
                                                       "shop_details": get_login_user_shop_details(request),
                                                       "login_username": request.user.get_username(),
@@ -433,12 +447,17 @@ def edit_parlour(request, shop_id):
     if request.method == "POST":
         ShopRegistration.objects.filter(ShopID=shop_id).update(Desk_Contact_Number=request.POST.get('Desk_Contact_Number'),
         Shop_Name=request.POST.get('Shop_Name'), Shop_Address=request.POST.get('Shop_Address'), email=request.POST.get('email'))
+        # pdb.set_trace()
+        print(request.FILES.get('logo'))
+        if request.FILES.get('logo') != None:
+            handle_uploaded_file(request, request.FILES.get('logo'), logo_path, request.session['shop_id'], request.session['shop_id'])
         messages.success(request, 'Updated successfully', extra_tags='alert')
     shop = ShopRegistration.objects.values('ShopID', 'Desk_Contact_Number', 'Shop_Name', 'Shop_Address', 'email').filter(ShopID=shop_id).first()
     set_session(request, shop_id)
     return render(request, 'update_shop.html', {"month_year_month_name": get_month_year_month_name_for_download(),
                                                 "shop_details": get_login_user_shop_details(request),
                                                 "shop": shop,
+                                                'logo_url': get_logo_image_url(request),
                                                 "login_username": request.user.get_username(),
                                                 'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})
 

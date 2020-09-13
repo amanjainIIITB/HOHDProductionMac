@@ -1,5 +1,6 @@
 from django import template
 from HOHDProductionMac.common_function import convert_date_yyyy_mm_dd_to_dd_mm_yyyy
+import datetime
 
 register = template.Library()
 
@@ -48,5 +49,8 @@ def finalAmount(total_online, expense_list):
 
 @register.filter
 def tag_convert_date_yyyy_mm_dd_to_dd_mm_yyyy(date):
-    return convert_date_yyyy_mm_dd_to_dd_mm_yyyy(date)
+    date_str = convert_date_yyyy_mm_dd_to_dd_mm_yyyy(date)
+    format_str = '%d-%b-%Y'
+    datetime_obj = datetime.datetime.strptime(date_str, format_str)
+    return datetime_obj.date()
 

@@ -12,7 +12,7 @@ def get_last_6_month_data_for_bar_graph(shop_id, year, month):
     now = datetime.datetime.now()
     barGraphNumberOfMonth = 6
     revenueBarGraphData = []
-    month_list = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    month_list = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
     for index in range(barGraphNumberOfMonth):
         if month == 0:
@@ -22,19 +22,21 @@ def get_last_6_month_data_for_bar_graph(shop_id, year, month):
                                                                                       numberOfCustomer=Sum('numberofclient'))
         cash = ClientVisit.objects.filter(payment_mode='cash', ShopID=shop_id, date__contains=get_bardate(month, year)).aggregate(Amount=Sum('amount'),
                                                                                       numberOfCustomer=Sum('numberofclient'))
-        amount = 0
-        numberofcustomer = 0
+        online_amount = 0
+        cash_amount = 0
+        online_numberofcustomer = 0
+        cash_numberofcustomer = 0
         if online['Amount'] is not None:
-            amount = amount + online['Amount']
+            online_amount = online['Amount']
         if cash['Amount'] is not None:
-            amount = amount + cash['Amount']
+            cash_amount = cash['Amount']
         if online['numberOfCustomer'] is not None:
-            numberofcustomer = numberofcustomer + online['numberOfCustomer']
+            online_numberofcustomer = online['numberOfCustomer']
         if cash['numberOfCustomer'] is not None:
-            numberofcustomer = numberofcustomer + cash['numberOfCustomer']
+            cash_numberofcustomer = cash['numberOfCustomer']
         month = month - 1
-        revenueBarGraphData.append([month_list[month], amount, numberofcustomer])
-    return revenueBarGraphData
+        revenueBarGraphData.append([month_list[month], online_amount+cash_amount, online_numberofcustomer+cash_numberofcustomer, online_amount, cash_amount, online_numberofcustomer, cash_numberofcustomer])
+    return revenueBarGraphData[::-1]
 
 
 def prepare_list_of_dates(year, month):
@@ -85,7 +87,7 @@ def get_day_wise_cash_of_the_month(shop_id, month, year):
 def get_all_client_data_of_the_month(shop_id):
     client_visit_objects =  ClientVisit.objects.values('custID', 'isMember', 'visitID', 'date', 'payment_mode', 'time', 'employee_id', 'amount', 'numberofclient').filter(ShopID=shop_id).order_by('date')
     for client_visit_object in client_visit_objects:
-        client_visit_object['date'] = convert_date_yyyy_mm_dd_to_dd_mm_yyyy(str(client_visit_object['date']))
+        # client_visit_object['date'] = convert_date_yyyy_mm_dd_to_dd_mm_yyyy(str(client_visit_object['date']))
         emp_queryset = Employee.objects.values('name').filter(ShopID=shop_id, EmployeeID=client_visit_object['employee_id'])
         if len(emp_queryset) != 0:
             client_visit_object['employee'] = emp_queryset.first()['name']
