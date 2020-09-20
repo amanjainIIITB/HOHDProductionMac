@@ -48,9 +48,9 @@
                         {% csrf_token %}
                         <div class="card-body">
                             <div class="form-group">
-                                <label for="mem_date">Date:</label>
+                                <label for="date">Date:</label>
                                 <div class="input-group date">
-                                    <input type="date" class="form-control datetimepicker-input" id="mem_date" name="mem_date" required/>
+                                    <input type="date" class="form-control datetimepicker-input" id="date" name="date" required/>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -80,6 +80,7 @@
                                 <input type="text" class="form-control" id="mem_amount" name="mem_amount" placeholder="Enter amount..." oninput="print_number_status('mem_amount', 'mem_amount_span')" required>
                             </div>
                             <span id="mem_amount_span" style="color: red;"></span>
+                            {% include 'services.html' %}
                         </div>
                         <!-- /.card-body -->
 
@@ -124,6 +125,7 @@
                                 <input type="text" class="form-control" id="amount" name="amount" placeholder="Enter amount..." oninput="print_number_status('amount', 'amount_span')" required>
                             </div>
                             <span id="amount_span" style="color: red;"></span>
+                            {% include 'services.html' %}
                         </div>
                         <!-- /.card-body -->
 

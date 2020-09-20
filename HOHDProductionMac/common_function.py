@@ -3,10 +3,33 @@ from datetime import datetime, timedelta
 from customer.models import Membership
 from useraccount.models import OwnerRegistration
 from staff.models import ShopRegistration
-from customer.models import ClientVisit
+from customer.models import ClientVisit, AllService
 from django.db.models import Sum, Count, Max
 
+# Import smtplib for the actual sending function
+import smtplib
 
+# Import the email modules we'll need
+from email.message import EmailMessage
+
+
+def get_all_services():
+    all_service_dict = {}
+    all_service = AllService.objects.all()
+    for service_obj in all_service:
+        all_service_dict[service_obj.ServiceID] = service_obj.Name
+    return all_service_dict
+
+
+def get_services():
+    all_services = get_all_services()
+    services = {}
+    services['hair'] = {'S1': all_services['S1'], 'S2': all_services['S2'], 'S3': all_services['S3'], 'S4': all_services['S4'], 'S5': all_services['S5'], 'S6': all_services['S6'], 'S7': all_services['S7'], 'S8': all_services['S8'], 'S9': all_services['S9'], 'S10': all_services['S10'], 'S11': all_services['S11'], 'S12': all_services['S12']}
+    services['face'] = {'S13': all_services['S13'], 'S14': all_services['S14'], 'S15': all_services['S15'], 'S16': all_services['S16']}
+    services['other'] = {'S17': all_services['S17'], 'S18': all_services['S18'], 'S19': all_services['S19'], 'S20': all_services['S20'], 'S21': all_services['S21'], 'S22': all_services['S22']}
+    return services
+
+    
 def convert_date_yyyy_mm_dd_to_dd_mm_yyyy(date):
     return datetime.strptime(date, "%Y-%m-%d").strftime("%d-%b-%Y")
 
@@ -46,6 +69,12 @@ def is_date_and_month_equal(date1, date2):
     date1split = str(date1).split("-")
     date2split = date2.split("-")
     return date1split[2]==date2split[2] and date1split[1]==date2split[1]
+
+
+def is_month_and_year_equal(date1, date2):
+    date1split = str(date1).split("-")
+    date2split = date2.split("-")
+    return date1split[0]==date2split[0] and date1split[1]==date2split[1]
 
 
 def get_month_year_month_name_for_download():
@@ -130,3 +159,22 @@ def get_all_membership_based_on_shop_id(request, ShopID):
     memberships = list(memberships)
     memberships = sorted(memberships, key=lambda d:(d['custID_character'], d['custID_number']))
     return memberships
+
+
+def email_format(message_body, sender, receiver, subject, Name):
+    message_greeting = 'Hello '+str(Name)+','
+    message_closing = 'Yours truely,\nHouse of Handsomes and Divas'
+
+    # Create a text/plain message
+    msg = EmailMessage()
+    msg.set_content(message_greeting+'\n\n'+message_body+'\n\n'+message_closing)
+    msg['Subject'] = subject
+    msg['From'] = sender
+    msg['To'] = receiver
+
+    # Send the message via our own SMTP server.
+    s = smtplib.SMTP('smtp.gmail.com', 587)
+    s.starttls()
+    s.login(sender, 'hohrockx@123')
+    s.send_message(msg)
+    s.quit()

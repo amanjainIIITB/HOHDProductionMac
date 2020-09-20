@@ -15,6 +15,7 @@ class ClientVisit(models.Model):
     time = models.TimeField(default=datetime.datetime.now().strftime('%H:%M:%S'))
     numberofclient = models.IntegerField(default=0)
     amount = models.IntegerField(default=0)
+    services = models.CharField(max_length=100, null=True)
 
     def __str__(self):
         return str(self.date)+" "+str(self.time)
@@ -32,3 +33,22 @@ class Membership(models.Model):
 
     def __str__(self):
         return str(self.shopID)+" "+str(self.custID)
+
+
+class Services(models.Model):
+    visitID = models.CharField(max_length=10, null=True)
+    date = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
+    time = models.TimeField(default=datetime.datetime.now().strftime('%H:%M:%S'))
+    shopID = models.CharField(max_length=10, null=True)
+    ServiceID = models.CharField(max_length=50, null=True)
+
+    def __str__(self):
+        return str(self.date)+" "+str(self.time)
+
+
+class AllService(models.Model):
+    ServiceID = models.CharField(max_length=10, null=True)
+    Name = models.CharField(max_length=50, null=True)
+
+    def __str__(self):
+        return str(self.Name)

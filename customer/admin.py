@@ -4,3 +4,5 @@ from django.contrib import admin
 from .models import *
 admin.site.register(ClientVisit)
 admin.site.register(Membership)
+admin.site.register(Services)
+admin.site.register(AllService)

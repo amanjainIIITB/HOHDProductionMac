@@ -1,0 +1,113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HOHD | Employee</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{% static 'appointment/plugins/fontawesome-free/css/all.min.css' %}">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{% static 'appointment/dist/css/adminlte.min.css' %}">
+</head>
+<body class="hold-transition sidebar-mini">
+    {% include 'status_popup.html' %}
+<div class="wrapper">
+  {% include 'top_bar.html' %}
+  {% include 'side_bar.html' %}
+
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper" style="padding-top: 15px;">
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <!-- left column -->
+                <div class="col-md-6">
+                    <!-- general form elements -->
+                    <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Feedback</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <!-- form start -->
+                    <form autocomplete="off" method="post" action="/staff/contact_us/">
+                        {% csrf_token %}
+                        <div class="card-body">
+                          <div class="form-group">
+                            <label for="Name">Name</label>
+                            <input type="text" class="form-control" id="Name" name="Name" placeholder="Enter Name" required>
+                          </div>
+                          <div class="form-group">
+                              <label for="Contact_Number">Contact Number</label>
+                              <input type="text" class="form-control" id="Contact_Number" name="Contact_Number" oninput="print_number_status('Contact_Number', 'span_contact_number')" placeholder="Enter Contact Number" required >
+                          </div>
+                          <span id="span_contact_number" style="color: red;"></span>
+                          <div class="form-group">
+                              <label for="email">Email</label>
+                              <input type="text" class="form-control" id="email" name="email" placeholder="Enter Email ID" required>
+                          </div>
+                          <div class="form-group">
+                              <label for="query">Query</label>
+                              <textarea class="form-control" rows="3" id="query" name="query" placeholder="Type Query" required></textarea>
+                          </div>
+                        </div>
+                        <!-- /.card-body -->
+
+                        <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                  <!-- general form elements -->
+                  <div class="card card-primary">
+                      <div class="card-header">
+                      <h3 class="card-title">Contact US</h3>
+                      </div>
+                      <!-- /.card-header -->
+                      <!-- form start -->
+                      <form>
+                          <img class="col-md-12" style="height: 492px;" src="{% static contact_us_image_url %}">
+                      </form>
+                  </div>
+              </div>
+            </div>
+            <!-- /.row -->
+        </div>
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+  {% include 'footer.html' %}
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="{% static 'appointment/plugins/jquery/jquery.min.js' %}"></script>
+<!-- Bootstrap 4 -->
+<script src="{% static 'appointment/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<!-- bs-custom-file-input -->
+<script src="{% static 'appointment/plugins/bs-custom-file-input/bs-custom-file-input.min.js' %}"></script>
+<!-- AdminLTE App -->
+<script src="{% static 'appointment/dist/js/adminlte.min.js' %}"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="{% static 'appointment/dist/js/demo.js' %}"></script>
+<!-- Page specific script -->
+<script src="{% static 'common/common.js' %}"></script>
+</body>
+</html>
+
+

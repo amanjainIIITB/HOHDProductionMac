@@ -17,15 +17,33 @@ from customer.models import Membership
 from useraccount.models import OwnerRegistration
 from HOHDProductionMac.common_function import get_month_year_month_name_for_download, atleast_one_shop_registered, \
     get_login_user_shop_details, set_session, get_list_of_login_user_shops, get_current_date, get_all_membership_based_on_shop_id, \
-    convert_date_yyyy_mm_dd_to_dd_mm_yyyy
+    convert_date_yyyy_mm_dd_to_dd_mm_yyyy, email_format, is_month_and_year_equal
 from fpdf import FPDF
 from django.core.files.storage import FileSystemStorage
 import cv2
 import pdb
+import calendar
+
 
 employee_id_path = 'staticfiles/images/employee_verification/'
 logo_path = 'staticfiles/images/shop_logo/'
 image_not_found = 'images/not_found.png'
+contact_us_image_url = 'images/contact_us.jpg'
+
+
+def contact_us(request):
+    if request.method == "POST":
+        message_body = 'Info Submitted by You\n'
+        message_body = message_body + 'Contact Number: '+request.POST.get('Contact_Number')+'\n'
+        message_body = message_body + 'Query: '+request.POST.get('query')+'\n\n'
+        message_body = message_body + 'Thank you for Contacting House of Handsomes & Divas, we are reviewing your Query, and we will contact you as soon as possible.\n\n'
+        message_body = message_body + 'In the meantime, you can reply to this email if you have more details to add, or you can call our support team, 9530101150.'
+        email_format(message_body, 'houseofhandsomes@gmail.com', request.POST.get('email'), 'Customer Support', request.POST.get('Name'))
+        messages.success(request, 'Submitted successfully', extra_tags='alert')
+    return render(request, 'contact_us.html', { "contact_us_image_url": contact_us_image_url,
+                                                "month_year_month_name": get_month_year_month_name_for_download(),
+                                                "login_username": request.user.get_username(),
+                                                'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})    
 
 
 def get_new_employee_id(request):
@@ -344,6 +362,73 @@ def gererate_all_customer_data_for_a_month_in_excel(month, year, r_json):
     return response
 
 
+def write_static_data_in_expense_excel(ws, row_num, date, purpose, comment, payment_mode, amount):
+    ws.write(row_num, 0, date)
+    ws.write(row_num, 1, purpose)
+    ws.write(row_num, 2, comment)
+    ws.write(row_num, 3, payment_mode)
+    ws.write(row_num, 4, amount)
+    return ws
+    
+
+
+def gererate_all_expense_data_for_a_month_in_excel(month, year, r_json):
+    print('Excel file is getting ready')
+    # content-type of response
+    response = HttpResponse(content_type='application/ms-excel')
+
+    # decide file name
+    response['Content-Disposition'] = 'attachment; filename=' + year + '-' + month + '-expense.xls'
+
+    # creating workbook
+    wb = xlwt.Workbook(encoding='utf-8')
+
+    # adding sheet
+    ws = wb.add_sheet("expense_data")
+
+    # Sheet header, first row
+    row_num = 0
+
+    font_style = xlwt.XFStyle()
+    # headers are bold
+    font_style.font.bold = True
+
+    # column header names, you can use your own headers here
+    columns = ['Date', 'Purpose', 'Comment', 'Payment Mode', 'Amount']
+
+    # write column headers in sheet
+    for col_num in range(len(columns)):
+        ws.write(row_num, col_num, columns[col_num], font_style)
+
+    # Sheet body, remaining rows
+    font_style = xlwt.XFStyle()
+
+    print(calendar.monthrange(2012,1)[1])
+    for obj in r_json['sell_of_the_month']:
+        row_num = row_num + 1
+        if is_month_and_year_equal(str(datetime.date(int(year), int(month), 1)), str(datetime.date.today())):
+            ws = write_static_data_in_expense_excel(ws, row_num, obj[0], obj[1], obj[2], obj[3], obj[4])
+        else:
+            day = calendar.monthrange(int(year), int(month))[1]
+            date = str(datetime.date(year=int(year), month=int(month), day=day))
+            ws = write_static_data_in_expense_excel(ws, row_num, date, obj[1], obj[2], obj[3], obj[4])
+
+    for obj in r_json['expense']:
+        row_num = row_num + 1
+        ws = write_static_data_in_expense_excel(ws, row_num, obj['date'], obj['purpose'], obj['comment'], obj['paymentmode'], obj['amount'])
+
+    for obj in r_json['remaining_balance']:
+        row_num = row_num + 1
+        if is_month_and_year_equal(str(datetime.date(int(year), int(month), 1)), str(datetime.date.today())):
+            ws = write_static_data_in_expense_excel(ws, row_num, obj[0], obj[1], obj[2], obj[3], obj[4])
+        else:
+            day = calendar.monthrange(int(year), int(month))[1]
+            date = str(datetime.date(year=int(year), month=int(month), day=day))
+            ws = write_static_data_in_expense_excel(ws, row_num, date, obj[1], obj[2], obj[3], obj[4])
+    wb.save(response)
+    return response
+
+
 @login_required(login_url="/")
 def download(request, download_type, month, year):
     if not atleast_one_shop_registered(request):
@@ -367,8 +452,7 @@ def download(request, download_type, month, year):
         pdf = render_to_pdf('analysis.html', r_json)
         return HttpResponse(pdf, content_type='application/pdf')
     elif download_type == 'expense':
-        pdf = render_to_pdf('expense.html', r_json)
-        return HttpResponse(pdf, content_type='application/pdf')
+        return gererate_all_expense_data_for_a_month_in_excel(month, year, r_json)
     elif download_type == 'analysis_excel':
         return gererate_all_customer_data_for_a_month_in_excel(month, year, r_json)
 

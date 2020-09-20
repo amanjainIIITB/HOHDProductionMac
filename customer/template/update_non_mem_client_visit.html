@@ -81,6 +81,7 @@
                             <input type="text" class="form-control" id="amount" name="amount" value="{{client_data.amount}}" placeholder="Enter amount..." oninput="print_number_status('amount', 'amount_span')" required>
                         </div>
                         <span id="amount_span" style="color: red;"></span>
+                        {% include 'services.html' %}
                     </div>
                     <!-- /.card-body -->
 

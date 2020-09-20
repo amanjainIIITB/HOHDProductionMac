@@ -27,6 +27,7 @@ urlpatterns = [
     url(r'^save_mem_client_appointment/$', views.save_mem_client_appointment, name='save_mem_client_appointment'),
     url(r'^save_non_mem_client_appointment/$', views.save_non_mem_client_appointment, name='save_non_mem_client_appointment'),
     url(r'^appointment/$', views.appointment, name='appointment'),
+    url(r'^contact_us/$', views.contact_us, name='contact_us'),
 ]
 
 urlpatterns += staticfiles_urlpatterns()

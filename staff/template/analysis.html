@@ -292,6 +292,7 @@
                                 <th>Date</th>
                                 <th>Amount</th>
                                 <th>Number of Client</th>
+                                <th>Services</th>
                                 <th>Client ID</th>
                                 <th>Time</th>
                                 <th>Employee</th>
@@ -305,6 +306,7 @@
                                     <td>{{customer_obj.date}}</td>
                                     <td>{{customer_obj.amount}}</td>
                                     <td>{{customer_obj.numberofclient}}</td>
+                                    <td>{{customer_obj.services}}</td>
                                     <td>{{customer_obj.custID}}</td>
                                     <td>{{customer_obj.time}}</td>
                                     <td>{{customer_obj.employee}}</td>
@@ -322,6 +324,7 @@
                                 <th>Date</th>
                                 <th>Amount</th>
                                 <th>Number of Client</th>
+                                <th>Services</th>
                                 <th>Client ID</th>
                                 <th>Time</th>
                                 <th>Employee</th>
@@ -486,6 +489,137 @@
                         <!-- /.card-body -->
                     </div>
                     <!-- /.card -->
+                </div>
+            </div>
+            <!-- /.row -->
+            <div class="row">
+                <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                    <h3 class="card-title">Staff Contribution</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                    <table id="example2" class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Total Amount</th>
+                                <th>Total Customer</th>
+                                <th>Online</th>
+                                <th>Online Customer</th>
+                                <th>Cash</th>
+                                <th>Cash Customer</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for obj in staff_contribution %}
+                                <tr>
+                                    <td>{{ obj.name}}</td>
+                                    <td>{{ obj.total_amount}}</td>
+                                    <td>{{ obj.total_customer}}</td>
+                                    <td>{{ obj.online_amount}}</td>
+                                    <td>{{ obj.online_numberofcustomer}}</td>
+                                    <td>{{ obj.cash_amount}}</td>
+                                    <td>{{ obj.cash_numberofcustomer}}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+                </div>
+                <!-- /.col -->
+            </div>
+            <!-- /.row -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card card-primary card-outline">
+                        <div class="card-header">
+                          <h3 class="card-title">
+                            <i class="far fa-chart-bar"></i>
+                            Current Month Services Stats: 
+                          </h3>
+          
+                          <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                              <i class="fas fa-minus"></i>
+                            </button>
+                          </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    {% for service_name, number_of_service in services_of_the_month.hair.items %}
+                                        <div class="form-check">
+                                            <label class="form-check-label">{{service_name}} = {{number_of_service}}</label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="col-md-4">
+                                    {% for service_name, number_of_service in services_of_the_month.face.items %}
+                                        <div class="form-check">
+                                            <label class="form-check-label">{{service_name}} = {{number_of_service}}</label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="col-md-4">
+                                    {% for service_name, number_of_service in services_of_the_month.other.items %}
+                                        <div class="form-check">
+                                            <label class="form-check-label">{{service_name}} = {{number_of_service}}</label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.card-body-->
+                      </div>
+                      <!-- /.card -->
+                </div>
+                <div class="col-md-6">
+                    <div class="card card-primary card-outline">
+                        <div class="card-header">
+                          <h3 class="card-title">
+                            <i class="far fa-chart-bar"></i>
+                            Previous Month Services Stats:
+                          </h3>
+          
+                          <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                              <i class="fas fa-minus"></i>
+                            </button>
+                          </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    {% for service_name, number_of_service in services_of_the_previous_month.hair.items %}
+                                        <div class="form-check">
+                                            <label class="form-check-label">{{service_name}} = {{number_of_service}}</label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="col-md-4">
+                                    {% for service_name, number_of_service in services_of_the_previous_month.face.items %}
+                                        <div class="form-check">
+                                            <label class="form-check-label">{{service_name}} = {{number_of_service}}</label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="col-md-4">
+                                    {% for service_name, number_of_service in services_of_the_previous_month.other.items %}
+                                        <div class="form-check">
+                                            <label class="form-check-label">{{service_name}} = {{number_of_service}}</label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.card-body-->
+                      </div>
+                      <!-- /.card -->
                 </div>
             </div>
             <!-- /.row -->

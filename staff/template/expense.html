@@ -108,30 +108,16 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                      <td>{{current_date}}</td>
-                      <td>Total Online</td>
-                      <td>Amount Till current Date</td>
-                      <td>Online</td>
-                      <td>{{total_online_amount_of_the_Month}}</td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                        <td>{{current_date}}</td>
-                        <td>Total Cash</td>
-                        <td>Amount Till current Date</td>
-                        <td>Cash</td>
-                        <td>{{total_cash_amount_of_the_month}}</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td>{{current_date}}</td>
-                        <td>Revenue</td>
-                        <td>Amount Till current Date</td>
-                        <td>NA</td>
-                        <td>{{revenue}}</td>
-                        <td></td>
-                    </tr>
+                      {% for transobj in sell_of_the_month %}
+                        <tr>
+                            <td>{{transobj.0}}</td>
+                            <td>{{transobj.1}}</td>
+                            <td>{{transobj.2}}</td>
+                            <td>{{transobj.3}}</td>
+                            <td>{{transobj.4}}</td>
+                            <td></td>
+                        </tr>
+                    {% endfor %}
                     {% for transobj in expense%}
                         <tr>
                             <td>{{transobj.date}}</td>
@@ -142,9 +128,9 @@
                             <td><a href="/staff/update_expense/{{transobj.ExpenseID}}">Edit</a> / <button onclick="popup_confirmation('Do you want to Delete Expense Data?', '/staff/delete_expense/{{transobj.ExpenseID}}/')">Delete</button></td>
                         </tr>
                     {% endfor %}
-                    {% for transobj in remaining_balance%}
+                    {% for transobj in remaining_balance %}
                         <tr>
-                            <td>{{current_date}}</td>
+                            <td>{{transobj.0}}</td>
                             <td>{{transobj.1}}</td>
                             <td>{{transobj.2}}</td>
                             <td>{{transobj.3}}</td>
