@@ -25,8 +25,9 @@ SECRET_KEY = 'lv#6ee+*tfh2kv&jscy9pr7%kh5opa(u(3qhfdz89k)mf6_lzs'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_IP = '192.168.0.107'
-ALLOWED_HOSTS = [ALLOWED_IP]
+ALLOWED_IP = 'localhost'
+# ALLOWED_IP = '*'
+ALLOWED_HOSTS = ['*']
 
 DATE_INPUT_FORMATS = [
     ("%d-%m-%Y"),
@@ -100,17 +101,8 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    }
 ]
 
 
@@ -136,3 +128,5 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'staticfiles'),
 )
+
+AUTH_USER_MODEL = 'useraccount.User'

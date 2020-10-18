@@ -17,7 +17,7 @@ from customer.models import Membership
 from useraccount.models import OwnerRegistration
 from HOHDProductionMac.common_function import get_month_year_month_name_for_download, atleast_one_shop_registered, \
     get_login_user_shop_details, set_session, get_list_of_login_user_shops, get_current_date, get_all_membership_based_on_shop_id, \
-    convert_date_yyyy_mm_dd_to_dd_mm_yyyy, email_format, is_month_and_year_equal
+    convert_date_yyyy_mm_dd_to_dd_mm_yyyy, email_format, is_month_and_year_equal, get_first_shop_name
 from fpdf import FPDF
 from django.core.files.storage import FileSystemStorage
 import cv2
@@ -43,7 +43,7 @@ def contact_us(request):
     return render(request, 'contact_us.html', { "contact_us_image_url": contact_us_image_url,
                                                 "month_year_month_name": get_month_year_month_name_for_download(),
                                                 "login_username": request.user.get_username(),
-                                                'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})    
+                                                'shop_name': get_first_shop_name(request)})    
 
 
 def get_new_employee_id(request):
@@ -102,6 +102,8 @@ def get_current_shop_employees(shop_id):
 
 
 def employee(request):
+    if not atleast_one_shop_registered(request):
+        return redirect('/staff/shopreg/')
     if request.method == "POST":
         employee_id=get_new_employee_id(request)
         print('DOB of the employee')
@@ -311,7 +313,7 @@ def aboutus(request):
                   {"month_year_month_name": get_month_year_month_name_for_download(),
                   "shop_details": get_login_user_shop_details(request),
                   "login_username": request.user.get_username(),
-                  'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})
+                  'shop_name': get_first_shop_name(request)})
 
 
 def gererate_all_customer_data_for_a_month_in_excel(month, year, r_json):
@@ -347,17 +349,43 @@ def gererate_all_customer_data_for_a_month_in_excel(month, year, r_json):
     font_style = xlwt.XFStyle()
     max_length = max(len(r_json['dayWiseOnlineOfTheMonth']), len(r_json['dayWiseCashOfTheMonth']))
     # get your data, from database or from a text file...
+
+    total_amount = 0
+    total_number_of_customer = 0
+    total_online_amount = 0
+    total_online_number_of_customer = 0
+    total_cash_amount = 0
+    total_cash_number_of_customer = 0
+
     for date in r_json['listOfDates']:
         row_num = row_num + 1
         ws.write(row_num, 0, date, font_style)
-        ws.write(row_num, 1, total_amount_of_the_day(date, r_json['dayWiseOnlineOfTheMonth']), font_style)
-        ws.write(row_num, 2, total_numberofcustomer_of_the_day(date, r_json['dayWiseOnlineOfTheMonth']), font_style)
-        ws.write(row_num, 3, total_amount_of_the_day(date, r_json['dayWiseCashOfTheMonth']), font_style)
-        ws.write(row_num, 4, total_numberofcustomer_of_the_day(date, r_json['dayWiseCashOfTheMonth']), font_style)
-        ws.write(row_num, 5, int(total_amount_of_the_day(date, r_json['dayWiseOnlineOfTheMonth'])) + 
-            int(total_amount_of_the_day(date, r_json['dayWiseCashOfTheMonth'])),font_style)
-        ws.write(row_num, 6, int(total_numberofcustomer_of_the_day(date, r_json['dayWiseOnlineOfTheMonth'])) +
-            int(total_numberofcustomer_of_the_day(date, r_json['dayWiseCashOfTheMonth'])), font_style)
+        val = total_amount_of_the_day(date, r_json['dayWiseOnlineOfTheMonth'])
+        total_online_amount = total_online_amount + val
+        ws.write(row_num, 1, val, font_style)
+        val = total_numberofcustomer_of_the_day(date, r_json['dayWiseOnlineOfTheMonth'])
+        total_online_number_of_customer = total_online_number_of_customer + val
+        ws.write(row_num, 2, val, font_style)
+        val = total_amount_of_the_day(date, r_json['dayWiseCashOfTheMonth'])
+        total_cash_amount = total_cash_amount + val
+        ws.write(row_num, 3, val, font_style)
+        val = total_numberofcustomer_of_the_day(date, r_json['dayWiseCashOfTheMonth'])
+        total_cash_number_of_customer = total_cash_number_of_customer + val
+        ws.write(row_num, 4, val, font_style)
+        val = int(total_amount_of_the_day(date, r_json['dayWiseOnlineOfTheMonth'])) + int(total_amount_of_the_day(date, r_json['dayWiseCashOfTheMonth']))
+        total_amount = total_amount + val
+        ws.write(row_num, 5, val,font_style)
+        val = int(total_numberofcustomer_of_the_day(date, r_json['dayWiseOnlineOfTheMonth'])) + int(total_numberofcustomer_of_the_day(date, r_json['dayWiseCashOfTheMonth']))
+        total_number_of_customer = total_number_of_customer + val
+        ws.write(row_num, 6, val, font_style)
+    
+    ws.write(row_num+2, 0, 'Total', font_style)
+    ws.write(row_num+2, 1, total_online_amount, font_style)
+    ws.write(row_num+2, 2, total_online_number_of_customer, font_style)
+    ws.write(row_num+2, 3, total_cash_amount, font_style)
+    ws.write(row_num+2, 4, total_cash_number_of_customer, font_style)
+    ws.write(row_num+2, 5, total_amount, font_style)
+    ws.write(row_num+2, 6, total_number_of_customer, font_style)
     wb.save(response)
     return response
 
@@ -461,7 +489,7 @@ def add_shop_id_in_login_user(request, shop_id):
     owner_object_values = OwnerRegistration.objects.values('ownerID', 'shop_list'). \
         filter(user=str(request.user.id)).first()
     owner_object = OwnerRegistration.objects.get(ownerID=owner_object_values['ownerID'])
-    if owner_object_values['shop_list'] == 'None':
+    if owner_object_values['shop_list'] == '':
         # if it is first parlour
         owner_object.shop_list = shop_id
     else:
@@ -471,9 +499,9 @@ def add_shop_id_in_login_user(request, shop_id):
 
 
 def add_shop_id_in_entered_user(request, entered_user_name, list_of_shop_id):
-    users = OwnerRegistration.objects.values('shop_list').filter(username=entered_user_name).first()
+    users = OwnerRegistration.objects.values('shop_list').filter(phone=entered_user_name).first()
     shops = ""
-    if users['shop_list'] != 'None':
+    if users['shop_list'] != '':
         shops = users['shop_list']
         for shop_id in list_of_shop_id:
             shops = shops + "," + str(shop_id)
@@ -481,7 +509,8 @@ def add_shop_id_in_entered_user(request, entered_user_name, list_of_shop_id):
         shops = list_of_shop_id[0]
         for shop_index in range(1, len(list_of_shop_id)):
             shops = shops + "," + str(list_of_shop_id[shop_index])
-    OwnerRegistration.objects.values('shop_list').filter(username=entered_user_name).update(shop_list=shops)
+    OwnerRegistration.objects.values('shop_list').filter(phone=entered_user_name).update(shop_list=shops)
+
 
 
 def get_new_shop_id(request):
@@ -504,27 +533,28 @@ def get_logo_image_url(request):
 @login_required(login_url="/")
 def shopreg(request):
     if request.method == "POST":
+        new_shop_id = get_new_shop_id(request)
         shopRegistration = ShopRegistration()
-        shopRegistration.ShopID = get_new_shop_id(request)
+        shopRegistration.ShopID = new_shop_id
         shopRegistration.Desk_Contact_Number = request.POST.get('Desk_Contact_Number')
         shopRegistration.Shop_Name = request.POST.get('Shop_Name')
         shopRegistration.Shop_Address = request.POST.get('Shop_Address')
         shopRegistration.email = request.POST.get('email')
-        shopRegistration.owner_list = OwnerRegistration.objects.values('ownerID').filter(user=str(request.user.id)).first()['ownerID']
-        add_shop_id_in_login_user(request, shopRegistration.ShopID)
+        shopRegistration.owner_list = OwnerRegistration.objects.values('ownerID').filter(phone=request.user.phone).first()['ownerID']
+        add_shop_id_in_entered_user(request, request.user.phone, [shopRegistration.ShopID])
         shopRegistration.save()
         print(request.FILES.get('logo'))
         if request.FILES.get('logo') != None:
             handle_uploaded_file(request, request.FILES.get('logo'), logo_path, shopRegistration.ShopID, shopRegistration.ShopID) 
         if len(get_list_of_login_user_shops(request)) == 1:
             # check if it is first parlour to be registered then set it as the default parlour
-            set_session(request, 'S' + str(new_shop_id))
+            set_session(request, str(new_shop_id))
         messages.success(request, 'Added successfully', extra_tags='alert')
     print(get_logo_image_url(request))
     return render(request, 'shop_registration.html', {"month_year_month_name": get_month_year_month_name_for_download(),
                                                       "shop_details": get_login_user_shop_details(request),
                                                       "login_username": request.user.get_username(),
-                                                      'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})
+                                                      'shop_name': get_first_shop_name(request)})
 
 
 def edit_parlour(request, shop_id):
@@ -550,7 +580,7 @@ def get_all_owners(request):
     users = OwnerRegistration.objects.all()
     list_users = []
     for userobj in users:
-        user = [userobj.get_username().username, userobj.get_name(), userobj.get_ownerID(),
+        user = [userobj.get_username(), userobj.get_name(), userobj.get_ownerID(),
                 userobj.get_contact_number(), userobj.get_shop_list()]
         list_users.append(user)
     return list_users
@@ -562,7 +592,7 @@ def select_parlour(request, shop_id):
 
 
 def add_owner_id_in_shop_registration_for_entered_user(request, entered_user_name, list_of_shop_id):
-    owner = OwnerRegistration.objects.values('ownerID').filter(username=entered_user_name).first()
+    owner = OwnerRegistration.objects.values('ownerID').filter(phone=entered_user_name).first()
     print('Owner data is')
     print(owner)
     for shop_id in list_of_shop_id:

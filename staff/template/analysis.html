@@ -1,5 +1,4 @@
 <!-- {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -19,9 +18,7 @@
         {% include 'status_popup.html' %}
         {% include 'menubar.html' with active_menubar_item="Analytics" %}
         <div id="piechart"></div>
-
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-
         <script type="text/javascript">
         // Load google charts
         google.charts.load('current', {'packages':['corechart']});
@@ -29,7 +26,6 @@
         google.charts.setOnLoadCallback(number_of_customers_for_last_6_month);
         google.charts.setOnLoadCallback(income_of_the_month);
         google.charts.setOnLoadCallback(number_of_customer_of_the_month);
-
         function revenue_for_last_6_month() {
                 outer = []
                 inner = ["Month", "Income", { role: "style" } ];
@@ -42,7 +38,6 @@
                     outer.push(inner);
                 {% endfor %}
             var data = google.visualization.arrayToDataTable(outer);
-
             var view = new google.visualization.DataView(data);
             view.setColumns([0, 1,
             { calc: "stringify",
@@ -50,7 +45,6 @@
               type: "string",
               role: "annotation" },
             2]);
-
             var options = {
                 title: "Revenue of Last 6 Month",
                 width: 1200,
@@ -58,11 +52,9 @@
                 bar: {groupWidth: "95%"},
                 legend: { position: "none" },
             };
-
             var chart = new google.visualization.BarChart(document.getElementById("revenuediv"));
             chart.draw(view, options);
         }
-
         function number_of_customers_for_last_6_month()
         {
             outer = []
@@ -76,7 +68,6 @@
                     outer.push(inner);
                 {% endfor %}
             var data = google.visualization.arrayToDataTable(outer);
-
             var view = new google.visualization.DataView(data);
             view.setColumns([0, 1,
             { calc: "stringify",
@@ -84,7 +75,6 @@
               type: "string",
               role: "annotation" },
             2]);
-
             var options = {
                 title: "Number of Client in Last 6 Month",
                 width: 1200,
@@ -92,13 +82,10 @@
                 bar: {groupWidth: "95%"},
                 legend: { position: "none" },
             };
-
             var chart = new google.visualization.BarChart(document.getElementById("numberofcustomersdiv"));
             chart.draw(view, options);
         }
-
         function income_of_the_month(){
-
             console.log('income of the month')
             var data = google.visualization.arrayToDataTable([
                 ['Task', 'Amount'],
@@ -107,13 +94,10 @@
             ]);
             // Optional; add a title and set the width and height of the chart
             var options = {'title':'Income', 'width':1200, 'height':400};
-
             var chart = new google.visualization.PieChart(document.getElementById('incomeofthemonthdiv'));
             chart.draw(data, options);
         }
-
         function number_of_customer_of_the_month(){
-
             var data = google.visualization.arrayToDataTable([
                 ['Task', 'Number of Customer'],
                 ['Cash', {{ number_of_cash_customer_Of_The_Month }}],
@@ -121,7 +105,6 @@
             ]);
             // Optional; add a title and set the width and height of the chart
             var options = {'title':'Number of Customer', 'width':1200, 'height':400};
-
             var chart = new google.visualization.PieChart(document.getElementById('numberofcustomerofthemonthdiv'));
             chart.draw(data, options);
         }
@@ -138,7 +121,6 @@
         <h1>Number of Customers for last 6 month</h1><br>
         <div id="numberofcustomersdiv"></div>
         <br>
-
         <h1>Customer wise Data</h1><br>
         <table border="2">
             <tr>
@@ -187,7 +169,6 @@
                     <td>{{ dateobj|total_numberofcustomer_of_the_day:dayWiseOnlineOfTheMonth}}</td>
                     <td>{{ dateobj|total_amount_of_the_day:dayWiseCashOfTheMonth}}</td>
                     <td>{{ dateobj|total_numberofcustomer_of_the_day:dayWiseCashOfTheMonth}}</td>
-
                     {% with cashamount=dateobj|total_amount_of_the_day:dayWiseCashOfTheMonth  %}
                         {% with onlineamount=dateobj|total_amount_of_the_day:dayWiseOnlineOfTheMonth %}
                             <td>{{cashamount|add:onlineamount}}</td>
@@ -202,7 +183,6 @@
             {% endfor %}
         </table>
         <br><br>
-
         <h1>Cash VS Online of the Month</h1><br>
         <div id="incomeofthemonthdiv"></div>
         <div id="numberofcustomerofthemonthdiv"></div>
@@ -935,4 +915,3 @@
   </script>
 </body>
 </html>
-

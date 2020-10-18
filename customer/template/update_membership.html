@@ -143,7 +143,6 @@
         function oninput_custid(){
             entered_custid = (document.getElementById('custID').value).toUpperCase();
             client_details = get_client_details_based_on_clientID('custID', {{memberships|safe}});
-            console.log(client_details);
             if(client_details != '' && entered_custid != "{{custID}}"){
                 document.getElementById('custid_span').innerHTML="This Client ID has already been assigned <b>"+client_details.Name+"</b>, try another ID";
             }

@@ -93,9 +93,7 @@
 <script>
     function get_selected_username_info(username, name, id, contact_number)
     {
-        console.log("hello");
         partner_info = create_textarea_with_data("Name: "+name+"\nUsername: "+username+"\nContact Number: "+contact_number);
-        console.log(partner_info);
         document.getElementById('user_details').innerHTML = partner_info;
     }
     function get_list_of_shops_for_selected_user(entered_user_shop_list, login_user_shop_list)
@@ -130,7 +128,7 @@
         document.getElementById('shop_list').innerHTML = "";
 
         // Enable the relevant message, Entered Username not found. Please make sure you are entering correct username
-        document.getElementById('user_details').innerHTML = "NOTE: Entered Username not found. Please make sure you are entering correct username<br><br>";
+        document.getElementById('user_details').innerHTML = "NOTE: Entered Number not found. Please make sure you are entering correct Phone Number<br><br>";
 
     }
     function cannot_add_yourself()
@@ -151,20 +149,22 @@
     }
     function validate_username()
     {
-        var entered_username_or_contact_number = document.getElementById('name').value;
+        var entered_contact_number = document.getElementById('name').value;
         var login_username="{{login_username}}";
         var users = {{list_users|safe}};
         var list_shop_details = {{shop_details|safe}};
         var flag="False";
+        
+        
         for(i=0; i<users.length; i++)
         {
-            if(entered_username_or_contact_number==login_username)
+            if(entered_contact_number==login_username)
             {
                 cannot_add_yourself()
                 flag="True";
                 break;
             }
-            else if(entered_username_or_contact_number==users[i][0] || entered_username_or_contact_number==users[i][3])
+            else if(entered_contact_number==users[i][3])
             {
                 found_correct_username(users[i], list_shop_details)
                 flag="True";
@@ -177,7 +177,6 @@
             incorrect_username();
         }
     }
-    
     function onload_behaviour()
     {
         // Disable the tile

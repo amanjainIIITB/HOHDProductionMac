@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Welcome</title>
+    </head>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/menubar.css' %}">
+    <body style="background-color: pink;">
+
+        {% if messages %}
+            <script>
+                {% for message in messages %}
+                    alert("{{ message }}");
+                {% endfor %}
+            </script>
+        {% endif %}
+        <div class="menu-bar">
+            <ul>
+                <li><a href="/message/email/">Send Email</a></li>
+                <li><a href="/message/daily_check/">daily_check</a></li>
+                <li><a href="/message/exportDB/">Export DB</a></li>
+                <li><a href="/message/deleteDB/">Delete DB</a></li>
+                <li><a href="/message/importDB/">Import DB</a></li>
+                <li><a href="/message/addevent/">Add Event</a></li>
+                <li><a class="active" href="#">Send Message</a></li>
+                <li>
+                    <div>
+                        <form action="/useraccount/logout/" method="post">
+                            {% csrf_token %}
+                            <button type="submit">Logout</button>
+                        </form>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <form method="post" enctype="multipart/form-data" action="/message/importDB/">
+            <h1>Upload File</h1>
+            {% csrf_token %}
+            <input type="file" id="import" name="import">
+            <input type="submit" id="submit" value="Submit">
+        </form>
+    </body>
+</html>

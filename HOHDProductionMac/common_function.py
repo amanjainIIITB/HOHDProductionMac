@@ -13,20 +13,52 @@ import smtplib
 from email.message import EmailMessage
 
 
+def get_first_shop_name(request):
+    print('shop id in session', request.session['shop_id'])
+    if request.session['shop_id'] == None:
+        return "Shop does Not Exist"
+    else:
+        return ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']
+
+
 def get_all_services():
     all_service_dict = {}
-    all_service = AllService.objects.all()
-    for service_obj in all_service:
-        all_service_dict[service_obj.ServiceID] = service_obj.Name
+    all_services = AllService.objects.values('ServiceID', 'Name')
+    for all_service in all_services:
+        number = 0
+        character = ''
+        for c in all_service['ServiceID']:
+            if c >= '0' and c <='9':
+                number = number*10 + int(c)
+            else:
+                character = character + c
+        all_service['number'] = number
+        all_service['character'] = character
+    all_services = list(all_services)
+    all_services = sorted(all_services, key=lambda d:(d['character'], d['number']))
+    for service_obj in all_services:
+        print(service_obj)
+        all_service_dict[service_obj['ServiceID']] = service_obj['Name']
     return all_service_dict
 
 
 def get_services():
     all_services = get_all_services()
+    print(all_services)
     services = {}
-    services['hair'] = {'S1': all_services['S1'], 'S2': all_services['S2'], 'S3': all_services['S3'], 'S4': all_services['S4'], 'S5': all_services['S5'], 'S6': all_services['S6'], 'S7': all_services['S7'], 'S8': all_services['S8'], 'S9': all_services['S9'], 'S10': all_services['S10'], 'S11': all_services['S11'], 'S12': all_services['S12']}
-    services['face'] = {'S13': all_services['S13'], 'S14': all_services['S14'], 'S15': all_services['S15'], 'S16': all_services['S16']}
-    services['other'] = {'S17': all_services['S17'], 'S18': all_services['S18'], 'S19': all_services['S19'], 'S20': all_services['S20'], 'S21': all_services['S21'], 'S22': all_services['S22']}
+    hair_services = {}
+    face_services = {}
+    other_services = {}
+    for key, value in all_services.items():
+        if 'HS' in key:
+            hair_services[key] = value
+        elif 'FS' in key:
+            face_services[key] = value
+        elif 'OS' in key:
+            other_services[key] = value
+    services['hair'] = hair_services
+    services['face'] = face_services
+    services['other'] = other_services
     return services
 
     
@@ -102,17 +134,21 @@ def get_month_year_month_name_for_download():
 
 
 def atleast_one_shop_registered(request):
-    ownerIDobj = OwnerRegistration.objects.values('ownerID', 'shop_list').filter(user=str(request.user.id)).first()
-    if ownerIDobj['shop_list'] == 'None':
-        messages.success(request, 'Register your Parlour or ask your partner to add you', extra_tags='alert')
+    ownerIDobj = OwnerRegistration.objects.values('ownerID', 'shop_list').filter(phone=request.user.get_phone_number()).first()
+    if ownerIDobj['shop_list'] == '':
+        messages.success(request, 'Register your Shop', extra_tags='alert')
         return False
     else:
         return True
 
 
 def get_list_of_login_user_shops(request):
-    ownerIDobj = OwnerRegistration.objects.values('ownerID', 'shop_list').filter(user=str(request.user.id)).first()
-    return ownerIDobj['shop_list'].split(",")
+    ownerIDobj = OwnerRegistration.objects.values('ownerID', 'shop_list').filter(phone=request.user.get_phone_number()).first()
+    if ownerIDobj['shop_list'] == '':
+        return list()
+    else:
+        return str(ownerIDobj['shop_list']).split(",")
+    
 
 
 def get_login_user_shop_details(request):
@@ -126,6 +162,7 @@ def get_login_user_shop_details(request):
 
 
 def set_session(request, shop_id):
+    print('Session is set', shop_id)
     request.session['shop_id'] = shop_id
 
 

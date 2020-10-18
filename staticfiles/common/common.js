@@ -27,7 +27,6 @@ function print_contact_number_validations_and_errors(is_suggestions_available, c
     // we have few suggestion
     if(is_suggestions_available){
         client_details = get_client_details_based_on_contact_number(contact_number_id, members);
-        console.log(client_details);
         // enetered correct number
         if(client_details != ""){
             print_client_details(document.getElementById(contact_number_id).value, client_details, client_details_id);
@@ -61,7 +60,6 @@ function autocomplete(value_id, data, suggestions_id){
         for(i=0; i<suggested_contact_numbers.length; i++){
             html = html + '<div onclick="set_contact_number(' + suggested_contact_numbers[i] + ')">'+suggested_contact_numbers[i]+'</div>';
         }
-        console.log(html);
         suggestionsPanel.innerHTML = html;
     }
     return suggestions_available;
@@ -80,7 +78,6 @@ function create_textarea_with_data(data){
 }
 
 function print_client_details(value, client_details, client_details_id){
-    console.log(client_details);
     if(client_details != ''){
         html = create_textarea_with_data("ID: "+client_details.custID+"\nName: "+client_details.Name+"\nContact Number: "+client_details.Contact_Number+"\nDOB: "+client_details.DOB);
         document.getElementById(client_details_id).innerHTML = html;
@@ -117,8 +114,6 @@ function get_client_details_based_on_clientID(value_id, all_membership_based_on_
     var client_details = '';
     for(i=0; i < all_membership_based_on_shop_id.length; i++)
     {
-        console.log(client_id_or_contact_number);
-        console.log(all_membership_based_on_shop_id[i].custID);
         if(client_id_or_contact_number == all_membership_based_on_shop_id[i].custID)
         {
             client_details = all_membership_based_on_shop_id[i];
@@ -140,8 +135,6 @@ function setDate(id, date){
 }
 
 function set_card_body(panelIndex){
-    console.log(tabs);
-    console.log(panels);
     tabs[0].style.color="white";
     tabs[1].style.color="white";
     if(panelIndex=="0"){

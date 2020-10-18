@@ -173,8 +173,10 @@ def get_all_client_data_of_the_month(shop_id, month, year):
             service_ids = client_visit_object['services'].split(",")
             service_names = []
             client_visit_object['services'] = ''
+            print('Service ids', service_ids)
             for service_id in service_ids:
-                service_names.append(all_services_dict[service_id])
+                if service_id != '' and service_id in all_services_dict:
+                    service_names.append(all_services_dict[service_id])
             client_visit_object['services'] = ",".join(service_names)
     return client_visit_objects
 

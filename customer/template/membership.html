@@ -177,7 +177,7 @@
             // autocomplete('contact_number', {{memberships|safe}});
             client_details = get_client_details_based_on_contact_number('contact_number', {{memberships|safe}});
             if(client_details != ''){
-                document.getElementById('membership_contact').innerHTML="NOTE: This contact number has already been assigned <b>"+client_details.Name+"</b>, try another Number";
+                document.getElementById('membership_contact').innerHTML="NOTE: This contact number has already been assigned to <b>"+client_details.custID+" "+client_details.Name+"</b>, try another Number";
             }    
             else{
                 value = document.getElementById("contact_number").value;
@@ -202,7 +202,7 @@
             $('#example2').DataTable({
             "paging": true,
             "lengthChange": false,
-            "searching": false,
+            "searching": true,
             "ordering": false,
             "info": true,
             "autoWidth": false,

@@ -5,8 +5,10 @@ from customer.models import Membership
 from customer.views import get_all_membership
 from messageManagement.views import send_message_to_all_shop_all_owner, send_message_to_all_shop_all_client, send_message_to_particular_shop_all_owner, send_message_to_particular_shop_all_client, send_message_to_particular_shop_specific_client
 from .data_export import get_complete_database
+from .data_import import put_complete_database
+from .data_delete import delete_complete_database
 from .models import Event
-from HOHDProductionMac.common_function import get_all_membership_based_on_shop_id, get_month_year_month_name_for_download, get_login_user_shop_details, get_current_date, add_date, is_date_less, is_date_and_month_equal, email_format
+from HOHDProductionMac.common_function import get_all_membership_based_on_shop_id, get_month_year_month_name_for_download, get_login_user_shop_details, get_current_date, add_date, is_date_less, is_date_and_month_equal, email_format, convert_date_dd_mm_yyyy_to_yyyy_mm_dd
 import datetime
 
 
@@ -102,19 +104,30 @@ def send(request):
 def exportDB(request):
     return get_complete_database()
 
+def deleteDB(request):
+    delete_complete_database()
+    return redirect('/message/send/')
+
+def importDB(request):
+    if request.method == 'POST':
+        print(request)
+        print(request.FILES.get('import'))
+        put_complete_database(request.FILES.get('import'))
+        messages.success(request, 'Uploaded successfully', extra_tags='alert')
+    return render(request, 'import.html')
+
 
 def send_email(message_body):
     sender='houseofhandsomes@gmail.com'
     receivers = ['amanjain2016@gmail.com']
     for receiver in receivers:
-        message_opening = 'Please find the statistics Below for the Registered Parlour\n\n'+message_body
+        message_body = 'Please find the statistics Below for the Registered Parlour\n\n'+message_body
         email_format(message_body, sender, receiver, 'Message Report', receiver)
 
 
 def email(request):
     message_body = 'Testing Mail'
-    for receiver in receivers:
-        send_email(message_body)
+    send_email(message_body)
     return redirect('/message/send/')
 
 
@@ -126,7 +139,7 @@ def time_interval_message(request, greeting, shop_detail, greeting_choice):
         event = Event.objects.values('EventID', 'name', 'message', 'date').filter(name=days_interval).order_by('date').first()
         clients = get_all_membership_based_on_shop_id(request, shop_detail['ShopID'])
         for client in clients:
-            date = datetime.datetime.strptime(client['last_visit'], "%Y-%m-%d")
+            date = datetime.datetime.strptime(convert_date_dd_mm_yyyy_to_yyyy_mm_dd(client['last_visit']), "%Y-%m-%d")
             if str(add_date(date, int(days_interval))).split()[0] == str(get_current_date()):
                 count = count + 1
                 # If Client is has exceeded the number of days interval

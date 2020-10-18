@@ -12,13 +12,10 @@
             var shop_id = document.getElementById('shop_id').value;
             if(message_receiver == "client")
             {
-                console.log('hey');
                 html = "<select id=\"client_selector\" name=\"client_selector\">";
                 html = html + "<option value=\"all\">All</option>";
                 for(var i=0; i<clients.length; i++)
                 {
-                    console.log(shop_id);
-                    console.log(clients[i][3]);
                     if(clients[i][4]==shop_id)
                         html = html + "<option value=\'" + clients[i][0] + "\'>"+clients[i][0]+" - "+clients[i][3]+"</option>";
                 }
@@ -124,6 +121,8 @@
                 <li><a href="/message/email/">Send Email</a></li>
                 <li><a href="/message/daily_check/">daily_check</a></li>
                 <li><a href="/message/exportDB/">Export DB</a></li>
+                <li><a href="/message/deleteDB/">Delete DB</a></li>
+                <li><a href="/message/importDB/">Import DB</a></li>
                 <li><a href="/message/addevent/">Add Event</a></li>
                 <li><a class="active" href="#">Send Message</a></li>
                 <li>

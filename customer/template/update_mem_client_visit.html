@@ -68,7 +68,8 @@
                             <select class="form-control" id="EmployeeID" name="EmployeeID">
                                 <option value="None">None</option>
                                 {% for employee in employees %}
-                                    {% if client_data.employee == employee.EmployeeID %}
+                                    {% if client_data.employee_id == employee.EmployeeID %}
+                                        hello
                                         <option value="{{employee.EmployeeID}}" selected>{{employee.name}}</option>
                                     {% else %}
                                         <option value="{{employee.EmployeeID}}">{{employee.name}}</option>
@@ -126,6 +127,7 @@
     }
 
     function oninput_custid(){
+        // console.log({{client_data}});
         client_details = get_client_details_based_on_clientID('custID', {{memberships|safe}});
         if(client_details != ''){
             client_details = create_textarea_with_data("ID: "+client_details.custID+"\nName: "+client_details.Name+"\nDate of Birth: "+client_details.DOB+"\nContact Number: "+client_details.Contact_Number);
@@ -145,5 +147,3 @@
     }
 </script>
 </body>
-</html>
-
