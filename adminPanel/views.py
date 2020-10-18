@@ -22,6 +22,8 @@ def get_new_event_id(request):
 
 
 def addevent(request):
+    if request.user.get_phone_number() != '0246813579':
+        return render(request, 'notAllowed.html')
     if request.method == "POST":
         event_id=get_new_event_id(request)
         Event(EventID=event_id, name=request.POST.get('name'), message=request.POST.get('message')).save()
@@ -54,6 +56,8 @@ def email_all_shops_all_clients(occasion, message):
 
 
 def send(request):
+    if request.user.get_phone_number() != '0246813579':
+        return render(request, 'notAllowed.html')
     if request.method == 'POST':
         shop_id = request.POST.get('shop_id')
         receiver = request.POST.get('receiver')
@@ -102,13 +106,19 @@ def send(request):
 
 
 def exportDB(request):
+    if request.user.get_phone_number() != '0246813579':
+        return render(request, 'notAllowed.html')
     return get_complete_database()
 
 def deleteDB(request):
+    if request.user.get_phone_number() != '0246813579':
+        return render(request, 'notAllowed.html')
     delete_complete_database()
     return redirect('/message/send/')
 
 def importDB(request):
+    if request.user.get_phone_number() != '0246813579':
+        return render(request, 'notAllowed.html')
     if request.method == 'POST':
         print(request)
         print(request.FILES.get('import'))
@@ -118,6 +128,8 @@ def importDB(request):
 
 
 def send_email(message_body):
+    if request.user.get_phone_number() != '0246813579':
+        return render(request, 'notAllowed.html')
     sender='houseofhandsomes@gmail.com'
     receivers = ['amanjain2016@gmail.com']
     for receiver in receivers:
@@ -126,6 +138,8 @@ def send_email(message_body):
 
 
 def email(request):
+    if request.user.get_phone_number() != '0246813579':
+        return render(request, 'notAllowed.html')
     message_body = 'Testing Mail'
     send_email(message_body)
     return redirect('/message/send/')
@@ -165,6 +179,8 @@ def birthday(request, greeting, shop_detail, greeting_choice):
 
 
 def daily_check(request):
+    if request.user.get_phone_number() != '0246813579':
+        return render(request, 'notAllowed.html')
     greeting = 'Hello'
     greeting_choice = 'no'
     message_body = ''
