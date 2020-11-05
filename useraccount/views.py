@@ -2,15 +2,32 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth import get_user_model
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
 from .user_form import OwnerRegistrationForm, AuthenticationForm
 from .models import OwnerRegistration
-from HOHDProductionMac.common_function import set_session, atleast_one_shop_registered
+from HOHDProductionMac.common_function import set_session, atleast_one_shop_registered, get_month_year_month_name_for_download, get_first_shop_name
+
+def change_password(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Important!
+            messages.success(request, 'Your password was successfully updated!')
+            return redirect('/')
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'change_password.html', {"month_year_month_name": get_month_year_month_name_for_download(),
+                                                    "login_username": request.user.get_username(),
+                                                    'shop_name': get_first_shop_name(request),
+                                                    'form': form })
 
 
 def signup_view(request):
     if request.method == "POST":
-        user_form = OwnerRegistrationForm(request.POST)
+        user_form = OwnerRegistrationForm(request.POST) 
         if user_form.is_valid():
             mob = user_form.cleaned_data.get('phone')
             name = user_form.cleaned_data.get('Name')
