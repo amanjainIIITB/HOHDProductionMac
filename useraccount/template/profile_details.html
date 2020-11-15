@@ -34,24 +34,36 @@
             <!-- general form elements -->
             <div class="card card-primary">
                 <div class="card-header">
-                    <h3 class="card-title">Change Password</h3>
+                    <h3 class="card-title">Profile Details</h3>
                 </div>
               <!-- /.card-header -->
               <!-- form start -->
-                <form autocomplete="off" method="post" action="/change_password/">
+                <form autocomplete="off" method="post" action="/profile_details/">
                     {% csrf_token %}
                     <div class="card-body">
                         <div class="form-group">
-                            <label for="Old Password">Old Password</label>
-                            {% render_field form.old_password class="form-control" placeholder="Enter Old Password" %}
+                            <label for="Name">Name</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Enter Name" required>
                         </div>
                         <div class="form-group">
-                            <label for="New Password">New Password</label>
-                            {% render_field form.new_password1 class="form-control" placeholder="Enter New Password" %}
+                            <label for="Email">Email</label>
+                            <input type="text" class="form-control" id="email" name="email" placeholder="Enter Email" required>
                         </div>
                         <div class="form-group">
-                            <label for="Confirm New Password">Confirm New Password</label>
-                            {% render_field form.new_password2 class="form-control" placeholder="Enter New Password Again" %}
+                            <label for="Date of Birth">Date of Birth</label>
+                            <div class="input-group date">
+                                <input type="date" id="date_of_birth" name="date_of_birth" class="form-control datetimepicker-input" required/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="experience">When did you join Salon Industry?</label>
+                            <div class="input-group date">
+                                <input type="date" id="date_of_joining" name="date_of_joining" class="form-control datetimepicker-input" required/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="Address">Address</label>
+                            <textarea class="form-control" rows="3" id="address" name="address" placeholder="Enter Address" required></textarea>
                         </div>
                     </div>
                     <!-- /.card-body -->

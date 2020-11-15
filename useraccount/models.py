@@ -96,4 +96,12 @@ class OwnerRegistration(models.Model):
 
     def get_shop_list(self):
         return self.shop_list
-        
+
+class Access(models.Model):
+    regID = models.CharField(max_length=10, null=True)
+    shopID = models.CharField(max_length=10, null=True)
+    isowner = models.BooleanField(default=False)
+    page_list = models.TextField(null=True, blank='', default='')
+
+    def __str__(self):
+        return str(self.regID) + " " + str(self.shopID)

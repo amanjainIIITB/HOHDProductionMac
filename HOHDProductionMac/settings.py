@@ -78,6 +78,10 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'HOHDProductionMac.context_processor.get_month_year_month_name_for_download',
+                'HOHDProductionMac.context_processor.get_login_user_shop_details',
+                'HOHDProductionMac.context_processor.get_shop_name',
+                'HOHDProductionMac.context_processor.get_login_username'
             ],
         },
     },

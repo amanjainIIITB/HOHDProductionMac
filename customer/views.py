@@ -5,8 +5,7 @@ from .models import *
 from staff.models import Employee, ShopRegistration
 from staff.views import analysis
 from customer.models import Services
-from HOHDProductionMac.common_function import get_month_year_month_name_for_download, atleast_one_shop_registered, \
-    get_login_user_shop_details, get_current_time, get_all_membership_based_on_shop_id, convert_date_yyyy_mm_dd_to_dd_mm_yyyy, get_services
+from HOHDProductionMac.common_function import atleast_one_shop_registered, get_current_time, get_all_membership_based_on_shop_id, convert_date_yyyy_mm_dd_to_dd_mm_yyyy, get_services
 import datetime
 # Create your views here.
 
@@ -42,14 +41,10 @@ def update_non_mem_client_visit(request, visit_id):
     served_services = set()
     if client_data['services'] is not None:
         served_services = set(client_data['services'].split(","))
-    return render(request, 'update_non_mem_client_visit.html', {"month_year_month_name": get_month_year_month_name_for_download(),
-                                                                'client_data': client_data, 
+    return render(request, 'update_non_mem_client_visit.html', {'client_data': client_data, 
                                                                 "served_services": served_services,
                                                                 "services": get_services(),
-                                                                "employees": Employee.objects.values('EmployeeID', 'name').filter(ShopID=request.session['shop_id']),
-                                                                "shop_details": get_login_user_shop_details(request),
-                                                                "login_username": request.user.get_username(),
-                                                                'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})
+                                                                "employees": Employee.objects.values('EmployeeID', 'name').filter(ShopID=request.session['shop_id'])})
 
 
 
@@ -64,15 +59,11 @@ def update_mem_client_visit(request, visit_id):
     served_services = set()
     if client_data['services'] is not None:
         served_services = set(client_data['services'].split(","))
-    return render(request, 'update_mem_client_visit.html', {"month_year_month_name": get_month_year_month_name_for_download(),
-                                                            'client_data': client_data,
+    return render(request, 'update_mem_client_visit.html', {'client_data': client_data,
                                                             "employees": Employee.objects.values('EmployeeID', 'name').filter(ShopID=request.session['shop_id']),
                                                             "memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),
-                                                            "shop_details": get_login_user_shop_details(request),
                                                             "served_services": served_services,
-                                                            "services": get_services(),
-                                                            "login_username": request.user.get_username(),
-                                                            'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})
+                                                            "services": get_services()})
 
 
 
@@ -130,17 +121,14 @@ def save_non_mem_visit(request):
 
 @login_required(login_url="/")
 def details(request):
+    context = {}
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
     employees = Employee.objects.values('EmployeeID', 'name').filter(ShopID=request.session['shop_id'])
-    return render(request, 'details.html', {"month_year_month_name": get_month_year_month_name_for_download(), 
-                                            "shop_details": get_login_user_shop_details(request),
-                                            "memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),
+    return render(request, 'details.html', {"memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),
                                             "employees": employees,
                                             "served_services": set(),
-                                            "services": get_services(),
-                                            "login_username": request.user.get_username(),
-                                            'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})
+                                            "services": get_services()})
 
 
 def get_all_membership():
@@ -160,11 +148,7 @@ def membership(request):
     if request.method == "POST":
         Membership(custID=request.POST.get('custid').upper(), shopID=request.session['shop_id'], Name=request.POST.get('name'), Sex=request.POST.get('sex'), Contact_Number=request.POST.get('contact_number'), DOB=request.POST.get('DOB')).save()
         messages.success(request, 'Added successfully', extra_tags='alert')
-    return render(request, 'membership.html', {"month_year_month_name": get_month_year_month_name_for_download(), 
-                                                "shop_details": get_login_user_shop_details(request),
-                                                "memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),
-                                                "login_username": request.user.get_username(),
-                                                'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})
+    return render(request, 'membership.html', {"memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id']))})
 
 
 def update_client_visit_after_update_membership(current_client_id, changed_client_id, shop_id):
@@ -191,16 +175,12 @@ def update_membership(request, cust_id):
             filter(shopID=request.session['shop_id'], custID=cust_id).last()
         print(membership)
         print(membership['DOB'])
-        return render(request, 'update_membership.html', { "month_year_month_name": get_month_year_month_name_for_download(),
-                                                           'custID': membership['custID'],
+        return render(request, 'update_membership.html', { 'custID': membership['custID'],
                                                            'Contact_Number': membership['Contact_Number'],
                                                            'Sex': membership['Sex'],
                                                            'Name': membership['Name'],
                                                            'DOB': membership['DOB'],
-                                                           'memberships': list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),
-                                                           "shop_details": get_login_user_shop_details(request),
-                                                           "login_username": request.user.get_username(),
-                                                           'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})
+                                                           'memberships': list(get_all_membership_based_on_shop_id(request, request.session['shop_id']))})
 
 def delete_all_visit_of_client(client_id, shop_id):
     ClientVisit.objects.filter(custID=client_id, ShopID=shop_id).update(isMember=False, custID='None')

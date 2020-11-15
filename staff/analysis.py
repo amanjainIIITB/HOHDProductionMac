@@ -4,7 +4,6 @@ from rest_framework.response import Response
 import datetime
 from staff.models import Employee
 from customer.models import ClientVisit, Services
-from .views import get_month_year_month_name_for_download
 from .common_functions import get_total_online_amount_of_the_month, get_total_cash_amount_of_the_month, get_bardate
 from HOHDProductionMac.common_function import convert_date_dd_mm_yyyy_to_yyyy_mm_dd, convert_date_yyyy_mm_dd_to_dd_mm_yyyy, get_services, get_all_services
 
@@ -202,5 +201,4 @@ class AnalysisReport(APIView):
              'total_cash_amount_Of_The_Month': get_total_cash_amount_of_the_month(request.data['shop_id'], month, year),
              'total_online_amount_Of_The_Month': get_total_online_amount_of_the_month(request.data['shop_id'], month, year),
              'number_of_cash_customer_Of_The_Month': get_total_cash_customer_of_the_month(request.data['shop_id'], month, year),
-             'number_of_online_customer_Of_The_Month': get_total_online_customer_of_the_month(request.data['shop_id'], month, year),
-             "month_year_month_name": get_month_year_month_name_for_download()})
+             'number_of_online_customer_Of_The_Month': get_total_online_customer_of_the_month(request.data['shop_id'], month, year)})

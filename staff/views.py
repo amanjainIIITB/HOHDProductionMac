@@ -14,10 +14,10 @@ from django.template.loader import render_to_string
 from weasyprint import HTML
 from .models import Expense, ShopRegistration, Employee, Appointment
 from customer.models import Membership
-from useraccount.models import OwnerRegistration
-from HOHDProductionMac.common_function import get_month_year_month_name_for_download, atleast_one_shop_registered, \
-    get_login_user_shop_details, set_session, get_list_of_login_user_shops, get_current_date, get_all_membership_based_on_shop_id, \
+from useraccount.models import OwnerRegistration, Access
+from HOHDProductionMac.common_function import atleast_one_shop_registered, set_session, get_list_of_login_user_shops, get_current_date, get_all_membership_based_on_shop_id, \
     convert_date_yyyy_mm_dd_to_dd_mm_yyyy, email_format, is_month_and_year_equal, get_first_shop_name
+from HOHDProductionMac.context_processor import get_login_user_shop_details
 from fpdf import FPDF
 from django.core.files.storage import FileSystemStorage
 import cv2
@@ -40,10 +40,7 @@ def contact_us(request):
         message_body = message_body + 'In the meantime, you can reply to this email if you have more details to add, or you can call our support team, 9530101150.'
         email_format(message_body, 'houseofhandsomes@gmail.com', request.POST.get('email'), 'Customer Support', request.POST.get('Name'))
         messages.success(request, 'Submitted successfully', extra_tags='alert')
-    return render(request, 'contact_us.html', { "contact_us_image_url": contact_us_image_url,
-                                                "month_year_month_name": get_month_year_month_name_for_download(),
-                                                "login_username": request.user.get_username(),
-                                                'shop_name': get_first_shop_name(request)})    
+    return render(request, 'contact_us.html', { "contact_us_image_url": contact_us_image_url})    
 
 
 def get_new_employee_id(request):
@@ -111,6 +108,11 @@ def employee(request):
         Employee(EmployeeID=employee_id, ShopID=request.session['shop_id'], name=request.POST.get('name'), contact_number=request.POST.get('contact_number'), 
                 sex=request.POST.get('sex'), date_of_joining=request.POST.get('date_of_joining'), DOB=request.POST.get('DOB'), 
                 position=request.POST.get('position'), temporary_address=request.POST.get('temporary_address'), permanent_address=request.POST.get('permanent_address')).save()
+        employee_access = request.POST.get('employee_access')
+        if employee_access == "YES":
+            if is_employee_account_already_created() == False:
+                create_employee_account()
+            add_shop_id_to_employee_account()
         print(request)
         print(request.FILES.get('employee_gov_id'))
         if request.FILES.get('employee_gov_id') != None:
@@ -126,11 +128,7 @@ def employee(request):
             employee['govt_id'] = 'images/employee_verification/'+str(request.session['shop_id'])+'/'+ str(employee['EmployeeID']) +'.png'
         else:
             employee['govt_id'] = 'images/not_found.png'
-    return render(request, 'employee.html', {"month_year_month_name": get_month_year_month_name_for_download(),
-                                            'employees': employees,
-                                            "shop_details": get_login_user_shop_details(request),
-                                            "login_username": request.user.get_username(),
-                                             'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})
+    return render(request, 'employee.html', {'employees': employees})
 
 
 def update_employee(request, employee_id):
@@ -149,11 +147,7 @@ def update_employee(request, employee_id):
     else:
         employee = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'sex', 'date_of_joining', 'position', 'DOB', 'temporary_address', 'permanent_address'). \
             filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).last()
-    return render(request, 'update_employee.html', {"month_year_month_name": get_month_year_month_name_for_download(),
-                                                    'employee': employee,
-                                                    "shop_details": get_login_user_shop_details(request),
-                                                    "login_username": request.user.get_username(),
-                                                    'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})
+    return render(request, 'update_employee.html', {'employee': employee})
 
 
 def delete_employee(request, employee_id):
@@ -206,16 +200,12 @@ def update_expense(request, expense_id):
             filter(shopID=request.session['shop_id'], ExpenseID=expense_id).last()
         if expense['purpose'] == 'Amount Given':
             expense['amount'] = int(expense['amount']) * -1
-        return render(request, 'update_expense.html', { "month_year_month_name": get_month_year_month_name_for_download(),
-                                                        'ExpenseID': expense['ExpenseID'],
+        return render(request, 'update_expense.html', { 'ExpenseID': expense['ExpenseID'],
                                                         'date': expense['date'],
                                                         'purpose': expense['purpose'],
                                                         'paymentmode': expense['paymentmode'],
                                                         'comment': expense['comment'],
-                                                        'amount': expense['amount'],
-                                                        "shop_details": get_login_user_shop_details(request),
-                                                        "login_username": request.user.get_username(),
-                                                        'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})
+                                                        'amount': expense['amount']})
                                                         
 
 def delete_expense(request, expense_id):
@@ -253,9 +243,6 @@ def expense(request):
     r_json = response.json()
     r_json['month'] = now.month
     r_json['year'] = now.year
-    r_json['shop_details'] = get_login_user_shop_details(request)
-    r_json['login_username'] = request.user.get_username()
-    r_json['shop_name'] = ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']
     return render(request, 'expense.html', r_json)
 
     
@@ -279,9 +266,6 @@ def analysis(request):
     r_json = response.json()
     r_json['month'] = now.month
     r_json['year'] = now.year
-    r_json['shop_details'] = get_login_user_shop_details(request)
-    r_json['login_username'] = request.user.get_username()
-    r_json['shop_name'] = ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']
     return render(request, 'analysis.html', r_json)
 
 
@@ -308,12 +292,8 @@ def total_numberofcustomer_of_the_day(date, datewisedata):
 
 @login_required(login_url="/")
 def aboutus(request):
-    month_year_month_name = get_month_year_month_name_for_download()
     return render(request, 'aboutus.html',
-                  {"month_year_month_name": get_month_year_month_name_for_download(),
-                  "shop_details": get_login_user_shop_details(request),
-                  "login_username": request.user.get_username(),
-                  'shop_name': get_first_shop_name(request)})
+                  {'shop_name': get_first_shop_name(request)})
 
 
 def gererate_all_customer_data_for_a_month_in_excel(month, year, r_json):
@@ -485,17 +465,8 @@ def download(request, download_type, month, year):
         return gererate_all_customer_data_for_a_month_in_excel(month, year, r_json)
 
 
-def add_shop_id_in_login_user(request, shop_id):
-    owner_object_values = OwnerRegistration.objects.values('ownerID', 'shop_list'). \
-        filter(user=str(request.user.id)).first()
-    owner_object = OwnerRegistration.objects.get(ownerID=owner_object_values['ownerID'])
-    if owner_object_values['shop_list'] == '':
-        # if it is first parlour
-        owner_object.shop_list = shop_id
-    else:
-        # if user has already at least one parlour
-        owner_object.shop_list = owner_object_values['shop_list'] + ',' + shop_id
-    owner_object.save()
+def add_shop_id_in_login_user(request, reg_id, shop_id):
+    Access(regID = OwnerRegistration.objects.values('ownerID').filter(phone=request.user.phone).first()['ownerID'], shopID = shopRegistration.ShopID, isowner = True).save()
 
 
 def add_shop_id_in_entered_user(request, entered_user_name, list_of_shop_id):
@@ -543,18 +514,16 @@ def shopreg(request):
         shopRegistration.owner_list = OwnerRegistration.objects.values('ownerID').filter(phone=request.user.phone).first()['ownerID']
         add_shop_id_in_entered_user(request, request.user.phone, [shopRegistration.ShopID])
         shopRegistration.save()
+        add_shop_id_in_login_user(request, OwnerRegistration.objects.values('ownerID').filter(phone=request.user.phone).first()['ownerID'], shopRegistration.ShopID)
         print(request.FILES.get('logo'))
         if request.FILES.get('logo') != None:
             handle_uploaded_file(request, request.FILES.get('logo'), logo_path, shopRegistration.ShopID, shopRegistration.ShopID) 
         if len(get_list_of_login_user_shops(request)) == 1:
             # check if it is first parlour to be registered then set it as the default parlour
-            set_session(request, str(new_shop_id))
+            set_session(request, "shop_id", str(new_shop_id))
         messages.success(request, 'Added successfully', extra_tags='alert')
     print(get_logo_image_url(request))
-    return render(request, 'shop_registration.html', {"month_year_month_name": get_month_year_month_name_for_download(),
-                                                      "shop_details": get_login_user_shop_details(request),
-                                                      "login_username": request.user.get_username(),
-                                                      'shop_name': get_first_shop_name(request)})
+    return render(request, 'shop_registration.html', {'shop_name': get_first_shop_name(request)})
 
 
 def edit_parlour(request, shop_id):
@@ -567,13 +536,9 @@ def edit_parlour(request, shop_id):
             handle_uploaded_file(request, request.FILES.get('logo'), logo_path, request.session['shop_id'], request.session['shop_id'])
         messages.success(request, 'Updated successfully', extra_tags='alert')
     shop = ShopRegistration.objects.values('ShopID', 'Desk_Contact_Number', 'Shop_Name', 'Shop_Address', 'email').filter(ShopID=shop_id).first()
-    set_session(request, shop_id)
-    return render(request, 'update_shop.html', {"month_year_month_name": get_month_year_month_name_for_download(),
-                                                "shop_details": get_login_user_shop_details(request),
-                                                "shop": shop,
-                                                'logo_url': get_logo_image_url(request),
-                                                "login_username": request.user.get_username(),
-                                                'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})
+    set_session(request, "shop_id", shop_id)
+    return render(request, 'update_shop.html', {"shop": shop,
+                                                'logo_url': get_logo_image_url(request)})
 
 
 def get_all_owners(request):
@@ -587,7 +552,7 @@ def get_all_owners(request):
 
 
 def select_parlour(request, shop_id):
-    set_session(request, shop_id)
+    set_session(request, "shop_id", shop_id)
     return redirect('/staff/aboutus/')
 
 
@@ -617,11 +582,8 @@ def add_partner(request):
             add_shop_id_in_entered_user(request, entered_user_name, list_of_shop_id)
             add_owner_id_in_shop_registration_for_entered_user(request, entered_user_name, list_of_shop_id)
             messages.success(request, 'Selected Parlour Added successfully', extra_tags='alert')
-    return render(request, 'add_partner.html', {"month_year_month_name": get_month_year_month_name_for_download(),
-                                                "shop_details": list(get_login_user_shop_details(request)),
-                                                "list_users": list(get_all_owners(request)),
-                                                "login_username": request.user.get_username(),
-                                                'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})
+    return render(request, 'add_partner.html', {"shop_details": list(get_login_user_shop_details(request)["shop_details"]),
+                                                "list_users": list(get_all_owners(request))})
 
 
 def save_mem_client_appointment(request):
@@ -657,9 +619,5 @@ def appointment(request):
         event['end_minute'] = event['end_time'].minute
         event['start_time'] = str(event['start_time'])
         event['end_time'] = str(event['end_time'])
-    return render(request, 'calendar.html', {"month_year_month_name": get_month_year_month_name_for_download(),
-                                             "shop_details": get_login_user_shop_details(request),
-                                             'events': list(events), 
-                                             "memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),   
-                                             "login_username": request.user.get_username(),
-                                             'shop_name': ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']})
+    return render(request, 'calendar.html', {'events': list(events), 
+                                             "memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id']))})

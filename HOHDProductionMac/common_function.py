@@ -1,17 +1,20 @@
 from django.contrib import messages
 from datetime import datetime, timedelta
 from customer.models import Membership
-from useraccount.models import OwnerRegistration
+from useraccount.models import OwnerRegistration, Access
 from staff.models import ShopRegistration
 from customer.models import ClientVisit, AllService
 from django.db.models import Sum, Count, Max
 
-# Import smtplib for the actual sending function
+
+# Import smtplib for the actual email sending function
 import smtplib
 
 # Import the email modules we'll need
 from email.message import EmailMessage
 
+def get_regID(request):
+    return {"regID" : OwnerRegistration.objects.values('ownerID').filter(phone=request.user.phone).first()['ownerID']}
 
 def get_first_shop_name(request):
     print('shop id in session', request.session['shop_id'])
@@ -109,33 +112,9 @@ def is_month_and_year_equal(date1, date2):
     return date1split[0]==date2split[0] and date1split[1]==date2split[1]
 
 
-def get_month_year_month_name_for_download():
-    now = datetime.now()
-    month_year_month_name = {}
-    month_index = []
-    year_list = []
-    month_name = []
-    index_to_month_name = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov',
-                            'Dec']
-    current_month = now.month
-    current_year = now.year
-    for i in range(4):
-        if current_month == 0:
-            current_month = 12
-            current_year = current_year - 1
-        month_index.append(current_month)
-        month_name.append(index_to_month_name[current_month - 1])
-        year_list.append(current_year)
-        current_month = current_month - 1
-    month_year_month_name['month_index'] = month_index
-    month_year_month_name['month_name'] = month_name
-    month_year_month_name['year_list'] = year_list
-    return month_year_month_name
-
-
 def atleast_one_shop_registered(request):
-    ownerIDobj = OwnerRegistration.objects.values('ownerID', 'shop_list').filter(phone=request.user.get_phone_number()).first()
-    if ownerIDobj['shop_list'] == '':
+    count = Access.objects.filter(regID=request.session['regID']).count()
+    if count == 0:
         messages.success(request, 'Register your Shop', extra_tags='alert')
         return False
     else:
@@ -143,27 +122,16 @@ def atleast_one_shop_registered(request):
 
 
 def get_list_of_login_user_shops(request):
-    ownerIDobj = OwnerRegistration.objects.values('ownerID', 'shop_list').filter(phone=request.user.get_phone_number()).first()
-    if ownerIDobj['shop_list'] == '':
-        return list()
-    else:
-        return str(ownerIDobj['shop_list']).split(",")
-    
+    shop_lists = request.session['shop_list_access']
+    list_of_shops = []
+    for shop_id in shop_lists:
+        list_of_shops.append(shop_id)
+    print(list_of_shops)
+    return list_of_shops
 
 
-def get_login_user_shop_details(request):
-    shops = get_list_of_login_user_shops(request)
-    list_shop_details = []
-    for shopid in shops:
-        shop_details = ShopRegistration.objects.values('ShopID', 'Shop_Name', 'Shop_Address').filter(
-            ShopID=shopid).last()
-        list_shop_details.append(shop_details)
-    return list_shop_details
-
-
-def set_session(request, shop_id):
-    print('Session is set', shop_id)
-    request.session['shop_id'] = shop_id
+def set_session(request, name, value):
+    request.session[name] = value
 
 
 def get_all_membership_based_on_shop_id(request, ShopID):

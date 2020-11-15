@@ -1,6 +1,5 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .views import get_month_year_month_name_for_download
 from .common_functions import get_total_online_amount_of_the_month, get_total_cash_amount_of_the_month
 from .models import Expense
 from HOHDProductionMac.common_function import convert_date_dd_mm_yyyy_to_yyyy_mm_dd, convert_date_yyyy_mm_dd_to_dd_mm_yyyy
@@ -58,5 +57,4 @@ class ExpenseReport(APIView):
                          'expense': expense_of_the_month(request.data['shop_id'], month, year),
                          'remaining_balance': profit_of_the_month(date.today(), request.data['shop_id'], month, year,
                                                     total_online_amount_of_the_month,
-                                                    total_cash_amount_of_the_month),
-                         "month_year_month_name": get_month_year_month_name_for_download()})
+                                                    total_cash_amount_of_the_month)})

@@ -6,8 +6,15 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
 from .user_form import OwnerRegistrationForm, AuthenticationForm
-from .models import OwnerRegistration
-from HOHDProductionMac.common_function import set_session, atleast_one_shop_registered, get_month_year_month_name_for_download, get_first_shop_name
+from .models import OwnerRegistration, Access
+from HOHDProductionMac.common_function import set_session, atleast_one_shop_registered, get_first_shop_name, get_regID
+
+
+def profile_details(request):
+    if request.method == 'POST':
+        pass
+    return render(request, 'profile_details.html')
+
 
 def change_password(request):
     if request.method == 'POST':
@@ -19,10 +26,7 @@ def change_password(request):
             return redirect('/')
     else:
         form = PasswordChangeForm(request.user)
-    return render(request, 'change_password.html', {"month_year_month_name": get_month_year_month_name_for_download(),
-                                                    "login_username": request.user.get_username(),
-                                                    'shop_name': get_first_shop_name(request),
-                                                    'form': form })
+    return render(request, 'change_password.html', {'form': form })
 
 
 def signup_view(request):
@@ -67,6 +71,15 @@ def delete_session(request):
     del request.session['shop_id']
 
 
+def get_shop_list_access(request):
+    shop_list_access = Access.objects.values('shopID', 'isowner', 'page_list').filter(regID=get_regID(request)['regID'])
+    print(list(shop_list_access))
+    shop_list_access_json = {}
+    for shop_list_access_object in shop_list_access:
+        shop_list_access_json[shop_list_access_object['shopID']] = {'isowner': shop_list_access_object['isowner'], 'page_list': shop_list_access_object['page_list']}
+    return shop_list_access_json
+
+
 def login_view(request):
     if request.method == "POST":
         login_form = AuthenticationForm(data=request.POST)
@@ -74,14 +87,17 @@ def login_view(request):
             user = authenticate(phone = request.POST['phone'], password = request.POST['password'])
             if user is not None:
                 login(request, user)
+                set_session(request, "regID", OwnerRegistration.objects.values('ownerID').filter(phone=request.user.phone).first()['ownerID'])
                 if 'next' in request.POST:
                     return redirect(request.POST.get('next'))
                 if atleast_one_shop_registered(request):
                     print('Yes shop is registered')
                     shop_id = get_first_shop_id(request)
-                    set_session(request, shop_id)
+                    set_session(request, "shop_id", shop_id)
+                    set_session(request, "shop_list_access", get_shop_list_access(request))
                 else:
-                    set_session(request, None)
+                    set_session(request, "shop_id",None)
+                    set_session(request, "shop_list_access", None)
                 return redirect('/staff/aboutus/')
             else:
                 messages.success(request, 'Either Phone Number or Password is incorrect', extra_tags='alert')

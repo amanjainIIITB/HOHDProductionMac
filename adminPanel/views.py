@@ -8,7 +8,7 @@ from .data_export import get_complete_database
 from .data_import import put_complete_database
 from .data_delete import delete_complete_database
 from .models import Event
-from HOHDProductionMac.common_function import get_all_membership_based_on_shop_id, get_month_year_month_name_for_download, get_login_user_shop_details, get_current_date, add_date, is_date_less, is_date_and_month_equal, email_format, convert_date_dd_mm_yyyy_to_yyyy_mm_dd
+from HOHDProductionMac.common_function import get_all_membership_based_on_shop_id, get_current_date, add_date, is_date_less, is_date_and_month_equal, email_format, convert_date_dd_mm_yyyy_to_yyyy_mm_dd
 import datetime
 
 
