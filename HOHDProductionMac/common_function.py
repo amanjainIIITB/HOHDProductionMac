@@ -13,11 +13,11 @@ import smtplib
 # Import the email modules we'll need
 from email.message import EmailMessage
 
-def get_regID(request):
-    return {"regID" : OwnerRegistration.objects.values('ownerID').filter(phone=request.user.phone).first()['ownerID']}
+def get_regID(request, phone_number):
+    return OwnerRegistration.objects.values('ownerID').filter(phone=phone_number).first()['ownerID']
+
 
 def get_first_shop_name(request):
-    print('shop id in session', request.session['shop_id'])
     if request.session['shop_id'] == None:
         return "Shop does Not Exist"
     else:

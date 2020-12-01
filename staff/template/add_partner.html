@@ -41,8 +41,8 @@
                     {% csrf_token %}
                     <div class="card-body">
                         <div class="form-group">
-                            <label for="name">Partner Username</label>
-                            <input type="text" oninput="validate_username()" class="form-control" id="name" name="name" placeholder="Enter Username">
+                            <label for="name">Partner Contact Number</label>
+                            <input type="text" oninput="validate_username()" class="form-control" id="contact_number" name="contact_number" placeholder="Enter Contact Number">
                         </div>
                         <span id="user_details" style="color: red;"></span>
                         <div class="form-group">
@@ -93,7 +93,7 @@
 <script>
     function get_selected_username_info(username, name, id, contact_number)
     {
-        partner_info = create_textarea_with_data("Name: "+name+"\nUsername: "+username+"\nContact Number: "+contact_number);
+        partner_info = create_textarea_with_data("Name: "+name+"\nContact Number: "+contact_number);
         document.getElementById('user_details').innerHTML = partner_info;
     }
     function get_list_of_shops_for_selected_user(entered_user_shop_list, login_user_shop_list)
@@ -149,7 +149,7 @@
     }
     function validate_username()
     {
-        var entered_contact_number = document.getElementById('name').value;
+        var entered_contact_number = document.getElementById('contact_number').value;
         var login_username="{{login_username}}";
         var users = {{list_users|safe}};
         var list_shop_details = {{shop_details|safe}};

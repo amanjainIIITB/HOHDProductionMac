@@ -14,14 +14,14 @@ from django.template.loader import render_to_string
 from weasyprint import HTML
 from .models import Expense, ShopRegistration, Employee, Appointment
 from customer.models import Membership
-from useraccount.models import OwnerRegistration, Access
+from useraccount.models import OwnerRegistration, Access, UserManager, User
+from useraccount.views import create_owner_registration
 from HOHDProductionMac.common_function import atleast_one_shop_registered, set_session, get_list_of_login_user_shops, get_current_date, get_all_membership_based_on_shop_id, \
-    convert_date_yyyy_mm_dd_to_dd_mm_yyyy, email_format, is_month_and_year_equal, get_first_shop_name
+    convert_date_yyyy_mm_dd_to_dd_mm_yyyy, email_format, is_month_and_year_equal, get_first_shop_name, get_regID
 from HOHDProductionMac.context_processor import get_login_user_shop_details
 from fpdf import FPDF
 from django.core.files.storage import FileSystemStorage
 import cv2
-import pdb
 import calendar
 
 
@@ -98,27 +98,43 @@ def get_current_shop_employees(shop_id):
     return images
 
 
-def employee(request):
-    if not atleast_one_shop_registered(request):
-        return redirect('/staff/shopreg/')
-    if request.method == "POST":
-        employee_id=get_new_employee_id(request)
-        print('DOB of the employee')
-        print(request.POST.get('DOB'))
-        Employee(EmployeeID=employee_id, ShopID=request.session['shop_id'], name=request.POST.get('name'), contact_number=request.POST.get('contact_number'), 
-                sex=request.POST.get('sex'), date_of_joining=request.POST.get('date_of_joining'), DOB=request.POST.get('DOB'), 
-                position=request.POST.get('position'), temporary_address=request.POST.get('temporary_address'), permanent_address=request.POST.get('permanent_address')).save()
-        employee_access = request.POST.get('employee_access')
-        if employee_access == "YES":
-            if is_employee_account_already_created() == False:
-                create_employee_account()
-            add_shop_id_to_employee_account()
-        print(request)
-        print(request.FILES.get('employee_gov_id'))
-        if request.FILES.get('employee_gov_id') != None:
-            handle_uploaded_file(request, request.FILES.get('employee_gov_id'), employee_id_path, request.session['shop_id'], employee_id)  
-        messages.success(request, 'Added successfully', extra_tags='alert')
-    employees = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'ShopID', 'sex', 'date_of_joining', 'position', 'DOB', 'temporary_address', 'permanent_address').filter(ShopID=request.session['shop_id'])
+def is_account_exist(contact_number):
+    print(OwnerRegistration.objects.filter(phone=contact_number).exists())
+    return OwnerRegistration.objects.filter(phone=contact_number).exists()
+
+
+def is_shop_available_for_account(request, phone):
+    return Access.objects.filter(regID=get_regID(request, phone), shopID=request.session['shop_id']).exists()
+
+
+def create_account(contact_number):
+    User.objects.create_user(contact_number, 'hoh1234#')
+
+
+def remove_shop_access(request, phone):
+    if is_shop_available_for_account(request, phone):
+        regID = get_regID(request, phone)
+        Access.objects.filter(regID=regID).delete()
+
+
+def update_page_access(request, phone, page_list):
+    regID = get_regID(request, phone)
+    Access.objects.filter(regID=regID, shopID=request.session['shop_id']).update(page_list=page_list)
+
+
+def get_page_permissions(request, phone):
+    if is_account_exist(phone) and is_shop_available_for_account(request, phone):
+        page_permissions = Access.objects.values('page_list').filter(regID=get_regID(request, phone), shopID=request.session['shop_id']).first()['page_list']
+        if page_permissions == '':
+            return list()
+        page_permissions = page_permissions.split(',')
+        return [int(i) for i in page_permissions] 
+    else:
+        return list()
+
+
+def get_employees_record_for_display(request):
+    employees = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'ShopID', 'sex', 'date_of_joining', 'position', 'DOB', 'temporary_address', 'permanent_address', 'access').filter(ShopID=request.session['shop_id'])
     images = get_current_shop_employees(request.session['shop_id'])
     for employee in employees:
         employee['date_of_joining'] = convert_date_yyyy_mm_dd_to_dd_mm_yyyy(str(employee['date_of_joining']))
@@ -128,30 +144,95 @@ def employee(request):
             employee['govt_id'] = 'images/employee_verification/'+str(request.session['shop_id'])+'/'+ str(employee['EmployeeID']) +'.png'
         else:
             employee['govt_id'] = 'images/not_found.png'
-    return render(request, 'employee.html', {'employees': employees})
+        employee['page_permissions'] = get_page_permissions(request, employee['contact_number'])
+    return employees
+
+
+def create_shop_access_for_newly_added_employee(request, access, phone, page_list):
+    if raccess == "YES":
+        if is_account_exist(phone) == False:
+            create_account(phone)
+        add_shop_id_to_user(request, get_regID(request, phone), request.session['shop_id'], False, page_list)
+
+
+def employee(request):
+    if not atleast_one_shop_registered(request):
+        return redirect('/staff/shopreg/')
+    if request.method == "POST":
+        employee_id=get_new_employee_id(request)
+        page_list = ",".join(request.POST.getlist('page_list[]'))
+        Employee(EmployeeID=employee_id, ShopID=request.session['shop_id'], name=request.POST.get('name'), contact_number=request.POST.get('contact_number'), 
+                sex=request.POST.get('sex'), date_of_joining=request.POST.get('date_of_joining'), DOB=request.POST.get('DOB'), access = request.POST.get('employee_access'),
+                position=request.POST.get('position'), temporary_address=request.POST.get('temporary_address'), permanent_address=request.POST.get('permanent_address')).save()
+        create_shop_access_for_newly_added_employee(request, request.POST.get('employee_access'), request.POST.get('contact_number'), page_list)
+        if request.FILES.get('employee_gov_id') != None:
+            handle_uploaded_file(request, request.FILES.get('employee_gov_id'), employee_id_path, request.session['shop_id'], employee_id)  
+        messages.success(request, 'Added successfully', extra_tags='alert')
+    return render(request, 'employee.html', {'employees': list(get_employees_record_for_display(request)), 'page_permissions': list()})
+
+
+def update_employee_access_with_different_phone_number(request, access, phone, page_list):
+    remove_shop_access(request, phone)
+    if access == "YES":
+        add_shop_id_to_user(request, get_regID(request, phone), request.session['shop_id'], False, page_list)
+
+    
+def update_employee_access_with_same_phone_number(request, employee, access, phone, page_list):
+    # Grant access
+    if employee['access'] == "NO" and access == "YES":
+        add_shop_id_to_user(request, get_regID(request, phone), request.session['shop_id'], False, page_list)
+    # Revoke access
+    if employee['access'] == "YES" and access == "NO":
+        remove_shop_access(request, phone)
+    # In case if we have added or removed access from few of the Pages 
+    if employee['access'] == "YES" and access == "YES":
+        # check if there is difference in old page access and new submit page access, if yes then update access
+        if get_page_permissions(request, employee['contact_number']) != page_list:
+            update_page_access(request, phone, page_list)
+
+
+def update_employee_access(request, employee):
+    page_list = ",".join(request.POST.getlist('page_list[]'))
+    # if Shop not assigned to the employee simply create the new entry in the Access table
+    if request.POST.get('access') == "YES" and is_shop_available_for_account(request, request.POST.get('contact_number')) == False:
+        Access(regID=get_regID(request, request.POST.get('contact_number')), shopID=request.session['shop_id'], isowner=False, page_list=page_list).save()
+    # in case with shop already assigned but there is some modification in the access
+    else:
+        if request.POST.get('contact_number') != str(employee['contact_number']):
+            update_employee_access_with_different_phone_number(request, request.POST.get('access'), request.POST.get('contact_number'), page_list)
+        else:
+            update_employee_access_with_same_phone_number(request, employee, request.POST.get('access'), request.POST.get('contact_number'), page_list)
 
 
 def update_employee(request, employee_id):
+    employee = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'sex', 'date_of_joining', 'position', 'DOB', 'temporary_address', 'permanent_address', 'access').filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).first()
     if request.method == "POST":
+        if request.POST.get('access') == "YES" and is_account_exist(request.POST.get('contact_number')) == False:
+            create_account(request.POST.get('contact_number'))
+            create_owner_registration(request.POST.get('name'), request.POST.get('contact_number'))
+        update_employee_access(request, employee)
         Employee.objects.filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).update(EmployeeID=employee_id, name=request.POST.get('name'),
-                       contact_number=request.POST.get('contact_number'),
-                       sex=request.POST.get('sex'), date_of_joining=request.POST.get('date_of_joining'), 
-                       position=request.POST.get('position'),
-                       DOB=request.POST.get('DOB'), temporary_address=request.POST.get('temporary_address'), 
-                       permanent_address=request.POST.get('permanent_address'))
-        if request.FILES.get('employee_gov_id')!=None:
+                                access = request.POST.get('access'),
+                                contact_number=request.POST.get('contact_number'),
+                                sex=request.POST.get('sex'), date_of_joining=request.POST.get('date_of_joining'), 
+                                position=request.POST.get('position'),
+                                DOB=request.POST.get('DOB'), temporary_address=request.POST.get('temporary_address'), 
+                                permanent_address=request.POST.get('permanent_address'))
+        if request.FILES.get('employee_gov_id') != None:
             handle_uploaded_file(request, request.FILES.get('employee_gov_id'), employee_id_path, request.session['shop_id'], employee_id)  
-            messages.success(request, 'Updated successfully', extra_tags='alert')
         messages.success(request, 'Updated successfully', extra_tags='alert')
         return redirect('/staff/employee/')
     else:
-        employee = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'sex', 'date_of_joining', 'position', 'DOB', 'temporary_address', 'permanent_address'). \
-            filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).last()
+        employee['page_permissions'] = get_page_permissions(request, employee['contact_number'])
     return render(request, 'update_employee.html', {'employee': employee})
 
 
 def delete_employee(request, employee_id):
+    employee = Employee.objects.values('access', 'contact_number').filter(EmployeeID=employee_id).first()
+    if employee['access'] == "yes":
+        remove_shop_access(request, employee['contact_number'])
     delete_file(employee_id_path, request.session['shop_id'], employee_id)
+    remove_shop_access(request, employee['contact_number'])
     Employee.objects.filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).delete()
     messages.success(request, 'Deleted successfully', extra_tags='alert')
     return redirect('/staff/employee/')
@@ -289,6 +370,7 @@ def total_numberofcustomer_of_the_day(date, datewisedata):
         i = i + 1
     if flag == False:
         return 0
+
 
 @login_required(login_url="/")
 def aboutus(request):
@@ -465,23 +547,13 @@ def download(request, download_type, month, year):
         return gererate_all_customer_data_for_a_month_in_excel(month, year, r_json)
 
 
-def add_shop_id_in_login_user(request, reg_id, shop_id):
-    Access(regID = OwnerRegistration.objects.values('ownerID').filter(phone=request.user.phone).first()['ownerID'], shopID = shopRegistration.ShopID, isowner = True).save()
+def add_shop_id_to_user(request, reg_id, shop_id, isowner, page_list):
+    Access(regID = reg_id, shopID = shop_id, isowner = isowner, page_list=page_list).save()
 
 
-def add_shop_id_in_entered_user(request, entered_user_name, list_of_shop_id):
-    users = OwnerRegistration.objects.values('shop_list').filter(phone=entered_user_name).first()
-    shops = ""
-    if users['shop_list'] != '':
-        shops = users['shop_list']
-        for shop_id in list_of_shop_id:
-            shops = shops + "," + str(shop_id)
-    else:
-        shops = list_of_shop_id[0]
-        for shop_index in range(1, len(list_of_shop_id)):
-            shops = shops + "," + str(list_of_shop_id[shop_index])
-    OwnerRegistration.objects.values('shop_list').filter(phone=entered_user_name).update(shop_list=shops)
-
+def add_shop_id_in_entered_user(request, entered_contact_number, list_of_shop_id):
+    for shop_id in list_of_shop_id:
+        add_shop_id_to_user(request, get_regID(request, entered_contact_number), shop_id, True, '')
 
 
 def get_new_shop_id(request):
@@ -511,10 +583,9 @@ def shopreg(request):
         shopRegistration.Shop_Name = request.POST.get('Shop_Name')
         shopRegistration.Shop_Address = request.POST.get('Shop_Address')
         shopRegistration.email = request.POST.get('email')
-        shopRegistration.owner_list = OwnerRegistration.objects.values('ownerID').filter(phone=request.user.phone).first()['ownerID']
         add_shop_id_in_entered_user(request, request.user.phone, [shopRegistration.ShopID])
         shopRegistration.save()
-        add_shop_id_in_login_user(request, OwnerRegistration.objects.values('ownerID').filter(phone=request.user.phone).first()['ownerID'], shopRegistration.ShopID)
+        add_shop_id_to_user(request, OwnerRegistration.objects.values('ownerID').filter(phone=request.user.phone).first()['ownerID'], shopRegistration.ShopID, True, '')
         print(request.FILES.get('logo'))
         if request.FILES.get('logo') != None:
             handle_uploaded_file(request, request.FILES.get('logo'), logo_path, shopRegistration.ShopID, shopRegistration.ShopID) 
@@ -546,7 +617,7 @@ def get_all_owners(request):
     list_users = []
     for userobj in users:
         user = [userobj.get_username(), userobj.get_name(), userobj.get_ownerID(),
-                userobj.get_contact_number(), userobj.get_shop_list()]
+                userobj.get_contact_number()]
         list_users.append(user)
     return list_users
 
@@ -556,31 +627,17 @@ def select_parlour(request, shop_id):
     return redirect('/staff/aboutus/')
 
 
-def add_owner_id_in_shop_registration_for_entered_user(request, entered_user_name, list_of_shop_id):
-    owner = OwnerRegistration.objects.values('ownerID').filter(phone=entered_user_name).first()
-    print('Owner data is')
-    print(owner)
-    for shop_id in list_of_shop_id:
-        print(shop_id)
-        shopRegistration = ShopRegistration.objects.values('owner_list').filter(ShopID=shop_id).first()
-        print(shopRegistration)
-        list_of_owners = shopRegistration['owner_list'] + ","+owner['ownerID']
-        print(list_of_owners)
-        ShopRegistration.objects.values('owner_list').filter(ShopID=shop_id).update(owner_list=list_of_owners)
-
-
 @login_required(login_url="/")
 def add_partner(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
     if request.method == "POST":
-        entered_user_name = request.POST.get('name')
+        entered_contact_number = request.POST.get('contact_number')
         list_of_shop_id = request.POST.getlist('shop_list[]')
         if len(list_of_shop_id) == 0:
             messages.success(request, 'Select parlour to add', extra_tags='alert')
         else:
-            add_shop_id_in_entered_user(request, entered_user_name, list_of_shop_id)
-            add_owner_id_in_shop_registration_for_entered_user(request, entered_user_name, list_of_shop_id)
+            add_shop_id_in_entered_user(request, entered_contact_number, list_of_shop_id)
             messages.success(request, 'Selected Parlour Added successfully', extra_tags='alert')
     return render(request, 'add_partner.html', {"shop_details": list(get_login_user_shop_details(request)["shop_details"]),
                                                 "list_users": list(get_all_owners(request))})

@@ -99,6 +99,19 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="form-group">
+                                <label for="Employee Access">Do you want to provide Access for the Employee?</label>
+                                <select class="form-control" id="access" name="access" onchange="displayPagePermissions('access', 'page_permission_span', {{employee.page_permissions|safe}})">
+                                    {% if employee.access == "YES" %}
+                                        <option value="YES" selected>YES</option>
+                                        <option value="NO">NO</option>
+                                    {% else %}
+                                        <option value="YES">YES</option>
+                                        <option value="NO" selected>NO</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <span id="page_permission_span"></span>
                         </div>
                         <!-- /.card-body -->
 
@@ -147,8 +160,8 @@
     function onload_behaviour(){
         setDate("DOB", "{{employee.DOB}}");
         setDate("date_of_joining", "{{employee.date_of_joining}}");
+        displayPagePermissions('access', 'page_permission_span', {{employee.page_permissions|safe}})
     }
-</script>
 </script>
 </body>
 </html>

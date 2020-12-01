@@ -70,9 +70,9 @@ def get_expense_data(wb, row_num, date_format, font_style):
 
 
 def get_shop_registration_data(wb, row_num, font_style):
-    column_names = ['ShopID', 'Desk_Contact_Number', 'Shop_Name', 'Shop_Address', 'owner_list']
+    column_names = ['ShopID', 'Desk_Contact_Number', 'Shop_Name', 'Shop_Address']
     ws = set_table_header(wb, "shop_registration_data", column_names, font_style)
-    shop_registrations = ShopRegistration.objects.values('ShopID', 'Desk_Contact_Number', 'Shop_Name', 'Shop_Address', 'owner_list')
+    shop_registrations = ShopRegistration.objects.values('ShopID', 'Desk_Contact_Number', 'Shop_Name', 'Shop_Address')
     
     for shop_registration in shop_registrations:
         row_num = row_num + 1
@@ -80,7 +80,6 @@ def get_shop_registration_data(wb, row_num, font_style):
         ws.write(row_num, 1, shop_registration['Desk_Contact_Number'], font_style)
         ws.write(row_num, 2, shop_registration['Shop_Name'], font_style)
         ws.write(row_num, 3, shop_registration['Shop_Address'], font_style)
-        ws.write(row_num, 4, shop_registration['owner_list'], font_style)
 
 
 def get_employee_data(wb, row_num, date_format, font_style):

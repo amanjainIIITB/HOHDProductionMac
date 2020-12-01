@@ -4,7 +4,7 @@ from HOHDProductionMac.common_function import get_list_of_login_user_shops
 from staff.models import Expense, ShopRegistration
 
 
-DB_PHONE_NUMBER = '0246813579'
+ADMIN_PHONE_NUMBER = '0246813579'
 def get_month_year_month_name_for_download(request):
     now = datetime.now()
     month_year_month_name = {}
@@ -29,7 +29,7 @@ def get_month_year_month_name_for_download(request):
     return {"month_year_month_name" : month_year_month_name}
 
 def get_login_user_shop_details(request):
-    if str(request.user) != 'AnonymousUser' and str(request.user) != DB_PHONE_NUMBER:
+    if str(request.user) != 'AnonymousUser' and str(request.user) != ADMIN_PHONE_NUMBER:
         shop_ids = get_list_of_login_user_shops(request)
         list_shop_details = []
         for shopid in shop_ids:
@@ -41,13 +41,19 @@ def get_login_user_shop_details(request):
         return {}
 
 def get_login_username(request):
-    if str(request.user) != 'AnonymousUser' and str(request.user) != DB_PHONE_NUMBER:
+    if str(request.user) != 'AnonymousUser' and str(request.user) != ADMIN_PHONE_NUMBER:
         return {"login_username": request.user.get_phone_number()}
     else:
         return {}
 
 def get_shop_name(request):
-    if str(request.user) != 'AnonymousUser' and str(request.user) != DB_PHONE_NUMBER:
+    if str(request.user) != 'AnonymousUser' and str(request.user) != ADMIN_PHONE_NUMBER and request.session['shop_id'] != None:
         return {"shop_name": ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']}
     else:
         return {}
+
+# page_access_dict = {
+#     # Structure
+#     # "method_name" : {"pageID" : id, "display_page_name" : "name"}
+#     ""
+# }

@@ -28,6 +28,15 @@ def change_password(request):
         form = PasswordChangeForm(request.user)
     return render(request, 'change_password.html', {'form': form })
 
+def create_owner_registration(name, phone):
+    last_owner_id = OwnerRegistration.objects.values('ownerID').last()
+    new_owner_id = ''
+    if last_owner_id is None:
+        new_owner_id = '0'
+    else:
+        new_owner_id = int(str(last_owner_id['ownerID'])[1:])+1
+    OwnerRegistration(Name=name, phone=phone, ownerID='O'+str(new_owner_id)).save()
+
 
 def signup_view(request):
     if request.method == "POST":
@@ -36,13 +45,7 @@ def signup_view(request):
             mob = user_form.cleaned_data.get('phone')
             name = user_form.cleaned_data.get('Name')
             user_form.save()
-            last_owner_id = OwnerRegistration.objects.values('ownerID').last()
-            new_owner_id = ''
-            if last_owner_id is None:
-                new_owner_id = '0'
-            else:
-                new_owner_id = int(str(last_owner_id['ownerID'])[1:])+1
-            OwnerRegistration(Name=name, phone=mob, ownerID='O'+str(new_owner_id)).save()
+            create_owner_registration(name, mob)
             return redirect('/')
         else:
             phone_length = len(request.POST['phone'])
@@ -62,9 +65,7 @@ def signup_view(request):
 
 
 def get_first_shop_id(request):
-    ownerIDobj = OwnerRegistration.objects.values('ownerID', 'shop_list').filter(phone=request.user.get_phone_number()).first()
-    shops = ownerIDobj['shop_list'].split(",")
-    return shops[0]
+    return Access.objects.values('shopID').filter(regID=request.session['regID']).first()['shopID']
 
 
 def delete_session(request):
@@ -72,7 +73,7 @@ def delete_session(request):
 
 
 def get_shop_list_access(request):
-    shop_list_access = Access.objects.values('shopID', 'isowner', 'page_list').filter(regID=get_regID(request)['regID'])
+    shop_list_access = Access.objects.values('shopID', 'isowner', 'page_list').filter(regID=request.session['regID'])
     print(list(shop_list_access))
     shop_list_access_json = {}
     for shop_list_access_object in shop_list_access:
@@ -97,7 +98,7 @@ def login_view(request):
                     set_session(request, "shop_list_access", get_shop_list_access(request))
                 else:
                     set_session(request, "shop_id",None)
-                    set_session(request, "shop_list_access", None)
+                    set_session(request, "shop_list_access", '')
                 return redirect('/staff/aboutus/')
             else:
                 messages.success(request, 'Either Phone Number or Password is incorrect', extra_tags='alert')

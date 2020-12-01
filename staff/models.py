@@ -23,7 +23,6 @@ class ShopRegistration(models.Model):
                                               null=True)
     Shop_Name = models.CharField(max_length=50, null=True)
     Shop_Address = models.TextField(max_length=1000, null=True)
-    owner_list = models.TextField(null=True)
     email = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
@@ -38,10 +37,11 @@ class Employee(models.Model):
                                               null=True)
     sex = models.CharField(max_length=10, null=True)
     date_of_joining = models.DateField(default=datetime.datetime.now().strftime("%Y-%m-%d"))
-    position = models.CharField(max_length=50, blank=True, null=True)
+    position = models.CharField(max_length=50, default='')
     DOB = models.CharField(max_length=10, null=True)
     temporary_address = models.TextField(max_length=1000, null=True)
     permanent_address = models.TextField(max_length=1000, null=True)
+    access = models.CharField(max_length=10, null=True)
 
 
 class Appointment(models.Model):

@@ -77,7 +77,6 @@ class OwnerRegistration(models.Model):
     phone = models.CharField(max_length=15, null=True)
     ownerID = models.CharField(max_length=10, null=True)
     Name = models.CharField(max_length=50, null=True)
-    shop_list = models.TextField(null=True, blank='', default='')
 
     def __str__(self):
         return str(self.ownerID)
@@ -93,9 +92,6 @@ class OwnerRegistration(models.Model):
 
     def get_contact_number(self):
         return self.phone
-
-    def get_shop_list(self):
-        return self.shop_list
 
 class Access(models.Model):
     regID = models.CharField(max_length=10, null=True)

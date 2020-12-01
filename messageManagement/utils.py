@@ -7,10 +7,6 @@ def get_shop_owner_details_based_on_owner_id(owner_id):
     return OwnerRegistration.objects.values('phone', 'ownerID', 'Name').filter(ownerID=owner_id).first()
 
 
-def get_shop_owners_ids_based_on_shop_id(shop_id):
-    return ShopRegistration.objects.values('owner_list').filter(ShopID=shop_id).first()
-
-
 def get_all_shop_owner_details():
     return OwnerRegistration.objects.values('phone', 'ownerID', 'Name', 'shop_list')
 

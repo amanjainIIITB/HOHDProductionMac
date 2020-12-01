@@ -35,7 +35,7 @@ def put_shop_registration_data(file):
     df = pandas.read_excel(file, sheet_name='shop_registration_data')
     df = df.fillna("")
     for index, row in df.iterrows(): 
-        ShopRegistration(ShopID=row["ShopID"], Desk_Contact_Number=row["Desk_Contact_Number"], Shop_Name=row["Shop_Name"], Shop_Address=row["Shop_Address"], owner_list=row["owner_list"]).save()
+        ShopRegistration(ShopID=row["ShopID"], Desk_Contact_Number=row["Desk_Contact_Number"], Shop_Name=row["Shop_Name"], Shop_Address=row["Shop_Address"]).save()
 
 
 def put_employee_data(file):

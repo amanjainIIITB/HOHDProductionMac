@@ -30,10 +30,12 @@ def send_message_to_all_shop_all_client(greeting, message, greeting_choice):
 
 
 def send_message_to_particular_shop_all_owner(greeting, message, shop_id, greeting_choice):
-    owner_ids = get_shop_owners_ids_based_on_shop_id(shop_id)['owner_list'].split(",")
-    for owner_id in owner_ids:
-        owner = get_shop_owner_details_based_on_owner_id(owner_id)
-        sendMessage(owner['Name'], owner['Contact_Number'], greeting, message, greeting_choice)
+    pass
+    # get the data from Access based on the shop_id and isowner
+    # owner_ids = Access.objects.values('regID').filter()
+    # for owner_id in owner_ids:
+    #     owner = get_shop_owner_details_based_on_owner_id(owner_id)
+    #     sendMessage(owner['Name'], owner['Contact_Number'], greeting, message, greeting_choice)
 
 
 def send_message_to_particular_shop_all_client(greeting, message, shop_id, greeting_choice):
