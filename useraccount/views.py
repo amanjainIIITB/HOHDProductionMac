@@ -7,6 +7,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
 from .user_form import OwnerRegistrationForm, AuthenticationForm
 from .models import OwnerRegistration, Access
+from HOHDProductionMac.context_processor import get_page_permission_dict, get_messages
 from HOHDProductionMac.common_function import set_session, atleast_one_shop_registered, get_first_shop_name, get_regID
 
 
@@ -27,6 +28,7 @@ def change_password(request):
     else:
         form = PasswordChangeForm(request.user)
     return render(request, 'change_password.html', {'form': form })
+
 
 def create_owner_registration(name, phone):
     last_owner_id = OwnerRegistration.objects.values('ownerID').last()
@@ -77,7 +79,7 @@ def get_shop_list_access(request):
     print(list(shop_list_access))
     shop_list_access_json = {}
     for shop_list_access_object in shop_list_access:
-        shop_list_access_json[shop_list_access_object['shopID']] = {'isowner': shop_list_access_object['isowner'], 'page_list': shop_list_access_object['page_list']}
+        shop_list_access_json[shop_list_access_object['shopID']] = {'isowner': shop_list_access_object['isowner'], 'page_list': shop_list_access_object['page_list'].split(',')}
     return shop_list_access_json
 
 
@@ -96,6 +98,8 @@ def login_view(request):
                     shop_id = get_first_shop_id(request)
                     set_session(request, "shop_id", shop_id)
                     set_session(request, "shop_list_access", get_shop_list_access(request))
+                    set_session(request, "page_permissions_dict", get_page_permission_dict(request))
+                    set_session(request, "messages", get_messages(request))
                 else:
                     set_session(request, "shop_id",None)
                     set_session(request, "shop_list_access", '')

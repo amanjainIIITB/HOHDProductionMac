@@ -5,7 +5,7 @@ from .models import *
 from staff.models import Employee, ShopRegistration
 from staff.views import analysis
 from customer.models import Services
-from HOHDProductionMac.common_function import atleast_one_shop_registered, get_current_time, get_all_membership_based_on_shop_id, convert_date_yyyy_mm_dd_to_dd_mm_yyyy, get_services
+from HOHDProductionMac.common_function import atleast_one_shop_registered, get_current_time, get_all_membership_based_on_shop_id, convert_date_yyyy_mm_dd_to_dd_mm_yyyy, get_services, is_page_accessible
 import datetime
 # Create your views here.
 
@@ -32,6 +32,8 @@ def update_client_services(request, visitID):
 
 def update_non_mem_client_visit(request, visit_id):
     if request.method == "POST":
+        if is_page_accessible(request) == False:
+            return redirect('/staff/aboutus/') 
         ClientVisit.objects.filter(visitID=visit_id, ShopID=request.session['shop_id']).update(date=request.POST.get('date'), services=update_client_services(request, visit_id), time=get_current_time(),
                        numberofclient=request.POST.get('numberofclient'), employee_id=request.POST.get('employee'), payment_mode=request.POST.get('payment_mode'), amount=request.POST.get('amount'))
         messages.success(request, 'Updated successfully', extra_tags='alert')
@@ -50,6 +52,8 @@ def update_non_mem_client_visit(request, visit_id):
 
 def update_mem_client_visit(request, visit_id):
     if request.method == "POST":
+        if is_page_accessible(request) == False:
+            return redirect('/staff/aboutus/') 
         ClientVisit.objects.filter(visitID=visit_id, ShopID=request.session['shop_id']).update(custID=request.POST.get('custID'), services=update_client_services(request, visit_id), date=request.POST.get('date'),
                        time=get_current_time(), employee_id=request.POST.get('EmployeeID'), payment_mode=request.POST.get('payment_mode'), amount=request.POST.get('amount'))
         messages.success(request, 'Updated successfully', extra_tags='alert')
@@ -68,6 +72,8 @@ def update_mem_client_visit(request, visit_id):
 
 
 def delete_client_visit(request, visit_id):
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
     ClientVisit.objects.filter(visitID=visit_id, ShopID=request.session['shop_id']).delete()
     Services.objects.filter(visitID=visit_id, shopID=request.session['shop_id']).delete()
     messages.success(request, 'Deleted successfully', extra_tags='alert')
@@ -88,6 +94,8 @@ def save_mem_visit(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
     else:
+        if is_page_accessible(request) == False:
+            return redirect('/staff/aboutus/') 
         visitID=get_new_visit_id(request)
         membership = Membership.objects.values('custID').filter(shopID=request.session['shop_id'], Contact_Number=request.POST.get('Contact_Number')).first()
         paymentmode = request.POST.get('mem_paymentmode')
@@ -106,6 +114,8 @@ def save_non_mem_visit(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
     else:
+        if is_page_accessible(request) == False:
+            return redirect('/staff/aboutus/') 
         paymentmode = request.POST.get('paymentmode')
         visitID=get_new_visit_id(request)
         if (paymentmode == 'cash'):
@@ -121,9 +131,10 @@ def save_non_mem_visit(request):
 
 @login_required(login_url="/")
 def details(request):
-    context = {}
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
     employees = Employee.objects.values('EmployeeID', 'name').filter(ShopID=request.session['shop_id'])
     return render(request, 'details.html', {"memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),
                                             "employees": employees,
@@ -142,12 +153,19 @@ def get_all_membership():
 
 
 @login_required(login_url="/")
+def create_membership(request):
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
+    Membership(custID=request.POST.get('custid').upper(), shopID=request.session['shop_id'], Name=request.POST.get('name'), Sex=request.POST.get('sex'), Contact_Number=request.POST.get('contact_number'), DOB=request.POST.get('DOB')).save()
+    messages.success(request, 'Added successfully', extra_tags='alert')
+
+
+@login_required(login_url="/")
 def membership(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
-    if request.method == "POST":
-        Membership(custID=request.POST.get('custid').upper(), shopID=request.session['shop_id'], Name=request.POST.get('name'), Sex=request.POST.get('sex'), Contact_Number=request.POST.get('contact_number'), DOB=request.POST.get('DOB')).save()
-        messages.success(request, 'Added successfully', extra_tags='alert')
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
     return render(request, 'membership.html', {"memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id']))})
 
 
@@ -157,14 +175,10 @@ def update_client_visit_after_update_membership(current_client_id, changed_clien
 
 def update_membership(request, cust_id):
     if request.method == "POST":
+        if is_page_accessible(request) == False:
+            return redirect('/staff/aboutus/') 
         membership = Membership.objects.values('custID', 'Contact_Number', 'Sex', 'Name', 'DOB'). \
             filter(shopID=request.session['shop_id'], custID=cust_id)
-        print(request)
-        print(request.POST.get('DOB'))
-        print(request.method)
-        print(request.POST)
-        print(request.POST.get('Contact_Number'))
-        print(request.POST.get('custID'))
         membership.update(custID=request.POST.get('custID').upper(), Contact_Number=request.POST.get('Contact_Number'),
                     Sex=request.POST.get('Sex'), Name=request.POST.get('Name'), DOB=request.POST.get('DOB'))
         update_client_visit_after_update_membership(cust_id, request.POST.get('custID').upper(), request.session['shop_id'])
@@ -173,8 +187,6 @@ def update_membership(request, cust_id):
     else:
         membership = Membership.objects.values('custID', 'Contact_Number', 'Sex', 'Name', 'DOB'). \
             filter(shopID=request.session['shop_id'], custID=cust_id).last()
-        print(membership)
-        print(membership['DOB'])
         return render(request, 'update_membership.html', { 'custID': membership['custID'],
                                                            'Contact_Number': membership['Contact_Number'],
                                                            'Sex': membership['Sex'],
@@ -187,6 +199,8 @@ def delete_all_visit_of_client(client_id, shop_id):
 
 
 def delete_membership(request, cust_id):
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
     Membership.objects.filter(custID=cust_id, shopID=request.session['shop_id']).delete()
     delete_all_visit_of_client(cust_id, request.session['shop_id'])
     messages.success(request, 'Deleted successfully', extra_tags='alert')

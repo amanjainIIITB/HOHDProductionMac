@@ -151,26 +151,12 @@ function set_card_body(panelIndex){
     }
 }
 
-function displayPagePermissions(employee_access_id, page_permission_span_id, page_permissions, is_checkbox_disable) {
+function displayPagePermissions(employee_access_id, page_permission_span_id, page_permissions, page_display_dict, is_checkbox_disable) {
     document.getElementById(page_permission_span_id).innerHTML = "";
     var span = document.getElementById(page_permission_span_id);
     employee_access = document.getElementById(employee_access_id).value;
     if (employee_access == "YES") {
-
-        var page_permissions_dict = {
-            "Client Visit:" : ["Create Client Visit", "Edit Client Visit", "Delete Client Visit"],
-            "Client Membership:" : ["Create Membership", "Edit Membership", "Delete Membership"],
-            "Expense:" : ["Create Expense", "Edit Expense", "Delete Expense"],
-            "Download files:" : ["Expense", "Analysis", "Customer Data"],
-            "Can Employee create Appoint for the Client?" : ["Create/Update Appointment", "view Appointment"],
-            "Do you want your Employee to see the analytics of your Parlour?" : ["Analytics Details"],
-            "Do you want your Employee to Update the Parlour Details?" : ["Edit Parlour Details"],
-            "Do you want to provide permission to add Partner for your Parlour?" : ["Add Partner"],
-            "Employee:" : ["Create Employee", "Edit Employee", "Delete Employee"],
-        };
-
-        var checkbox_value=1;
-        for (var key in page_permissions_dict){
+        for (var key in page_display_dict){
             var label = document.createElement("LABEL");
             label.appendChild(document.createTextNode(key));
 
@@ -182,36 +168,36 @@ function displayPagePermissions(employee_access_id, page_permission_span_id, pag
             var div_row = document.createElement("div");
             div_row.classList.add("row");
 
-            for (page in page_permissions_dict[key]){
-                var div_col = document.createElement("div");
-                div_col.classList.add("col-md-4");
+            for (page in page_display_dict[key]){
+                if(page_display_dict[key][page][3] == 1){
+                    var div_col = document.createElement("div");
+                    div_col.classList.add("col-md-3");
 
-                var div_form_check = document.createElement("div");
-                div_form_check.classList.add("form-check");
+                    var div_form_check = document.createElement("div");
+                    div_form_check.classList.add("form-check");
 
-                var label = document.createElement("LABEL");
-                label.classList.add("form-check-label");
-                label.appendChild(document.createTextNode(page_permissions_dict[key][page]));
+                    var label = document.createElement("LABEL");
+                    label.classList.add("form-check-label");
+                    label.appendChild(document.createTextNode(page_display_dict[key][page][0]));
 
-                var input = document.createElement("INPUT");
-                input.classList.add("form-check-input");
-                input.setAttribute("type", "checkbox");
-                if (is_checkbox_disable) {
-                    input.setAttribute("disabled", true);
+                    var input = document.createElement("INPUT");
+                    input.classList.add("form-check-input");
+                    input.setAttribute("type", "checkbox");
+                    if (is_checkbox_disable) {
+                        input.setAttribute("disabled", true);
+                    }
+                    if (page_permissions.includes(page_display_dict[key][page][2])){
+                        input.setAttribute("checked", true);
+                    }
+                    input.setAttribute("name", "page_list[]");
+                    input.setAttribute("value", page_display_dict[key][page][2]);
+
+                    div_form_check.appendChild(input);
+                    div_form_check.appendChild(label);
+                    div_col.appendChild(div_form_check);
+                    div_row.appendChild(div_col);
+                    form_group.appendChild(div_row);
                 }
-                console.log(checkbox_value);
-                console.log(page_permissions);
-                if (page_permissions.includes(checkbox_value)){
-                    input.setAttribute("checked", true);
-                }
-                input.setAttribute("name", "page_list[]");
-                input.setAttribute("value", checkbox_value++);
-
-                div_form_check.appendChild(input);
-                div_form_check.appendChild(label);
-                div_col.appendChild(div_form_check);
-                div_row.appendChild(div_col);
-                form_group.appendChild(div_row);
             }
             span.appendChild(form_group);
         }

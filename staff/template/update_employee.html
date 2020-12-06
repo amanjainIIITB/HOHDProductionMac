@@ -160,7 +160,7 @@
     function onload_behaviour(){
         setDate("DOB", "{{employee.DOB}}");
         setDate("date_of_joining", "{{employee.date_of_joining}}");
-        displayPagePermissions('access', 'page_permission_span', {{employee.page_permissions|safe}})
+        displayPagePermissions('access', 'page_permission_span', {{employee.page_permissions|safe}}, {{page_display_dict|safe}}, false);
     }
 </script>
 </body>

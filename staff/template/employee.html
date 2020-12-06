@@ -41,7 +41,7 @@
                     </div>
                     <!-- /.card-header -->
                     <!-- form start -->
-                    <form autocomplete="off" method="post" enctype="multipart/form-data" action="/staff/employee/">
+                    <form autocomplete="off" method="post" enctype="multipart/form-data" action="/staff/create_employee/">
                         {% csrf_token %}
                         <div class="card-body">
                             <div class="form-group">
@@ -268,11 +268,10 @@
 <script src="{% static 'common/common.js' %}"></script>
 <script>
     function onload_behaviour(){
-        displayPagePermissions('access', 'page_permission_span', {{page_permissions|safe}}, false);
+        displayPagePermissions('access', 'page_permission_span', {{page_permissions|safe}}, {{page_display_dict|safe}},false);
         var employees = {{employees|safe}};
-        console.log(employees);
         for (var i=0; i<employees.length; i++){
-            displayPagePermissions('access_'+employees[i].EmployeeID, 'page_permission_span_'+employees[i].EmployeeID, employees[i].page_permissions, true);
+            displayPagePermissions('access_'+employees[i].EmployeeID, 'page_permission_span_'+employees[i].EmployeeID, employees[i].page_permissions, {{page_display_dict|safe}}, true);
         }
     }
 </script>

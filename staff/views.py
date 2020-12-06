@@ -17,8 +17,8 @@ from customer.models import Membership
 from useraccount.models import OwnerRegistration, Access, UserManager, User
 from useraccount.views import create_owner_registration
 from HOHDProductionMac.common_function import atleast_one_shop_registered, set_session, get_list_of_login_user_shops, get_current_date, get_all_membership_based_on_shop_id, \
-    convert_date_yyyy_mm_dd_to_dd_mm_yyyy, email_format, is_month_and_year_equal, get_first_shop_name, get_regID
-from HOHDProductionMac.context_processor import get_login_user_shop_details
+    convert_date_yyyy_mm_dd_to_dd_mm_yyyy, email_format, is_month_and_year_equal, get_first_shop_name, get_regID, is_page_accessible
+from HOHDProductionMac.context_processor import get_login_user_shop_details, page_display_dict
 from fpdf import FPDF
 from django.core.files.storage import FileSystemStorage
 import cv2
@@ -155,20 +155,28 @@ def create_shop_access_for_newly_added_employee(request, access, phone, page_lis
         add_shop_id_to_user(request, get_regID(request, phone), request.session['shop_id'], False, page_list)
 
 
+def create_employee(request):
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
+    employee_id=get_new_employee_id(request)
+    page_list = ",".join(request.POST.getlist('page_list[]'))
+    Employee(EmployeeID=employee_id, ShopID=request.session['shop_id'], name=request.POST.get('name'), contact_number=request.POST.get('contact_number'), 
+            sex=request.POST.get('sex'), date_of_joining=request.POST.get('date_of_joining'), DOB=request.POST.get('DOB'), access = request.POST.get('employee_access'),
+            position=request.POST.get('position'), temporary_address=request.POST.get('temporary_address'), permanent_address=request.POST.get('permanent_address')).save()
+    create_shop_access_for_newly_added_employee(request, request.POST.get('employee_access'), request.POST.get('contact_number'), page_list)
+    if request.FILES.get('employee_gov_id') != None:
+        handle_uploaded_file(request, request.FILES.get('employee_gov_id'), employee_id_path, request.session['shop_id'], employee_id)  
+    messages.success(request, 'Added successfully', extra_tags='alert')
+
+
 def employee(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
-    if request.method == "POST":
-        employee_id=get_new_employee_id(request)
-        page_list = ",".join(request.POST.getlist('page_list[]'))
-        Employee(EmployeeID=employee_id, ShopID=request.session['shop_id'], name=request.POST.get('name'), contact_number=request.POST.get('contact_number'), 
-                sex=request.POST.get('sex'), date_of_joining=request.POST.get('date_of_joining'), DOB=request.POST.get('DOB'), access = request.POST.get('employee_access'),
-                position=request.POST.get('position'), temporary_address=request.POST.get('temporary_address'), permanent_address=request.POST.get('permanent_address')).save()
-        create_shop_access_for_newly_added_employee(request, request.POST.get('employee_access'), request.POST.get('contact_number'), page_list)
-        if request.FILES.get('employee_gov_id') != None:
-            handle_uploaded_file(request, request.FILES.get('employee_gov_id'), employee_id_path, request.session['shop_id'], employee_id)  
-        messages.success(request, 'Added successfully', extra_tags='alert')
-    return render(request, 'employee.html', {'employees': list(get_employees_record_for_display(request)), 'page_permissions': list()})
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
+    return render(request, 'employee.html', {'employees': list(get_employees_record_for_display(request)), 
+                                             'page_display_dict': page_display_dict(request),
+                                             'page_permissions': list()})
 
 
 def update_employee_access_with_different_phone_number(request, access, phone, page_list):
@@ -205,6 +213,8 @@ def update_employee_access(request, employee):
 
 
 def update_employee(request, employee_id):
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
     employee = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'sex', 'date_of_joining', 'position', 'DOB', 'temporary_address', 'permanent_address', 'access').filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).first()
     if request.method == "POST":
         if request.POST.get('access') == "YES" and is_account_exist(request.POST.get('contact_number')) == False:
@@ -224,10 +234,12 @@ def update_employee(request, employee_id):
         return redirect('/staff/employee/')
     else:
         employee['page_permissions'] = get_page_permissions(request, employee['contact_number'])
-    return render(request, 'update_employee.html', {'employee': employee})
+    return render(request, 'update_employee.html', {'employee': employee, 'page_display_dict': page_display_dict(request),})
 
 
 def delete_employee(request, employee_id):
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
     employee = Employee.objects.values('access', 'contact_number').filter(EmployeeID=employee_id).first()
     if employee['access'] == "yes":
         remove_shop_access(request, employee['contact_number'])
@@ -267,6 +279,8 @@ def get_new_expense_id(request):
 
 
 def update_expense(request, expense_id):
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
     if request.method == "POST":
         new_amount = int(request.POST.get('amount'))
         if request.POST.get('purpose') == 'Amount Given':
@@ -290,20 +304,23 @@ def update_expense(request, expense_id):
                                                         
 
 def delete_expense(request, expense_id):
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
     Expense.objects.filter(shopID=request.session['shop_id'], ExpenseID=expense_id).delete()
     messages.success(request, 'Deleted successfully', extra_tags='alert')
     return redirect('/staff/expense/')
 
 
 def add_expense(request):
-    if request.method == "POST":
-        if request.POST.get('purpose') == 'Amount Received':
-            expense.amount = int(request.POST.get('amount'))
-        else:
-            expense.amount = int(request.POST.get('amount')) * -1
-        Expense(ExpenseID=get_new_expense_id(request), paymentmode=request.POST.get('paymentmode'), shopID=request.session['shop_id'], date=request.POST.get('date'), 
-                comment=request.POST.get('comment'), purpose=request.POST.get('purpose'), amount=expense.amount).save()
-        messages.success(request, 'Added successfully', extra_tags='alert')
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
+    if request.POST.get('purpose') == 'Amount Received':
+        expense.amount = int(request.POST.get('amount'))
+    else:
+        expense.amount = int(request.POST.get('amount')) * -1
+    Expense(ExpenseID=get_new_expense_id(request), paymentmode=request.POST.get('paymentmode'), shopID=request.session['shop_id'], date=request.POST.get('date'), 
+            comment=request.POST.get('comment'), purpose=request.POST.get('purpose'), amount=expense.amount).save()
+    messages.success(request, 'Added successfully', extra_tags='alert')
     return redirect('/staff/expense/')
 
 
@@ -311,6 +328,8 @@ def add_expense(request):
 def expense(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
     now = datetime.datetime.now()
     # put the ip address or dns of your apic-em controller in this url
     expense_url = 'http://'+ALLOWED_IP+':8000/staff/getExpense/'
@@ -331,6 +350,8 @@ def expense(request):
 def analysis(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
     now = datetime.datetime.now()
 
     # put the ip address or dns of your apic-em controller in this url
@@ -520,31 +541,52 @@ def gererate_all_expense_data_for_a_month_in_excel(month, year, r_json):
 
 
 @login_required(login_url="/")
-def download(request, download_type, month, year):
+def download_analysis_report(request, month, year):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
-    # put the ip address or dns of your apic-em controller in this url
-    url = ''
-    if download_type == 'analysis_render' or download_type == 'analysis_excel':
-        url = 'http://'+ALLOWED_IP+':8000/staff/getAnalysis/'
-    elif download_type == 'expense':
-        url = 'http://'+ALLOWED_IP+':8000/staff/getExpense/'
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
+    url = 'http://'+ALLOWED_IP+':8000/staff/getAnalysis/'
     payload = {"month": int(month), "year": int(year), "shop_id": request.session['shop_id']}
     # Content type must be included in the header
     header = {"content-type": "application/json"}
 
     # Performs a POST on the specified url to get the response
     response = requests.post(url, data=json.dumps(payload), headers=header, verify=False)
+    pdf = render_to_pdf('analysis.html', response.json())
+    return HttpResponse(pdf, content_type='application/pdf')
 
-    # convert response to json format
-    r_json = response.json()
-    if download_type == 'analysis_render':
-        pdf = render_to_pdf('analysis.html', r_json)
-        return HttpResponse(pdf, content_type='application/pdf')
-    elif download_type == 'expense':
-        return gererate_all_expense_data_for_a_month_in_excel(month, year, r_json)
-    elif download_type == 'analysis_excel':
-        return gererate_all_customer_data_for_a_month_in_excel(month, year, r_json)
+
+@login_required(login_url="/")
+def download_expense_data(request, month, year):
+    if not atleast_one_shop_registered(request):
+        return redirect('/staff/shopreg/')
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
+    url = 'http://'+ALLOWED_IP+':8000/staff/getExpense/'
+    payload = {"month": int(month), "year": int(year), "shop_id": request.session['shop_id']}
+    # Content type must be included in the header
+    header = {"content-type": "application/json"}
+
+    # Performs a POST on the specified url to get the response
+    response = requests.post(url, data=json.dumps(payload), headers=header, verify=False)
+    return gererate_all_expense_data_for_a_month_in_excel(month, year, response.json())
+
+
+@login_required(login_url="/")
+def download_customer_data(request, month, year):
+    if not atleast_one_shop_registered(request):
+        return redirect('/staff/shopreg/')
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
+    url = 'http://'+ALLOWED_IP+':8000/staff/getAnalysis/'
+    payload = {"month": int(month), "year": int(year), "shop_id": request.session['shop_id']}
+    # Content type must be included in the header
+    header = {"content-type": "application/json"}
+
+    # Performs a POST on the specified url to get the response
+    response = requests.post(url, data=json.dumps(payload), headers=header, verify=False)
+    return gererate_all_customer_data_for_a_month_in_excel(month, year, response.json())
 
 
 def add_shop_id_to_user(request, reg_id, shop_id, isowner, page_list):
@@ -576,6 +618,8 @@ def get_logo_image_url(request):
 @login_required(login_url="/")
 def shopreg(request):
     if request.method == "POST":
+        if is_page_accessible(request) == False:
+            return redirect('/staff/aboutus/') 
         new_shop_id = get_new_shop_id(request)
         shopRegistration = ShopRegistration()
         shopRegistration.ShopID = new_shop_id
@@ -598,6 +642,8 @@ def shopreg(request):
 
 
 def edit_parlour(request, shop_id):
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
     if request.method == "POST":
         ShopRegistration.objects.filter(ShopID=shop_id).update(Desk_Contact_Number=request.POST.get('Desk_Contact_Number'),
         Shop_Name=request.POST.get('Shop_Name'), Shop_Address=request.POST.get('Shop_Address'), email=request.POST.get('email'))
@@ -631,6 +677,8 @@ def select_parlour(request, shop_id):
 def add_partner(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
     if request.method == "POST":
         entered_contact_number = request.POST.get('contact_number')
         list_of_shop_id = request.POST.getlist('shop_list[]')
@@ -644,6 +692,8 @@ def add_partner(request):
 
 
 def save_mem_client_appointment(request):
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
     membership = Membership.objects.values('Name', 'Contact_Number').filter(shopID=request.session['shop_id'], Contact_Number=request.POST.get('mem_contact_number')).first()
     Appointment(name=membership['Name'], contact_number=membership['Contact_Number'], date=request.POST.get('mem_date'), start_time=request.POST.get('mem_start_time'), end_time=request.POST.get('mem_end_time')).save()
     messages.success(request, 'Appointment Scheduled successfully', extra_tags='alert')
@@ -651,11 +701,8 @@ def save_mem_client_appointment(request):
 
 
 def save_non_mem_client_appointment(request):
-    print(request.POST.get('cust_name'))
-    print(request.POST.get('contact_number'))
-    print(request.POST.get('date'))
-    print(request.POST.get('start_time'))
-    print(request.POST.get('end_time'))
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
     Appointment(name=request.POST.get('cust_name'), contact_number=request.POST.get('contact_number'), date=request.POST.get('date'), start_time=request.POST.get('start_time'), end_time=request.POST.get('end_time')).save()
     messages.success(request, 'Appointment Scheduled successfully', extra_tags='alert')
     return redirect('/staff/appointment/')
@@ -664,6 +711,8 @@ def save_non_mem_client_appointment(request):
 def appointment(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
+    if is_page_accessible(request) == False:
+        return redirect('/staff/aboutus/') 
     events = Appointment.objects.values('name', 'contact_number', 'date', 'start_time', 'end_time')
     for event in events:
         event['day'] = event['date'].day

@@ -6,7 +6,6 @@ from staff.models import ShopRegistration
 from customer.models import ClientVisit, AllService
 from django.db.models import Sum, Count, Max
 
-
 # Import smtplib for the actual email sending function
 import smtplib
 
@@ -183,3 +182,10 @@ def email_format(message_body, sender, receiver, subject, Name):
     s.login(sender, 'hohrockx@123')
     s.send_message(msg)
     s.quit()
+
+
+def is_page_accessible(request):
+    if request.session['shop_list_access'][request.session['shop_id']]['isowner'] == False and  request.session['page_permissions_dict'][request.get_full_path()] not in request.session['shop_list_access'][request.session['shop_id']]['page_list']:
+        messages.success(request, request.session['messages']['page_block_error'], extra_tags='alert')
+        return False
+    return True
