@@ -156,7 +156,7 @@ def create_shop_access_for_newly_added_employee(request, access, phone, page_lis
 
 
 def create_employee(request):
-    if is_page_accessible(request) == False:
+    if is_page_accessible(request, "create_employee") == False:
         return redirect('/staff/aboutus/') 
     employee_id=get_new_employee_id(request)
     page_list = ",".join(request.POST.getlist('page_list[]'))
@@ -172,7 +172,7 @@ def create_employee(request):
 def employee(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
-    if is_page_accessible(request) == False:
+    if is_page_accessible(request, "employee") == False:
         return redirect('/staff/aboutus/') 
     return render(request, 'employee.html', {'employees': list(get_employees_record_for_display(request)), 
                                              'page_display_dict': page_display_dict(request),
@@ -213,7 +213,7 @@ def update_employee_access(request, employee):
 
 
 def update_employee(request, employee_id):
-    if is_page_accessible(request) == False:
+    if is_page_accessible(request, "update_employee") == False:
         return redirect('/staff/aboutus/') 
     employee = Employee.objects.values('EmployeeID', 'name', 'contact_number', 'sex', 'date_of_joining', 'position', 'DOB', 'temporary_address', 'permanent_address', 'access').filter(ShopID=request.session['shop_id'], EmployeeID=employee_id).first()
     if request.method == "POST":
@@ -238,7 +238,7 @@ def update_employee(request, employee_id):
 
 
 def delete_employee(request, employee_id):
-    if is_page_accessible(request) == False:
+    if is_page_accessible(request, "delete_employee") == False:
         return redirect('/staff/aboutus/') 
     employee = Employee.objects.values('access', 'contact_number').filter(EmployeeID=employee_id).first()
     if employee['access'] == "yes":
@@ -279,7 +279,7 @@ def get_new_expense_id(request):
 
 
 def update_expense(request, expense_id):
-    if is_page_accessible(request) == False:
+    if is_page_accessible(request, "update_expense") == False:
         return redirect('/staff/aboutus/') 
     if request.method == "POST":
         new_amount = int(request.POST.get('amount'))
@@ -304,7 +304,7 @@ def update_expense(request, expense_id):
                                                         
 
 def delete_expense(request, expense_id):
-    if is_page_accessible(request) == False:
+    if is_page_accessible(request, "delete_expense") == False:
         return redirect('/staff/aboutus/') 
     Expense.objects.filter(shopID=request.session['shop_id'], ExpenseID=expense_id).delete()
     messages.success(request, 'Deleted successfully', extra_tags='alert')
@@ -312,7 +312,7 @@ def delete_expense(request, expense_id):
 
 
 def add_expense(request):
-    if is_page_accessible(request) == False:
+    if is_page_accessible(request, "add_expense") == False:
         return redirect('/staff/aboutus/') 
     if request.POST.get('purpose') == 'Amount Received':
         expense.amount = int(request.POST.get('amount'))
@@ -328,7 +328,7 @@ def add_expense(request):
 def expense(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
-    if is_page_accessible(request) == False:
+    if is_page_accessible(request, "expense") == False:
         return redirect('/staff/aboutus/') 
     now = datetime.datetime.now()
     # put the ip address or dns of your apic-em controller in this url
@@ -350,7 +350,7 @@ def expense(request):
 def analysis(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
-    if is_page_accessible(request) == False:
+    if is_page_accessible(request, "analysis") == False:
         return redirect('/staff/aboutus/') 
     now = datetime.datetime.now()
 
@@ -544,7 +544,7 @@ def gererate_all_expense_data_for_a_month_in_excel(month, year, r_json):
 def download_analysis_report(request, month, year):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
-    if is_page_accessible(request) == False:
+    if is_page_accessible(request, "download_analysis_report") == False:
         return redirect('/staff/aboutus/') 
     url = 'http://'+ALLOWED_IP+':8000/staff/getAnalysis/'
     payload = {"month": int(month), "year": int(year), "shop_id": request.session['shop_id']}
@@ -561,7 +561,7 @@ def download_analysis_report(request, month, year):
 def download_expense_data(request, month, year):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
-    if is_page_accessible(request) == False:
+    if is_page_accessible(request, "download_expense_data") == False:
         return redirect('/staff/aboutus/') 
     url = 'http://'+ALLOWED_IP+':8000/staff/getExpense/'
     payload = {"month": int(month), "year": int(year), "shop_id": request.session['shop_id']}
@@ -577,7 +577,7 @@ def download_expense_data(request, month, year):
 def download_customer_data(request, month, year):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
-    if is_page_accessible(request) == False:
+    if is_page_accessible(request, "download_customer_data") == False:
         return redirect('/staff/aboutus/') 
     url = 'http://'+ALLOWED_IP+':8000/staff/getAnalysis/'
     payload = {"month": int(month), "year": int(year), "shop_id": request.session['shop_id']}
@@ -618,8 +618,6 @@ def get_logo_image_url(request):
 @login_required(login_url="/")
 def shopreg(request):
     if request.method == "POST":
-        if is_page_accessible(request) == False:
-            return redirect('/staff/aboutus/') 
         new_shop_id = get_new_shop_id(request)
         shopRegistration = ShopRegistration()
         shopRegistration.ShopID = new_shop_id
@@ -642,7 +640,7 @@ def shopreg(request):
 
 
 def edit_parlour(request, shop_id):
-    if is_page_accessible(request) == False:
+    if is_page_accessible(request, "edit_parlour") == False:
         return redirect('/staff/aboutus/') 
     if request.method == "POST":
         ShopRegistration.objects.filter(ShopID=shop_id).update(Desk_Contact_Number=request.POST.get('Desk_Contact_Number'),
@@ -677,7 +675,7 @@ def select_parlour(request, shop_id):
 def add_partner(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
-    if is_page_accessible(request) == False:
+    if is_page_accessible(request, "add_partner") == False:
         return redirect('/staff/aboutus/') 
     if request.method == "POST":
         entered_contact_number = request.POST.get('contact_number')
@@ -692,7 +690,7 @@ def add_partner(request):
 
 
 def save_mem_client_appointment(request):
-    if is_page_accessible(request) == False:
+    if is_page_accessible(request, "save_mem_client_appointment") == False:
         return redirect('/staff/aboutus/') 
     membership = Membership.objects.values('Name', 'Contact_Number').filter(shopID=request.session['shop_id'], Contact_Number=request.POST.get('mem_contact_number')).first()
     Appointment(name=membership['Name'], contact_number=membership['Contact_Number'], date=request.POST.get('mem_date'), start_time=request.POST.get('mem_start_time'), end_time=request.POST.get('mem_end_time')).save()
@@ -701,7 +699,7 @@ def save_mem_client_appointment(request):
 
 
 def save_non_mem_client_appointment(request):
-    if is_page_accessible(request) == False:
+    if is_page_accessible(request, "save_non_mem_client_appointment") == False:
         return redirect('/staff/aboutus/') 
     Appointment(name=request.POST.get('cust_name'), contact_number=request.POST.get('contact_number'), date=request.POST.get('date'), start_time=request.POST.get('start_time'), end_time=request.POST.get('end_time')).save()
     messages.success(request, 'Appointment Scheduled successfully', extra_tags='alert')
@@ -711,7 +709,7 @@ def save_non_mem_client_appointment(request):
 def appointment(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
-    if is_page_accessible(request) == False:
+    if is_page_accessible(request, "appointment") == False:
         return redirect('/staff/aboutus/') 
     events = Appointment.objects.values('name', 'contact_number', 'date', 'start_time', 'end_time')
     for event in events:

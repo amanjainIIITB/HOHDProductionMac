@@ -53,35 +53,25 @@ def get_shop_name(request):
     else:
         return {}
 
-def page_display_dict(request):
-    month_year_month_name = get_month_year_month_name_for_download(request)
-    download = []
-    for index in range(len(month_year_month_name['month_year_month_name']['month_index'])):
-        download.append(["Analysis Report", "/staff/download_analysis_report/"+str(month_year_month_name['month_year_month_name']['month_index'][index])+"/"+str(month_year_month_name['month_year_month_name']['year_list'][index])+"/", 14, 1])
-    
-    for index in range(len(month_year_month_name['month_year_month_name']['month_index'])):
-        download.append(["Expense Data", "/staff/download_expense_data/"+str(month_year_month_name['month_year_month_name']['month_index'][index])+"/"+str(month_year_month_name['month_year_month_name']['year_list'][index])+"/", 15, 1])
+def page_display_dict():
+    # Structure = ["Display Name", "Function Name", "Page_id", "Boolean value to decide if you want to display the name"] 
 
-    for index in range(len(month_year_month_name['month_year_month_name']['month_index'])):
-        download.append(["Customer Data", "/staff/download_customer_data/"+str(month_year_month_name['month_year_month_name']['month_index'][index])+"/"+str(month_year_month_name['month_year_month_name']['year_list'][index])+"/", 16, 1])
-    
-    page_dict = {
-        "Client Visit:" : [["View", "/client/details/", 1, 1], ["Create", "/client/save_mem_visit/", 2, 1], ["Create", "/client/save_non_mem_visit/", 2, 0], ["Edit", "/client/update_mem_client_visit/", 3, 1], ["Edit", "/client/update_non_mem_client_visit/", 3, 0], ["Delete", "/client/delete_client_visit/", 4, 1]],
-        "Client Membership:" : [["View", "/client/membership/", 5, 1], ["Create", "/client/create_membership/", 6, 1], ["Edit", "/client/update_membership/", 7, 1], ["Delete", "/client/delete_membership/", 8, 1]],
-        "Expense:" : [["View", "/staff/expense/", 9, 1], ["Create", "/staff/add_expense/", 10, 1], ["Edit", "/staff/update_expense/", 11, 1], ["Delete", "/staff/delete_expense/", 12, 1]],
-        "Download files" : download,
-        "Can Employee create Appoint for the Client?" : [["View", "/staff/appointment/", 17, 1], ["Create/Update", "/staff/save_mem_client_appointment/", 18, 1], ["Create/Update", "/staff/save_non_mem_client_appointment/", 18, 0]],
-        "Do you want your Employee to see the analytics of your Parlour?" : [["Analytics Details", "/staff/analysis/", 19, 1]],
-        "Do you want your Employee to Update the Parlour Details?" : [["Edit Parlour Details", "/staff/edit_parlour/", 20, 1]],
-        "Do you want to provide permission to add Partner for your Parlour?" : [["Add Partner", "/staff/add_partner/", 21, 1]],
-        "Employee" : [["View", "/staff/details/", 22, 1], ["Create", "/staff/create_employee/", 23, 1], ["Edit", "/staff/update_employee/", 24, 1], ["Delete", "/staff/delete_employee/", 25, 1]]
+    return {
+        "Client Visit:" : [["View", "details", 1, 1], ["Create", "save_mem_visit", 2, 1], ["Create", "save_non_mem_visit", 2, 0], ["Edit", "update_mem_client_visit", 3, 1], ["Edit", "update_non_mem_client_visit", 3, 0], ["Delete", "delete_client_visit", 4, 1]],
+        "Client Membership:" : [["View", "membership", 5, 1], ["Create", "create_membership", 6, 1], ["Edit", "update_membership", 7, 1], ["Delete", "delete_membership", 8, 1]],
+        "Expense:" : [["View", "expense", 9, 1], ["Create", "add_expense", 10, 1], ["Edit", "update_expense", 11, 1], ["Delete", "delete_expense", 12, 1]],
+        "Download files" : [["Analysis Report", "download_analysis_report", 13, 1], ["Expense Data", "download_expense_data", 14, 1], ["Customer Data", "download_customer_data", 15, 1]],
+        "Can Employee create Appoint for the Client?" : [["View", "appointment", 16, 1], ["Create/Update", "save_mem_client_appointment", 17, 1], ["Create/Update", "save_non_mem_client_appointment", 17, 0]],
+        "Do you want your Employee to see the analytics of your Parlour?" : [["", "analysis", 18, 1]],
+        "Do you want your Employee to Update the Parlour Details?" : [["Edit Parlour Details", "edit_parlour", 19, 1]],
+        "Do you want to provide permission to add Partner for your Parlour?" : [["Add Partner", "add_partner", 20, 1]],
+        "Employee" : [["View", "employee", 21, 1], ["Create", "create_employee", 22, 1], ["Edit", "update_employee", 23, 1], ["Delete", "delete_employee", 24, 1]]
     }
-    
-    return page_dict
 
-def get_page_permission_dict(request):
+
+def get_page_permission_dict():
     page_permissions_dict = {}
-    page_dict = page_display_dict(request)
+    page_dict = page_display_dict()
     for ques, permissions in page_dict.items():
         for page in permissions:
             print(page)
@@ -89,5 +79,5 @@ def get_page_permission_dict(request):
     print(page_permissions_dict)
     return page_permissions_dict
 
-def get_messages(request):
+def get_messages():
     return {'page_block_error': 'This Page has been blocked by the owner'}

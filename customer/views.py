@@ -32,7 +32,7 @@ def update_client_services(request, visitID):
 
 def update_non_mem_client_visit(request, visit_id):
     if request.method == "POST":
-        if is_page_accessible(request) == False:
+        if is_page_accessible(request, "update_non_mem_client_visit") == False:
             return redirect('/staff/aboutus/') 
         ClientVisit.objects.filter(visitID=visit_id, ShopID=request.session['shop_id']).update(date=request.POST.get('date'), services=update_client_services(request, visit_id), time=get_current_time(),
                        numberofclient=request.POST.get('numberofclient'), employee_id=request.POST.get('employee'), payment_mode=request.POST.get('payment_mode'), amount=request.POST.get('amount'))
@@ -52,7 +52,7 @@ def update_non_mem_client_visit(request, visit_id):
 
 def update_mem_client_visit(request, visit_id):
     if request.method == "POST":
-        if is_page_accessible(request) == False:
+        if is_page_accessible(request, "update_mem_client_visit") == False:
             return redirect('/staff/aboutus/') 
         ClientVisit.objects.filter(visitID=visit_id, ShopID=request.session['shop_id']).update(custID=request.POST.get('custID'), services=update_client_services(request, visit_id), date=request.POST.get('date'),
                        time=get_current_time(), employee_id=request.POST.get('EmployeeID'), payment_mode=request.POST.get('payment_mode'), amount=request.POST.get('amount'))
@@ -72,7 +72,7 @@ def update_mem_client_visit(request, visit_id):
 
 
 def delete_client_visit(request, visit_id):
-    if is_page_accessible(request) == False:
+    if is_page_accessible(request, "delete_client_visit") == False:
         return redirect('/staff/aboutus/') 
     ClientVisit.objects.filter(visitID=visit_id, ShopID=request.session['shop_id']).delete()
     Services.objects.filter(visitID=visit_id, shopID=request.session['shop_id']).delete()
@@ -94,7 +94,7 @@ def save_mem_visit(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
     else:
-        if is_page_accessible(request) == False:
+        if is_page_accessible(request, "save_mem_visit") == False:
             return redirect('/staff/aboutus/') 
         visitID=get_new_visit_id(request)
         membership = Membership.objects.values('custID').filter(shopID=request.session['shop_id'], Contact_Number=request.POST.get('Contact_Number')).first()
@@ -114,7 +114,7 @@ def save_non_mem_visit(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
     else:
-        if is_page_accessible(request) == False:
+        if is_page_accessible(request, "save_non_mem_visit") == False:
             return redirect('/staff/aboutus/') 
         paymentmode = request.POST.get('paymentmode')
         visitID=get_new_visit_id(request)
@@ -133,7 +133,7 @@ def save_non_mem_visit(request):
 def details(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
-    if is_page_accessible(request) == False:
+    if is_page_accessible(request, "details") == False:
         return redirect('/staff/aboutus/') 
     employees = Employee.objects.values('EmployeeID', 'name').filter(ShopID=request.session['shop_id'])
     return render(request, 'details.html', {"memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),
@@ -154,19 +154,22 @@ def get_all_membership():
 
 @login_required(login_url="/")
 def create_membership(request):
-    if is_page_accessible(request) == False:
+    if not atleast_one_shop_registered(request):
+        return redirect('/staff/shopreg/')
+    if is_page_accessible(request, "create_membership") == False:
         return redirect('/staff/aboutus/') 
     Membership(custID=request.POST.get('custid').upper(), shopID=request.session['shop_id'], Name=request.POST.get('name'), Sex=request.POST.get('sex'), Contact_Number=request.POST.get('contact_number'), DOB=request.POST.get('DOB')).save()
     messages.success(request, 'Added successfully', extra_tags='alert')
+    return redirect('/client/membership/')
 
 
 @login_required(login_url="/")
 def membership(request):
     if not atleast_one_shop_registered(request):
         return redirect('/staff/shopreg/')
-    if is_page_accessible(request) == False:
+    if is_page_accessible(request, "membership") == False:
         return redirect('/staff/aboutus/') 
-    return render(request, 'membership.html', {"memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id']))})
+    return redirect('/client/membership/')
 
 
 def update_client_visit_after_update_membership(current_client_id, changed_client_id, shop_id):
@@ -175,7 +178,7 @@ def update_client_visit_after_update_membership(current_client_id, changed_clien
 
 def update_membership(request, cust_id):
     if request.method == "POST":
-        if is_page_accessible(request) == False:
+        if is_page_accessible(request, "update_membership") == False:
             return redirect('/staff/aboutus/') 
         membership = Membership.objects.values('custID', 'Contact_Number', 'Sex', 'Name', 'DOB'). \
             filter(shopID=request.session['shop_id'], custID=cust_id)
@@ -199,7 +202,7 @@ def delete_all_visit_of_client(client_id, shop_id):
 
 
 def delete_membership(request, cust_id):
-    if is_page_accessible(request) == False:
+    if is_page_accessible(request, "delete_membership") == False:
         return redirect('/staff/aboutus/') 
     Membership.objects.filter(custID=cust_id, shopID=request.session['shop_id']).delete()
     delete_all_visit_of_client(cust_id, request.session['shop_id'])

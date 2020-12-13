@@ -66,21 +66,39 @@ def signup_view(request):
     return render(request, 'signup.html', {'user_form': user_form})
 
 
-def get_first_shop_id(request):
-    return Access.objects.values('shopID').filter(regID=request.session['regID']).first()['shopID']
+def get_first_shop_id(regID):
+    return Access.objects.values('shopID').filter(regID=regID).first()['shopID']
 
 
 def delete_session(request):
     del request.session['shop_id']
 
 
-def get_shop_list_access(request):
-    shop_list_access = Access.objects.values('shopID', 'isowner', 'page_list').filter(regID=request.session['regID'])
+def get_shop_list_access(regID):
+    shop_list_access = Access.objects.values('shopID', 'isowner', 'page_list').filter(regID=regID)
     print(list(shop_list_access))
     shop_list_access_json = {}
     for shop_list_access_object in shop_list_access:
         shop_list_access_json[shop_list_access_object['shopID']] = {'isowner': shop_list_access_object['isowner'], 'page_list': shop_list_access_object['page_list'].split(',')}
     return shop_list_access_json
+
+
+def set_login_session(request, phone):
+    import pdb
+    pdb.set_trace()
+    set_session(request, "regID", OwnerRegistration.objects.values('ownerID').filter(phone=phone).first()['ownerID'])
+    if 'next' in request.POST:
+        return redirect(request.POST.get('next'))
+    if atleast_one_shop_registered(request):
+        print('Yes shop is registered')
+        shop_id = get_first_shop_id(request.session['regID'])
+        set_session(request, "shop_id", shop_id)
+        set_session(request, "shop_list_access", get_shop_list_access(request.session['regID']))
+        set_session(request, "page_permissions_dict", get_page_permission_dict(request))
+        set_session(request, "messages", get_messages(request))
+    else:
+        set_session(request, "shop_id",None)
+        set_session(request, "shop_list_access", '')
 
 
 def login_view(request):
@@ -90,19 +108,7 @@ def login_view(request):
             user = authenticate(phone = request.POST['phone'], password = request.POST['password'])
             if user is not None:
                 login(request, user)
-                set_session(request, "regID", OwnerRegistration.objects.values('ownerID').filter(phone=request.user.phone).first()['ownerID'])
-                if 'next' in request.POST:
-                    return redirect(request.POST.get('next'))
-                if atleast_one_shop_registered(request):
-                    print('Yes shop is registered')
-                    shop_id = get_first_shop_id(request)
-                    set_session(request, "shop_id", shop_id)
-                    set_session(request, "shop_list_access", get_shop_list_access(request))
-                    set_session(request, "page_permissions_dict", get_page_permission_dict(request))
-                    set_session(request, "messages", get_messages(request))
-                else:
-                    set_session(request, "shop_id",None)
-                    set_session(request, "shop_list_access", '')
+                set_login_session(request, request.user.phone)
                 return redirect('/staff/aboutus/')
             else:
                 messages.success(request, 'Either Phone Number or Password is incorrect', extra_tags='alert')

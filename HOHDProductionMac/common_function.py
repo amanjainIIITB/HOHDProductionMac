@@ -184,8 +184,8 @@ def email_format(message_body, sender, receiver, subject, Name):
     s.quit()
 
 
-def is_page_accessible(request):
-    if request.session['shop_list_access'][request.session['shop_id']]['isowner'] == False and  request.session['page_permissions_dict'][request.get_full_path()] not in request.session['shop_list_access'][request.session['shop_id']]['page_list']:
+def is_page_accessible(request, function_name):
+    if request.session['shop_list_access'][request.session['shop_id']]['isowner'] == False and  request.session['page_permissions_dict'][function_name] not in request.session['shop_list_access'][request.session['shop_id']]['page_list']:
         messages.success(request, request.session['messages']['page_block_error'], extra_tags='alert')
         return False
     return True
