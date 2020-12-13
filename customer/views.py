@@ -5,10 +5,32 @@ from .models import *
 from staff.models import Employee, ShopRegistration
 from staff.views import analysis
 from customer.models import Services
-from HOHDProductionMac.common_function import atleast_one_shop_registered, get_current_time, get_all_membership_based_on_shop_id, convert_date_yyyy_mm_dd_to_dd_mm_yyyy, get_services, is_page_accessible
+from HOHDProductionMac.common_function import atleast_one_shop_registered, get_current_time, get_all_membership_based_on_shop_id, convert_date_yyyy_mm_dd_to_dd_mm_yyyy, get_services, is_page_accessible, get_all_services
 import datetime
+from staff.common_functions import get_bardate
 # Create your views here.
 
+
+def get_all_client_data_of_the_month(shop_id, month, year):
+    all_services_dict = get_all_services()
+    client_visit_objects =  ClientVisit.objects.values('custID', 'isMember', 'services', 'visitID', 'date', 'payment_mode', 'time', 'employee_id', 'amount', 'numberofclient').filter(ShopID=shop_id, date__contains=get_bardate(month, year)).order_by('date')
+    for client_visit_object in client_visit_objects:
+        # client_visit_object['date'] = convert_date_yyyy_mm_dd_to_dd_mm_yyyy(str(client_visit_object['date']))
+        emp_queryset = Employee.objects.values('name').filter(ShopID=shop_id, EmployeeID=client_visit_object['employee_id'])
+        if len(emp_queryset) != 0:
+            client_visit_object['employee'] = emp_queryset.first()['name']
+        if client_visit_object['services'] is not None:
+            service_ids = client_visit_object['services'].split(",")
+            service_names = []
+            client_visit_object['services'] = ''
+            print('Service ids', service_ids)
+            for service_id in service_ids:
+                if service_id != '' and service_id in all_services_dict:
+                    service_names.append(all_services_dict[service_id])
+            client_visit_object['services'] = ",".join(service_names)
+    return client_visit_objects
+
+    
 def save_client_services(request, visitID):
     service_ids = request.POST.getlist('services[]')
     client_service_ids = ''
@@ -135,9 +157,13 @@ def details(request):
         return redirect('/staff/shopreg/')
     if is_page_accessible(request, "details") == False:
         return redirect('/staff/aboutus/') 
+    now = datetime.datetime.now()
+    month = now.month
+    year = now.year
     employees = Employee.objects.values('EmployeeID', 'name').filter(ShopID=request.session['shop_id'])
     return render(request, 'details.html', {"memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),
                                             "employees": employees,
+                                            'client_data_based_on_shop_id': get_all_client_data_of_the_month(request.session['shop_id'], month, year),
                                             "served_services": set(),
                                             "services": get_services()})
 
@@ -208,3 +234,4 @@ def delete_membership(request, cust_id):
     delete_all_visit_of_client(cust_id, request.session['shop_id'])
     messages.success(request, 'Deleted successfully', extra_tags='alert')
     return redirect('/client/membership/')
+

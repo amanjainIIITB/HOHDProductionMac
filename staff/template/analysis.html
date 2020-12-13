@@ -257,70 +257,6 @@
                     <!-- /.card -->
                 </div>
             </div>
-            <!-- /.row -->
-            <div class="row">
-                <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                    <h3 class="card-title">Customer wise Data</h3>
-                    </div>
-                    <!-- /.card-header -->
-                    <div class="card-body">
-                    <table id="example1" class="table table-bordered table-hover">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Amount</th>
-                                <th>Number of Client</th>
-                                <th>Services</th>
-                                <th>Client ID</th>
-                                <th>Time</th>
-                                <th>Employee</th>
-                                <th>payment Mode</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for customer_obj in client_data_based_on_shop_id %}
-                                <tr>
-                                    <td>{{customer_obj.date}}</td>
-                                    <td>{{customer_obj.amount}}</td>
-                                    <td>{{customer_obj.numberofclient}}</td>
-                                    <td>{{customer_obj.services}}</td>
-                                    <td>{{customer_obj.custID}}</td>
-                                    <td>{{customer_obj.time}}</td>
-                                    <td>{{customer_obj.employee}}</td>
-                                    <td>{{customer_obj.payment_mode}}</td>
-                                    {% if customer_obj.isMember == True %}
-                                        <td><a href="/client/update_mem_client_visit/{{customer_obj.visitID}}/">Edit</a> / <button onclick="popup_confirmation('Do you want to Delete Client Visit Entry?', '/client/delete_client_visit/{{customer_obj.visitID}}/')">Delete</button></td>
-                                    {% else %}
-                                        <td><a href="/client/update_non_mem_client_visit/{{customer_obj.visitID}}/">Edit</a> / <button onclick="popup_confirmation('Do you want to Delete Client Visit Entry?', '/client/delete_client_visit/{{customer_obj.visitID}}/')">Delete</button></td>
-                                    {% endif %}
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th>Date</th>
-                                <th>Amount</th>
-                                <th>Number of Client</th>
-                                <th>Services</th>
-                                <th>Client ID</th>
-                                <th>Time</th>
-                                <th>Employee</th>
-                                <th>payment Mode</th>
-                                <th>Action</th>
-                            </tr>
-                        </tfoot>
-                    </table>
-                    </div>
-                    <!-- /.card-body -->
-                </div>
-                <!-- /.card -->
-                </div>
-                <!-- /.col -->
-            </div>
-            <!-- /.row -->
             <div class="row">
                 <div class="col-12">
                 <div class="card">
@@ -817,7 +753,9 @@
         },
         series: {
             bars: {
-            show: true, barWidth: 0.5, align: 'center',
+                show: true, 
+                barWidth: 0.5, 
+                align: 'center',
             },
         },
         colors: ['#3c8dbc'],

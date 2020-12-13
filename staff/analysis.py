@@ -160,26 +160,6 @@ def get_day_wise_cash_of_the_month(shop_id, month, year):
         Amount=Sum('amount'), numberOfCustomer=Sum('numberofclient')).order_by('date')
 
 
-def get_all_client_data_of_the_month(shop_id, month, year):
-    all_services_dict = get_all_services()
-    client_visit_objects =  ClientVisit.objects.values('custID', 'isMember', 'services', 'visitID', 'date', 'payment_mode', 'time', 'employee_id', 'amount', 'numberofclient').filter(ShopID=shop_id, date__contains=get_bardate(month, year)).order_by('date')
-    for client_visit_object in client_visit_objects:
-        # client_visit_object['date'] = convert_date_yyyy_mm_dd_to_dd_mm_yyyy(str(client_visit_object['date']))
-        emp_queryset = Employee.objects.values('name').filter(ShopID=shop_id, EmployeeID=client_visit_object['employee_id'])
-        if len(emp_queryset) != 0:
-            client_visit_object['employee'] = emp_queryset.first()['name']
-        if client_visit_object['services'] is not None:
-            service_ids = client_visit_object['services'].split(",")
-            service_names = []
-            client_visit_object['services'] = ''
-            print('Service ids', service_ids)
-            for service_id in service_ids:
-                if service_id != '' and service_id in all_services_dict:
-                    service_names.append(all_services_dict[service_id])
-            client_visit_object['services'] = ",".join(service_names)
-    return client_visit_objects
-
-
 class AnalysisReport(APIView):
     def get(self):
         pass
@@ -197,7 +177,6 @@ class AnalysisReport(APIView):
              'dayWiseOnlineOfTheMonth': get_day_wise_online_of_the_month(request.data['shop_id'], month, year),
              'dayWiseCashOfTheMonth': get_day_wise_cash_of_the_month(request.data['shop_id'], month, year),
              'listOfDates': prepare_list_of_dates(year, month),
-             'client_data_based_on_shop_id': get_all_client_data_of_the_month(request.data['shop_id'], month, year),
              'total_cash_amount_Of_The_Month': get_total_cash_amount_of_the_month(request.data['shop_id'], month, year),
              'total_online_amount_Of_The_Month': get_total_online_amount_of_the_month(request.data['shop_id'], month, year),
              'number_of_cash_customer_Of_The_Month': get_total_cash_customer_of_the_month(request.data['shop_id'], month, year),

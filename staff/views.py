@@ -234,7 +234,7 @@ def update_employee(request, employee_id):
         return redirect('/staff/employee/')
     else:
         employee['page_permissions'] = get_page_permissions(request, employee['contact_number'])
-    return render(request, 'update_employee.html', {'employee': employee, 'page_display_dict': page_display_dict(request),})
+    return render(request, 'update_employee.html', {'employee': employee, 'page_display_dict': page_display_dict(),})
 
 
 def delete_employee(request, employee_id):
