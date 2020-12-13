@@ -84,8 +84,6 @@ def get_shop_list_access(regID):
 
 
 def set_login_session(request, phone):
-    import pdb
-    pdb.set_trace()
     set_session(request, "regID", OwnerRegistration.objects.values('ownerID').filter(phone=phone).first()['ownerID'])
     if 'next' in request.POST:
         return redirect(request.POST.get('next'))
@@ -94,8 +92,8 @@ def set_login_session(request, phone):
         shop_id = get_first_shop_id(request.session['regID'])
         set_session(request, "shop_id", shop_id)
         set_session(request, "shop_list_access", get_shop_list_access(request.session['regID']))
-        set_session(request, "page_permissions_dict", get_page_permission_dict(request))
-        set_session(request, "messages", get_messages(request))
+        set_session(request, "page_permissions_dict", get_page_permission_dict())
+        set_session(request, "messages", get_messages())
     else:
         set_session(request, "shop_id",None)
         set_session(request, "shop_list_access", '')

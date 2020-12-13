@@ -169,7 +169,7 @@ def membership(request):
         return redirect('/staff/shopreg/')
     if is_page_accessible(request, "membership") == False:
         return redirect('/staff/aboutus/') 
-    return redirect('/client/membership/')
+    return render(request, 'membership.html', {"memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id']))})
 
 
 def update_client_visit_after_update_membership(current_client_id, changed_client_id, shop_id):

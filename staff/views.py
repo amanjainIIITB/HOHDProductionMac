@@ -175,7 +175,7 @@ def employee(request):
     if is_page_accessible(request, "employee") == False:
         return redirect('/staff/aboutus/') 
     return render(request, 'employee.html', {'employees': list(get_employees_record_for_display(request)), 
-                                             'page_display_dict': page_display_dict(request),
+                                             'page_display_dict': page_display_dict(),
                                              'page_permissions': list()})
 
 
