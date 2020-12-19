@@ -15,10 +15,10 @@ from weasyprint import HTML
 from .models import Expense, ShopRegistration, Employee, Appointment
 from customer.models import Membership
 from useraccount.models import OwnerRegistration, Access, UserManager, User
-from useraccount.views import create_owner_registration
+from useraccount.views import create_owner_registration, get_first_shop_id, get_first_shop_name
 from HOHDProductionMac.common_function import atleast_one_shop_registered, set_session, get_list_of_login_user_shops, get_current_date, get_all_membership_based_on_shop_id, \
-    convert_date_yyyy_mm_dd_to_dd_mm_yyyy, email_format, is_month_and_year_equal, get_first_shop_name, get_regID, is_page_accessible
-from HOHDProductionMac.context_processor import get_login_user_shop_details, page_display_dict
+    convert_date_yyyy_mm_dd_to_dd_mm_yyyy, email_format, is_month_and_year_equal, get_regID, is_page_accessible, get_common_attributes
+from HOHDProductionMac.common_function import get_login_user_shop_details, page_display_dict, get_page_permission_dict, get_shop_list_access
 from fpdf import FPDF
 from django.core.files.storage import FileSystemStorage
 import cv2
@@ -40,7 +40,11 @@ def contact_us(request):
         message_body = message_body + 'In the meantime, you can reply to this email if you have more details to add, or you can call our support team, 9530101150.'
         email_format(message_body, 'houseofhandsomes@gmail.com', request.POST.get('email'), 'Customer Support', request.POST.get('Name'))
         messages.success(request, 'Submitted successfully', extra_tags='alert')
-    return render(request, 'contact_us.html', { "contact_us_image_url": contact_us_image_url})    
+    attributes_json = {
+        "contact_us_image_url": contact_us_image_url
+    }
+    get_common_attributes(request, attributes_json)
+    return render(request, 'contact_us.html', attributes_json)    
 
 
 def get_new_employee_id(request):
@@ -174,9 +178,13 @@ def employee(request):
         return redirect('/staff/shopreg/')
     if is_page_accessible(request, "employee") == False:
         return redirect('/staff/aboutus/') 
-    return render(request, 'employee.html', {'employees': list(get_employees_record_for_display(request)), 
-                                             'page_display_dict': page_display_dict(),
-                                             'page_permissions': list()})
+    attributes_json = {
+        'employees': list(get_employees_record_for_display(request)), 
+        'page_display_dict': page_display_dict(),
+        'page_permissions': list()
+    }
+    get_common_attributes(request, attributes_json)
+    return render(request, 'employee.html', attributes_json)
 
 
 def update_employee_access_with_different_phone_number(request, access, phone, page_list):
@@ -234,7 +242,12 @@ def update_employee(request, employee_id):
         return redirect('/staff/employee/')
     else:
         employee['page_permissions'] = get_page_permissions(request, employee['contact_number'])
-    return render(request, 'update_employee.html', {'employee': employee, 'page_display_dict': page_display_dict(),})
+    attributes_json = {
+        'employee': employee, 
+        'page_display_dict': page_display_dict()
+    }
+    get_common_attributes(request, attributes_json)
+    return render(request, 'update_employee.html', attributes_json)
 
 
 def delete_employee(request, employee_id):
@@ -295,12 +308,16 @@ def update_expense(request, expense_id):
             filter(shopID=request.session['shop_id'], ExpenseID=expense_id).last()
         if expense['purpose'] == 'Amount Given':
             expense['amount'] = int(expense['amount']) * -1
-        return render(request, 'update_expense.html', { 'ExpenseID': expense['ExpenseID'],
-                                                        'date': expense['date'],
-                                                        'purpose': expense['purpose'],
-                                                        'paymentmode': expense['paymentmode'],
-                                                        'comment': expense['comment'],
-                                                        'amount': expense['amount']})
+        attributes_json = {
+            'ExpenseID': expense['ExpenseID'],
+            'date': expense['date'],
+            'purpose': expense['purpose'],
+            'paymentmode': expense['paymentmode'],
+            'comment': expense['comment'],
+            'amount': expense['amount']
+        }
+        get_common_attributes(request, attributes_json)
+        return render(request, 'update_expense.html', attributes_json)
                                                         
 
 def delete_expense(request, expense_id):
@@ -343,6 +360,7 @@ def expense(request):
     r_json = response.json()
     r_json['month'] = now.month
     r_json['year'] = now.year
+    get_common_attributes(request, r_json)
     return render(request, 'expense.html', r_json)
 
     
@@ -368,6 +386,7 @@ def analysis(request):
     r_json = response.json()
     r_json['month'] = now.month
     r_json['year'] = now.year
+    get_common_attributes(request, r_json)
     return render(request, 'analysis.html', r_json)
 
 
@@ -395,8 +414,9 @@ def total_numberofcustomer_of_the_day(date, datewisedata):
 
 @login_required(login_url="/")
 def aboutus(request):
-    return render(request, 'aboutus.html',
-                  {'shop_name': get_first_shop_name(request)})
+    attributes_json = {}
+    get_common_attributes(request, attributes_json)
+    return render(request, 'aboutus.html', attributes_json)
 
 
 def gererate_all_customer_data_for_a_month_in_excel(month, year, r_json):
@@ -634,9 +654,14 @@ def shopreg(request):
         if len(get_list_of_login_user_shops(request)) == 1:
             # check if it is first parlour to be registered then set it as the default parlour
             set_session(request, "shop_id", str(new_shop_id))
+            set_session(request, "shop_name", str(shopRegistration.Shop_Name))
+            set_session(request, "shop_list_access", get_shop_list_access(request.session['regID']))
+            set_session(request, "page_permissions_dict", get_page_permission_dict())
         messages.success(request, 'Added successfully', extra_tags='alert')
     print(get_logo_image_url(request))
-    return render(request, 'shop_registration.html', {'shop_name': get_first_shop_name(request)})
+    attributes_json = {}
+    get_common_attributes(request, attributes_json)
+    return render(request, 'shop_registration.html', attributes_json)
 
 
 def edit_parlour(request, shop_id):
@@ -651,9 +676,17 @@ def edit_parlour(request, shop_id):
             handle_uploaded_file(request, request.FILES.get('logo'), logo_path, request.session['shop_id'], request.session['shop_id'])
         messages.success(request, 'Updated successfully', extra_tags='alert')
     shop = ShopRegistration.objects.values('ShopID', 'Desk_Contact_Number', 'Shop_Name', 'Shop_Address', 'email').filter(ShopID=shop_id).first()
-    set_session(request, "shop_id", shop_id)
-    return render(request, 'update_shop.html', {"shop": shop,
-                                                'logo_url': get_logo_image_url(request)})
+    set_session(request, "shop_id", get_first_shop_id(request.session['regID']))
+    set_session(request, "shop_name", get_first_shop_name(request))
+    set_session(request, "shop_details", get_login_user_shop_details(request))
+    set_session(request, "shop_list_access", get_shop_list_access(request.session['regID']))
+    #Need to set shop name, shop_details, access
+    attributes_json = {
+        "shop": shop,
+        'logo_url': get_logo_image_url(request)
+    }
+    get_common_attributes(request, attributes_json)
+    return render(request, 'update_shop.html', attributes_json)
 
 
 def get_all_owners(request):
@@ -685,8 +718,12 @@ def add_partner(request):
         else:
             add_shop_id_in_entered_user(request, entered_contact_number, list_of_shop_id)
             messages.success(request, 'Selected Parlour Added successfully', extra_tags='alert')
-    return render(request, 'add_partner.html', {"shop_details": list(get_login_user_shop_details(request)["shop_details"]),
-                                                "list_users": list(get_all_owners(request))})
+    attributes_json = {
+        "shop_details": list(get_login_user_shop_details(request)),
+        "list_users": list(get_all_owners(request))
+    }
+    get_common_attributes(request, attributes_json)
+    return render(request, 'add_partner.html', attributes_json)
 
 
 def save_mem_client_appointment(request):
@@ -723,5 +760,9 @@ def appointment(request):
         event['end_minute'] = event['end_time'].minute
         event['start_time'] = str(event['start_time'])
         event['end_time'] = str(event['end_time'])
-    return render(request, 'calendar.html', {'events': list(events), 
-                                             "memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id']))})
+    attributes_json = {
+        'events': list(events), 
+        "memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id']))
+    }
+    get_common_attributes(request, attributes_json)
+    return render(request, 'calendar.html', attributes_json)

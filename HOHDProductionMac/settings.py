@@ -27,6 +27,8 @@ SECRET_KEY = 'lv#6ee+*tfh2kv&jscy9pr7%kh5opa(u(3qhfdz89k)mf6_lzs'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+ADMIN_PHONE_NUMBER = '0246813579'
+
 ALLOWED_IP = 'localhost'
 # ALLOWED_IP = '*'
 ALLOWED_HOSTS = ['*']
@@ -80,10 +82,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'HOHDProductionMac.context_processor.get_month_year_month_name_for_download',
-                'HOHDProductionMac.context_processor.get_login_user_shop_details',
-                'HOHDProductionMac.context_processor.get_shop_name',
-                'HOHDProductionMac.context_processor.get_login_username',
             ],
         },
     },

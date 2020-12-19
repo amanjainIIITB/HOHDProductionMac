@@ -5,7 +5,7 @@ from .models import *
 from staff.models import Employee, ShopRegistration
 from staff.views import analysis
 from customer.models import Services
-from HOHDProductionMac.common_function import atleast_one_shop_registered, get_current_time, get_all_membership_based_on_shop_id, convert_date_yyyy_mm_dd_to_dd_mm_yyyy, get_services, is_page_accessible, get_all_services
+from HOHDProductionMac.common_function import atleast_one_shop_registered, get_current_time, get_all_membership_based_on_shop_id, convert_date_yyyy_mm_dd_to_dd_mm_yyyy, get_services, is_page_accessible, get_all_services, get_common_attributes
 import datetime
 from staff.common_functions import get_bardate
 # Create your views here.
@@ -65,10 +65,14 @@ def update_non_mem_client_visit(request, visit_id):
     served_services = set()
     if client_data['services'] is not None:
         served_services = set(client_data['services'].split(","))
-    return render(request, 'update_non_mem_client_visit.html', {'client_data': client_data, 
-                                                                "served_services": served_services,
-                                                                "services": get_services(),
-                                                                "employees": Employee.objects.values('EmployeeID', 'name').filter(ShopID=request.session['shop_id'])})
+    attributes_json = {
+        'client_data': client_data, 
+        "served_services": served_services,
+        "services": get_services(),
+        "employees": Employee.objects.values('EmployeeID', 'name').filter(ShopID=request.session['shop_id'])
+    }
+    get_common_attributes(request, attributes_json)
+    return render(request, 'update_non_mem_client_visit.html', attributes_json)
 
 
 
@@ -85,11 +89,15 @@ def update_mem_client_visit(request, visit_id):
     served_services = set()
     if client_data['services'] is not None:
         served_services = set(client_data['services'].split(","))
-    return render(request, 'update_mem_client_visit.html', {'client_data': client_data,
-                                                            "employees": Employee.objects.values('EmployeeID', 'name').filter(ShopID=request.session['shop_id']),
-                                                            "memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),
-                                                            "served_services": served_services,
-                                                            "services": get_services()})
+    attributes_json = {
+        'client_data': client_data,
+        "employees": Employee.objects.values('EmployeeID', 'name').filter(ShopID=request.session['shop_id']),
+        "memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),
+        "served_services": served_services,
+        "services": get_services()
+    }
+    get_common_attributes(request, attributes_json)
+    return render(request, 'update_mem_client_visit.html', attributes_json)
 
 
 
@@ -161,11 +169,14 @@ def details(request):
     month = now.month
     year = now.year
     employees = Employee.objects.values('EmployeeID', 'name').filter(ShopID=request.session['shop_id'])
-    return render(request, 'details.html', {"memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),
-                                            "employees": employees,
-                                            'client_data_based_on_shop_id': get_all_client_data_of_the_month(request.session['shop_id'], month, year),
-                                            "served_services": set(),
-                                            "services": get_services()})
+    attributes_json = {"memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id'])),
+        "employees": employees,
+        'client_data_based_on_shop_id': get_all_client_data_of_the_month(request.session['shop_id'], month, year),
+        "served_services": set(),
+        "services": get_services()
+    }
+    get_common_attributes(request, attributes_json)
+    return render(request, 'details.html', attributes_json)
 
 
 def get_all_membership():
@@ -195,7 +206,11 @@ def membership(request):
         return redirect('/staff/shopreg/')
     if is_page_accessible(request, "membership") == False:
         return redirect('/staff/aboutus/') 
-    return render(request, 'membership.html', {"memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id']))})
+    attributes_json = {
+        "memberships": list(get_all_membership_based_on_shop_id(request, request.session['shop_id']))
+    }
+    get_common_attributes(request, attributes_json)
+    return render(request, 'membership.html', attributes_json)
 
 
 def update_client_visit_after_update_membership(current_client_id, changed_client_id, shop_id):
@@ -216,12 +231,15 @@ def update_membership(request, cust_id):
     else:
         membership = Membership.objects.values('custID', 'Contact_Number', 'Sex', 'Name', 'DOB'). \
             filter(shopID=request.session['shop_id'], custID=cust_id).last()
-        return render(request, 'update_membership.html', { 'custID': membership['custID'],
-                                                           'Contact_Number': membership['Contact_Number'],
-                                                           'Sex': membership['Sex'],
-                                                           'Name': membership['Name'],
-                                                           'DOB': membership['DOB'],
-                                                           'memberships': list(get_all_membership_based_on_shop_id(request, request.session['shop_id']))})
+        attributes_json = { 'custID': membership['custID'],
+            'Contact_Number': membership['Contact_Number'],
+            'Sex': membership['Sex'],
+            'Name': membership['Name'],
+            'DOB': membership['DOB'],
+            'memberships': list(get_all_membership_based_on_shop_id(request, request.session['shop_id']))
+        }
+        get_common_attributes(request, attributes_json)
+        return render(request, 'update_membership.html', attributes_json)
 
 def delete_all_visit_of_client(client_id, shop_id):
     ClientVisit.objects.filter(custID=client_id, ShopID=shop_id).update(isMember=False, custID='None')

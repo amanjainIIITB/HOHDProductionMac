@@ -5,7 +5,7 @@ from customer.views import membership, create_membership, update_membership, del
 import json
 from useraccount.models import OwnerRegistration, Access
 from useraccount.views import signup_view, login_view, logout_view, set_login_session, get_shop_list_access, get_first_shop_id
-from HOHDProductionMac.context_processor import get_page_permission_dict, get_messages
+from useraccount.views import get_page_permission_dict, get_messages
 from django.contrib.auth import get_user_model
 
 

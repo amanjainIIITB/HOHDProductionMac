@@ -5,6 +5,7 @@ from useraccount.models import OwnerRegistration, Access
 from staff.models import ShopRegistration
 from customer.models import ClientVisit, AllService
 from django.db.models import Sum, Count, Max
+from HOHDProductionMac.settings import ADMIN_PHONE_NUMBER
 
 # Import smtplib for the actual email sending function
 import smtplib
@@ -14,13 +15,6 @@ from email.message import EmailMessage
 
 def get_regID(request, phone_number):
     return OwnerRegistration.objects.values('ownerID').filter(phone=phone_number).first()['ownerID']
-
-
-def get_first_shop_name(request):
-    if request.session['shop_id'] == None:
-        return "Shop does Not Exist"
-    else:
-        return ShopRegistration.objects.values('Shop_Name').filter(ShopID=request.session['shop_id']).first()['Shop_Name']
 
 
 def get_all_services():
@@ -189,3 +183,60 @@ def is_page_accessible(request, function_name):
         messages.success(request, request.session['messages']['page_block_error'], extra_tags='alert')
         return False
     return True
+
+
+def get_login_user_shop_details(request):
+    if str(request.user) != 'AnonymousUser' and str(request.user) != ADMIN_PHONE_NUMBER:
+        shop_ids = get_list_of_login_user_shops(request)
+        list_shop_details = []
+        for shopid in shop_ids:
+            shop_details = ShopRegistration.objects.values('ShopID', 'Shop_Name', 'Shop_Address').filter(
+                ShopID=shopid).last()
+            list_shop_details.append(shop_details)
+        return list_shop_details
+    else:
+        return list()
+
+
+def page_display_dict():
+    # Structure = ["Display Name", "Function Name", "Page_id", "Boolean value to decide if you want to display the name"] 
+
+    return {
+        "Client Visit:" : [["View", "details", 1, 1], ["Create", "save_mem_visit", 2, 1], ["Create", "save_non_mem_visit", 2, 0], ["Edit", "update_mem_client_visit", 3, 1], ["Edit", "update_non_mem_client_visit", 3, 0], ["Delete", "delete_client_visit", 4, 1]],
+        "Client Membership:" : [["View", "membership", 5, 1], ["Create", "create_membership", 6, 1], ["Edit", "update_membership", 7, 1], ["Delete", "delete_membership", 8, 1]],
+        "Expense:" : [["View", "expense", 9, 1], ["Create", "add_expense", 10, 1], ["Edit", "update_expense", 11, 1], ["Delete", "delete_expense", 12, 1]],
+        "Download files" : [["Analysis Report", "download_analysis_report", 13, 1], ["Expense Data", "download_expense_data", 14, 1], ["Customer Data", "download_customer_data", 15, 1]],
+        "Can Employee create Appoint for the Client?" : [["View", "appointment", 16, 1], ["Create/Update", "save_mem_client_appointment", 17, 1], ["Create/Update", "save_non_mem_client_appointment", 17, 0]],
+        "Do you want your Employee to see the analytics of your Parlour?" : [["YES", "analysis", 18, 1]],
+        "Do you want your Employee to Update the Parlour Details?" : [["Edit Parlour Details", "edit_parlour", 19, 1]],
+        "Do you want to provide permission to add Partner for your Parlour?" : [["Add Partner", "add_partner", 20, 1]],
+        "Employee" : [["View", "employee", 21, 1], ["Create", "create_employee", 22, 1], ["Edit", "update_employee", 23, 1], ["Delete", "delete_employee", 24, 1]]
+    }
+
+
+def get_page_permission_dict():
+    page_permissions_dict = {}
+    page_dict = page_display_dict()
+    for ques, permissions in page_dict.items():
+        for page in permissions:
+            print(page)
+            page_permissions_dict[page[1]] = str(page[2])
+    print(page_permissions_dict)
+    return page_permissions_dict
+
+
+def get_shop_list_access(regID):
+    shop_list_access = Access.objects.values('shopID', 'isowner', 'page_list').filter(regID=regID)
+    print(list(shop_list_access))
+    shop_list_access_json = {}
+    for shop_list_access_object in shop_list_access:
+        shop_list_access_json[shop_list_access_object['shopID']] = {'isowner': shop_list_access_object['isowner'], 'page_list': shop_list_access_object['page_list'].split(',')}
+    return shop_list_access_json
+
+
+def get_common_attributes(request, attributes_json):
+    attributes_json["login_username"] = request.session["login_username"]
+    attributes_json["shop_name"] = request.session["shop_name"]
+    attributes_json["shop_details"] = request.session["shop_details"]
+    attributes_json["shop_list_access"] = request.session["shop_list_access"]
+    attributes_json["month_year_month_name"] = request.session["month_year_month_name"]
