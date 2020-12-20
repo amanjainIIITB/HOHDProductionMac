@@ -18,8 +18,6 @@ def expense_of_the_month(shop_id, month, year):
     # for expense_obj in expense:
         # if expense_obj['date'] is not None:
         #     expense_obj['date'] = convert_date_yyyy_mm_dd_to_dd_mm_yyyy(str(expense_obj['date']))
-    # print('I am in expense')
-    # print(expense)
     return expense
 
 
@@ -31,8 +29,6 @@ def profit_of_the_month(date, shop_id, month, year, total_online_amount_of_the_m
                                      date__contains=str(year) + "-" + str(month)).order_by('date')
     remaining_cash = total_cash_amount_of_the_month
     remaining_online = total_online_amount_of_the_month
-    print('In the profit')
-    print(expense)
     for expenseobj in expense:
         if expenseobj['paymentmode'] == 'Cash':
             remaining_cash = remaining_cash + expenseobj['amount']

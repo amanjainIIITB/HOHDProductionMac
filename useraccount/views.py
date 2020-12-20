@@ -120,7 +120,7 @@ def get_messages():
 
 def get_login_session_report(request):
     login_session_report = {
-        'Name of the Report' : 'get_login_session_report',
+        'Name of the Report' : 'set_login_session',
         'regID' : request.session['regID'],
         'atleast_one_shop_registered' : atleast_one_shop_registered(request),
         'login_username' : get_login_username(request),
@@ -166,6 +166,7 @@ def login_post(request):
             set_login_session(request, request.user.phone)
             return redirect('/staff/aboutus/')
         else:
+            print('Either Phone Number or Password is incorrect')
             messages.success(request, 'Either Phone Number or Password is incorrect', extra_tags='alert')
     else:
         phone_length = len(request.POST['phone'])

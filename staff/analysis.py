@@ -48,16 +48,12 @@ def get_services_of_the_month(shop_id, year, month):
         else:
             other_services[all_services_dict[other_service_id]] = 0
 
-    print({ 'hair': hair_services, 'face': face_services, 'other': other_services })
     return { 'hair': hair_services, 'face': face_services, 'other': other_services }
 
 
 def get_staff_contribution(shop_id, year, month):
     emp_ids = Employee.objects.values('EmployeeID', 'name').filter(ShopID=shop_id)
     staff_contribution_list = []
-    print('Data')
-    print(ClientVisit.objects.values('employee_id').filter(ShopID=shop_id, date__contains=get_bardate(month, year)).annotate(Amount=Sum('amount'),
-                                                                                      numberOfCustomer=Sum('numberofclient')))
     for emp_id in emp_ids:
         staff_contibution_structure = {}
         staff_contibution_structure['name'] = emp_id['name']
@@ -166,8 +162,6 @@ class AnalysisReport(APIView):
 
     def post(self, request):
         month = request.data['month']
-        print('month is')
-        print(month)
         year = request.data['year']
         return Response(
             {'services_of_the_month': get_services_of_the_month(request.data['shop_id'], year, month),

@@ -33,14 +33,12 @@ def get_all_services():
     all_services = list(all_services)
     all_services = sorted(all_services, key=lambda d:(d['character'], d['number']))
     for service_obj in all_services:
-        print(service_obj)
         all_service_dict[service_obj['ServiceID']] = service_obj['Name']
     return all_service_dict
 
 
 def get_services():
     all_services = get_all_services()
-    print(all_services)
     services = {}
     hair_services = {}
     face_services = {}
@@ -119,7 +117,6 @@ def get_list_of_login_user_shops(request):
     list_of_shops = []
     for shop_id in shop_lists:
         list_of_shops.append(shop_id)
-    print(list_of_shops)
     return list_of_shops
 
 
@@ -135,7 +132,6 @@ def get_all_membership_based_on_shop_id(request, ShopID):
     memberships = Membership.objects.values('custID', 'Contact_Number', 'Sex', 'Name', 'DOB', 'last_visit').filter(shopID=ShopID)
     for membership in memberships:
         if membership['DOB'] != '':
-            print(membership['DOB'])
             membership['DOB'] = convert_date_yyyy_mm_dd_to_dd_mm_yyyy(membership['DOB'])
         if membership['custID'] not in client_visit_group_by_client_id_dict_key_clientID.keys():
             membership['last_visit'] = convert_date_yyyy_mm_dd_to_dd_mm_yyyy(membership['last_visit'].strftime("%Y-%m-%d"))
@@ -219,22 +215,42 @@ def get_page_permission_dict():
     page_dict = page_display_dict()
     for ques, permissions in page_dict.items():
         for page in permissions:
-            print(page)
             page_permissions_dict[page[1]] = str(page[2])
-    print(page_permissions_dict)
     return page_permissions_dict
+
+
+def get_shop_list_access_report(regID, shop_list_access_json):
+    shop_list_access_report = {
+        'Name of the Report' : 'get_shop_list_access',
+        'regID' : regID,
+        'shop_list_access_json' : shop_list_access_json
+    }
+    print(shop_list_access_report)
 
 
 def get_shop_list_access(regID):
     shop_list_access = Access.objects.values('shopID', 'isowner', 'page_list').filter(regID=regID)
-    print(list(shop_list_access))
     shop_list_access_json = {}
     for shop_list_access_object in shop_list_access:
         shop_list_access_json[shop_list_access_object['shopID']] = {'isowner': shop_list_access_object['isowner'], 'page_list': shop_list_access_object['page_list'].split(',')}
+    get_shop_list_access_report(regID, shop_list_access_json)
     return shop_list_access_json
 
 
+def get_common_attributes_report(request):
+    report = {
+        'Name of the Report' : 'get_common_attributes',
+        'login_username' : request.session["login_username"], 
+        'shop_name' : request.session["shop_name"],
+        'shop_details' : request.session["shop_details"],
+        'shop_list_access' : request.session["shop_list_access"],
+        'month_year_month_name' : request.session["month_year_month_name"]
+    }
+    print(report)
+
+
 def get_common_attributes(request, attributes_json):
+    get_common_attributes_report(request)
     attributes_json["login_username"] = request.session["login_username"]
     attributes_json["shop_name"] = request.session["shop_name"]
     attributes_json["shop_details"] = request.session["shop_details"]

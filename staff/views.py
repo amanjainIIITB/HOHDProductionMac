@@ -103,7 +103,6 @@ def get_current_shop_employees(shop_id):
 
 
 def is_account_exist(contact_number):
-    print(OwnerRegistration.objects.filter(phone=contact_number).exists())
     return OwnerRegistration.objects.filter(phone=contact_number).exists()
 
 
@@ -609,7 +608,19 @@ def download_customer_data(request, month, year):
     return gererate_all_customer_data_for_a_month_in_excel(month, year, response.json())
 
 
+def get_add_shop_id_to_user_report(request, regID, shop_id, isowner, page_list):
+    access_report = {
+        'Name of the Report' : 'add_shop_id_to_user',
+        'regID' : regID,
+        'shop_id' : shop_id,
+        '(Are you Owner)isowner' : isowner,
+        'page_list' : page_list
+    }
+    print(access_report)
+
+
 def add_shop_id_to_user(request, reg_id, shop_id, isowner, page_list):
+    get_add_shop_id_to_user_report(request, reg_id, shop_id, isowner, page_list)
     Access(regID = reg_id, shopID = shop_id, isowner = isowner, page_list=page_list).save()
 
 
@@ -638,6 +649,8 @@ def get_logo_image_url(request):
 @login_required(login_url="/")
 def shopreg(request):
     if request.method == "POST":
+
+        # New SHop Details and save it 
         new_shop_id = get_new_shop_id(request)
         shopRegistration = ShopRegistration()
         shopRegistration.ShopID = new_shop_id
@@ -645,20 +658,28 @@ def shopreg(request):
         shopRegistration.Shop_Name = request.POST.get('Shop_Name')
         shopRegistration.Shop_Address = request.POST.get('Shop_Address')
         shopRegistration.email = request.POST.get('email')
-        add_shop_id_in_entered_user(request, request.user.phone, [shopRegistration.ShopID])
         shopRegistration.save()
+
+        # Provide access to the shop whoever is registering shop.
         add_shop_id_to_user(request, OwnerRegistration.objects.values('ownerID').filter(phone=request.user.phone).first()['ownerID'], shopRegistration.ShopID, True, '')
-        print(request.FILES.get('logo'))
+        
+        # Set shop_list_access session so that at least the user who has registered new shop can access it without logout and login again
+        set_session(request, "shop_list_access", get_shop_list_access(request.session['regID']))
+        
+        # Set shop_details session to appear the added shop in the list of shops in parlour list
+        set_session(request, "shop_details", get_login_user_shop_details(request))
+
+        # Check if user has upload logo of the shop then only handle it
         if request.FILES.get('logo') != None:
             handle_uploaded_file(request, request.FILES.get('logo'), logo_path, shopRegistration.ShopID, shopRegistration.ShopID) 
+        
+        # If it's the first shop in user accound then set shop_id and shop_name
         if len(get_list_of_login_user_shops(request)) == 1:
             # check if it is first parlour to be registered then set it as the default parlour
             set_session(request, "shop_id", str(new_shop_id))
             set_session(request, "shop_name", str(shopRegistration.Shop_Name))
-            set_session(request, "shop_list_access", get_shop_list_access(request.session['regID']))
-            set_session(request, "page_permissions_dict", get_page_permission_dict())
+
         messages.success(request, 'Added successfully', extra_tags='alert')
-    print(get_logo_image_url(request))
     attributes_json = {}
     get_common_attributes(request, attributes_json)
     return render(request, 'shop_registration.html', attributes_json)
